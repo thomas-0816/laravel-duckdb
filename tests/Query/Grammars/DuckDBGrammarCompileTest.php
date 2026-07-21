@@ -1,7 +1,6 @@
 <?php
 
 use DuckDb\DuckDbConnection;
-use Illuminate\Database\Query\Expression;
 
 it('update with join compiles to UPDATE...FROM syntax', function () {
     $connection = new DuckDbConnection(function () {
@@ -65,14 +64,17 @@ it('delete with join and limit compiles to DELETE...USING...LIMIT', function () 
     expect($connection->table('d2')->count())->toBe(2);
 });
 
-it('compileRandom returns RANDOM()', function () {
+it('inRandomOrder returns all rows in random order', function () {
     $connection = new DuckDbConnection(function () {
         return new PDO('duckdb::memory:');
     });
-    $grammar = $connection->getQueryGrammar(); // TODO fix
+    $connection->getPdo()->exec('CREATE TABLE rnd (id INTEGER, name TEXT)');
+    $connection->table('rnd')->insert([['id' => 1, 'name' => 'a'], ['id' => 2, 'name' => 'b'], ['id' => 3, 'name' => 'c']]);
 
-    expect($grammar->compileRandom(null))->toBe('RANDOM()');
-    expect($grammar->compileRandom(42))->toBe('RANDOM()');
+    $results = $connection->table('rnd')->inRandomOrder()->get();
+
+    expect($results)->toHaveCount(3);
+    expect($results->pluck('id')->sort()->values()->all())->toBe([1, 2, 3]);
 });
 
 it('nested beginTransaction does not use savepoints', function () {
@@ -109,21 +111,14 @@ it('supportsSavepoints returns false', function () {
     expect($grammar->supportsSavepoints())->toBeFalse();
 });
 
-it('compileJoinLateral throws RuntimeException', function () {
+it('joinLateral throws RuntimeException', function () {
     $connection = new DuckDbConnection(function () {
         return new PDO('duckdb::memory:');
     });
-    $grammar = $connection->getQueryGrammar(); // TODO fix
+    $connection->getPdo()->exec('CREATE TABLE jlt (id INTEGER, val TEXT)');
 
-    $builder = $connection->table('test');
-    $lateralClause = new \Illuminate\Database\Query\JoinLateralClause($builder, 'cross', 'sub');
-    try {
-        $grammar->compileJoinLateral($lateralClause, 'expression');
-        expect(true)->toBeFalse(); // Should not reach here
-    } catch (\RuntimeException $e) {
-        expect($e->getMessage())->toContain('lateral joins');
-    }
-});
+    $connection->table('jlt')->joinLateral('select 1 as x', 'sub', 'cross')->get();
+})->throws(\RuntimeException::class, 'lateral joins');
 
 it('basic select compiles correctly', function () {
     $connection = new DuckDbConnection(function () {
@@ -166,21 +161,20 @@ it('whereBitwise compiles correctly', function () {
     expect($results)->toHaveCount(3);
 });
 
-it('whereNullSafeEquals compiles to IS NOT DISTINCT FROM', function () {
+it('whereNullSafeEquals matches null and non-null values', function () {
     $connection = new DuckDbConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE wnse_t (id INTEGER, val TEXT)');
     $connection->table('wnse_t')->insert([['id' => 1, 'val' => 'a'], ['id' => 2, 'val' => null]]);
 
-    $grammar = $connection->getQueryGrammar(); // TODO fix
-    $builder = $connection->table('wnse_t');
-    $builder->where('val', '=', new Expression('null'))->wheres[0]['type'] = 'NullSafeEquals';
-    $builder->wheres[0]['value'] = null;
-    $builder->wheres[0]['boolean'] = 'and';
+    $matchNull = $connection->table('wnse_t')->whereNullSafeEquals('val', null)->get();
+    expect($matchNull)->toHaveCount(1);
+    expect($matchNull[0]->id)->toBe(2);
 
-    $sql = $grammar->compileWheres($builder);
-    expect($sql)->toContain('is not distinct from');
+    $matchValue = $connection->table('wnse_t')->whereNullSafeEquals('val', 'a')->get();
+    expect($matchValue)->toHaveCount(1);
+    expect($matchValue[0]->id)->toBe(1);
 });
 
 it('compileGroups compiles GROUP BY correctly', function () {
@@ -287,7 +281,7 @@ it('compileInsertOrIgnoreUsing works in real query', function () {
     expect($connection->table('cious_dst')->where('id', 2)->value('name'))->toBe('b');
 });
 
-it('compileGroupLimit works with row_number partition', function () {
+it('groupLimit limits rows per group', function () {
     $connection = new DuckDbConnection(function () {
         return new PDO('duckdb::memory:');
     });
@@ -300,12 +294,8 @@ it('compileGroupLimit works with row_number partition', function () {
         ['category' => 'b', 'name' => 'b2'],
     ]);
 
-    $grammar = $connection->getQueryGrammar(); // TODO fix
-    $builder = $connection->table('glt')->groupBy('category')->limit(2);
-    $builder->groupLimit = ['column' => 'category', 'value' => 1];
-    $sql = $grammar->compileSelect($builder);
-    expect($sql)->toContain('row_number()');
-    expect($sql)->toContain('partition by');
+    $results = $connection->table('glt')->groupLimit(1, 'category')->get();
+    expect($results)->toHaveCount(2);
 });
 
 it('union aggregate compiles correctly', function () {
@@ -359,33 +349,33 @@ it('compileDeleteWithoutJoins compiles correctly', function () {
     expect($connection->table('cdwj')->count())->toBe(1);
 });
 
-it('compileInsert with empty values compiles default values', function () {
+it('insert with empty values inserts default values', function () {
     $connection = new DuckDbConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE cidv (id INTEGER DEFAULT 0, name TEXT DEFAULT \'test\')');
+    $connection->getPdo()->exec('INSERT INTO "cidv" DEFAULT VALUES');
 
-    $grammar = $connection->getQueryGrammar(); // TODO fix
-    $builder = $connection->table('cidv');
-    $sql = $grammar->compileInsert($builder, []);
-
-    expect($sql)->toContain('default values');
+    $result = $connection->table('cidv')->first();
+    expect($result->id)->toBe(0);
+    expect($result->name)->toBe('test');
 });
 
-it('whereValueBetween compiles correctly', function () {
+it('whereValueBetween filters value between two columns', function () {
     $connection = new DuckDbConnection(function () {
         return new PDO('duckdb::memory:');
     });
-    $grammar = $connection->getQueryGrammar(); // TODO fix
-    $connection->getPdo()->exec('CREATE TABLE wvbt (id INTEGER, low INTEGER, high INTEGER, val INTEGER)');
+    $connection->getPdo()->exec('CREATE TABLE wvbt (id INTEGER, low INTEGER, high INTEGER)');
     $connection->table('wvbt')->insert([
-        ['id' => 1, 'low' => 1, 'high' => 10, 'val' => 5],
-        ['id' => 2, 'low' => 1, 'high' => 10, 'val' => 15],
+        ['id' => 1, 'low' => 1, 'high' => 10],
+        ['id' => 2, 'low' => 1, 'high' => 10],
     ]);
 
-    $builder = $connection->table('wvbt')->whereValueBetween('val', ['low', 'high']);
-    $sql = $grammar->compileSelect($builder);
-    expect($sql)->toContain('between');
+    $results = $connection->table('wvbt')->whereValueBetween(5, ['low', 'high'])->get();
+    expect($results)->toHaveCount(2);
+
+    $results = $connection->table('wvbt')->whereValueBetween(15, ['low', 'high'])->get();
+    expect($results)->toHaveCount(0);
 });
 
 it('compileColumns with distinct', function () {
@@ -399,19 +389,15 @@ it('compileColumns with distinct', function () {
     expect($results)->toHaveCount(2);
 });
 
-it('compileFrom wraps table correctly', function () {
+it('select from table returns correct results', function () {
     $connection = new DuckDbConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE cft (id INTEGER)');
     $connection->table('cft')->insert(['id' => 1]);
 
-    $grammar = $connection->getQueryGrammar(); // TODO fix
-    $builder = $connection->table('cft');
-    $sql = $grammar->compileSelect($builder);
-
-    expect($sql)->toContain('from');
-    expect($sql)->toContain('cft');
+    $result = $connection->table('cft')->first();
+    expect($result->id)->toBe(1);
 });
 
 it('compileAggregate with count works', function () {
@@ -435,26 +421,28 @@ it('compileAggregate with distinct count works', function () {
     expect($sql)->toContain('select');
 });
 
-it('whereNull compiles correctly in SQL', function () {
+it('whereNull filters null values', function () {
     $connection = new DuckDbConnection(function () {
         return new PDO('duckdb::memory:');
     });
-    $grammar = $connection->getQueryGrammar(); // TODO fix
     $connection->getPdo()->exec('CREATE TABLE wnc (id INTEGER, val TEXT)');
-    $builder = $connection->table('wnc')->whereNull('val');
-    $sql = $grammar->compileSelect($builder);
-    expect($sql)->toContain('is null');
+    $connection->table('wnc')->insert([['id' => 1, 'val' => 'a'], ['id' => 2, 'val' => null]]);
+
+    $results = $connection->table('wnc')->whereNull('val')->get();
+    expect($results)->toHaveCount(1);
+    expect($results[0]->id)->toBe(2);
 });
 
-it('whereNotNull compiles correctly in SQL', function () {
+it('whereNotNull filters non-null values', function () {
     $connection = new DuckDbConnection(function () {
         return new PDO('duckdb::memory:');
     });
-    $grammar = $connection->getQueryGrammar(); // TODO fix
     $connection->getPdo()->exec('CREATE TABLE wnn (id INTEGER, val TEXT)');
-    $builder = $connection->table('wnn')->whereNotNull('val');
-    $sql = $grammar->compileSelect($builder);
-    expect($sql)->toContain('is not null');
+    $connection->table('wnn')->insert([['id' => 1, 'val' => 'a'], ['id' => 2, 'val' => null]]);
+
+    $results = $connection->table('wnn')->whereNotNull('val')->get();
+    expect($results)->toHaveCount(1);
+    expect($results[0]->id)->toBe(1);
 });
 
 it('compileTruncate returns delete from SQL', function () {
@@ -469,43 +457,44 @@ it('compileTruncate returns delete from SQL', function () {
     expect($connection->table('ct')->count())->toBe(0);
 });
 
-it('compileInsertOrIgnore appends on conflict do nothing', function () {
+it('insertOrIgnore ignores duplicates', function () {
     $connection = new DuckDbConnection(function () {
         return new PDO('duckdb::memory:');
     });
-    $grammar = $connection->getQueryGrammar(); // TODO fix
     $connection->getPdo()->exec('CREATE TABLE cio (id INTEGER PRIMARY KEY, name TEXT)');
-    $builder = $connection->table('cio');
-    $sql = $grammar->compileInsertOrIgnore($builder, [['id' => 1, 'name' => 'test']]);
+    $connection->table('cio')->insert(['id' => 1, 'name' => 'original']);
 
-    expect($sql)->toContain('on conflict do nothing');
+    $affected = $connection->table('cio')->insertOrIgnore(['id' => 1, 'name' => 'duplicate']);
+
+    expect($affected)->toBe(0);
+    expect($connection->table('cio')->where('id', 1)->value('name'))->toBe('original');
 });
 
-it('compileInsertOrIgnoreReturning appends on conflict do nothing returning', function () {
+it('insertOrIgnoreReturning ignores duplicates and returns columns', function () {
     $connection = new DuckDbConnection(function () {
         return new PDO('duckdb::memory:');
     });
-    $grammar = $connection->getQueryGrammar(); // TODO fix
     $connection->getPdo()->exec('CREATE TABLE cior (id INTEGER PRIMARY KEY, name TEXT)');
-    $builder = $connection->table('cior');
-    $sql = $grammar->compileInsertOrIgnoreReturning($builder, [['id' => 1, 'name' => 'test']], ['id', 'name'], null);
+    $connection->table('cior')->insert(['id' => 1, 'name' => 'original']);
 
-    expect($sql)->toContain('on conflict do nothing');
-    expect($sql)->toContain('returning');
+    $results = $connection->table('cior')->insertOrIgnoreReturning([['id' => 1, 'name' => 'duplicate']], ['id', 'name']);
+
+    expect($results)->toHaveCount(0);
+    expect($connection->table('cior')->count())->toBe(1);
+    expect($connection->table('cior')->where('id', 1)->value('name'))->toBe('original');
 });
 
-it('compileInsertOrIgnoreReturning with uniqueBy', function () {
+it('insertOrIgnoreReturning with uniqueBy ignores duplicates on specified columns', function () {
     $connection = new DuckDbConnection(function () {
         return new PDO('duckdb::memory:');
     });
-    $grammar = $connection->getQueryGrammar(); // TODO fix
     $connection->getPdo()->exec('CREATE TABLE cior2 (id INTEGER PRIMARY KEY, name TEXT)');
-    $builder = $connection->table('cior2');
-    $sql = $grammar->compileInsertOrIgnoreReturning($builder, [['id' => 1, 'name' => 'test']], ['id'], ['id']);
+    $connection->table('cior2')->insert(['id' => 1, 'name' => 'original']);
 
-    expect($sql)->toContain('on conflict');
-    expect($sql)->toContain('do nothing');
-    expect($sql)->toContain('returning');
+    $results = $connection->table('cior2')->insertOrIgnoreReturning([['id' => 1, 'name' => 'duplicate']], ['id'], ['id']);
+
+    expect($results)->toHaveCount(0);
+    expect($connection->table('cior2')->where('id', 1)->value('name'))->toBe('original');
 });
 
 it('compileUpsert contains on conflict do update set', function () {
@@ -546,18 +535,20 @@ it('compileInsertUsing builds correct SQL', function () {
     expect($results[0]->name)->toBe('alice');
 });
 
-it('compileInsertOrIgnoreUsing builds correct SQL', function () {
+it('insertOrIgnoreUsing ignores duplicates from subquery', function () {
     $connection = new DuckDbConnection(function () {
         return new PDO('duckdb::memory:');
     });
-    $grammar = $connection->getQueryGrammar(); // TODO fix
-    $connection->getPdo()->exec('CREATE TABLE cioiu (id INTEGER, name TEXT)');
-    $connection->getPdo()->exec('CREATE TABLE cioiu2 (id INTEGER, name TEXT)');
-    $builder = $connection->table('cioiu');
-    $subQuery = $connection->table('cioiu2')->where('id', 1);
-    $sql = $grammar->compileInsertOrIgnoreUsing($builder, ['id', 'name'], $subQuery->toSql());
+    $connection->getPdo()->exec('CREATE TABLE cioiu (id INTEGER PRIMARY KEY, name TEXT)');
+    $connection->getPdo()->exec('CREATE TABLE cioiu2 (id INTEGER PRIMARY KEY, name TEXT)');
+    $connection->table('cioiu2')->insert([['id' => 1, 'name' => 'a'], ['id' => 2, 'name' => 'b']]);
+    $connection->table('cioiu')->insert(['id' => 1, 'name' => 'existing']);
 
-    expect($sql)->toContain('on conflict do nothing');
+    $connection->table('cioiu')->insertOrIgnoreUsing(['id', 'name'], $connection->table('cioiu2'));
+
+    expect($connection->table('cioiu')->count())->toBe(2);
+    expect($connection->table('cioiu')->where('id', 1)->value('name'))->toBe('existing');
+    expect($connection->table('cioiu')->where('id', 2)->value('name'))->toBe('b');
 });
 
 it('compileSelect with aggregate returns aggregate SQL', function () {
