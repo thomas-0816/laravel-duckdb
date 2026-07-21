@@ -28,7 +28,7 @@ it('compileSchemas executes against DuckDB', function () {
     })();
     $grammar = new DuckDBGrammar($connection);
 
-    $result = $connection->getPdo()->query($grammar->compileSchemas())->fetchAll(PDO::FETCH_ASSOC);
+    $result = $connection->getPdo()->query($grammar->compileSchemas())->fetchAll(PDO::FETCH_ASSOC); // TODO make real test, dont call compile function directly
 
     expect($result)->not->toBeEmpty();
     $names = array_column($result, 'name');
@@ -42,7 +42,7 @@ it('compileTableExists queries information_schema', function () {
         });
     })());
 
-    $sql = $grammar->compileTableExists('main', 'test_table');
+    $sql = $grammar->compileTableExists('main', 'test_table'); // TODO make real test, dont call compile function directly
 
     expect($sql)->toContain('information_schema.tables');
     expect($sql)->toContain("'test_table'");
@@ -58,7 +58,7 @@ it('compileTableExists defaults to main schema when null', function () {
         });
     })());
 
-    $sql = $grammar->compileTableExists(null, 'test_table');
+    $sql = $grammar->compileTableExists(null, 'test_table'); // TODO make real test, dont call compile function directly
 
     expect($sql)->toContain("'main'");
 });
@@ -72,7 +72,7 @@ it('compileTableExists returns true for existing table', function () {
     $grammar = new DuckDBGrammar($connection);
 
     $connection->getPdo()->exec('CREATE TABLE existing_tbl (id INTEGER)');
-    $result = $connection->getPdo()->query($grammar->compileTableExists('main', 'existing_tbl'))->fetch(PDO::FETCH_ASSOC);
+    $result = $connection->getPdo()->query($grammar->compileTableExists('main', 'existing_tbl'))->fetch(PDO::FETCH_ASSOC); // TODO make real test, dont call compile function directly
 
     expect($result['exists'])->toBe(true);
 });
@@ -85,7 +85,7 @@ it('compileTableExists returns false for non-existing table', function () {
     })();
     $grammar = new DuckDBGrammar($connection);
 
-    $result = $connection->getPdo()->query($grammar->compileTableExists('main', 'nonexistent'))->fetch(PDO::FETCH_ASSOC);
+    $result = $connection->getPdo()->query($grammar->compileTableExists('main', 'nonexistent'))->fetch(PDO::FETCH_ASSOC); // TODO make real test, dont call compile function directly
 
     expect($result['exists'])->toBe(false);
 });
@@ -97,7 +97,7 @@ it('compileTables with null schema omits schema filter', function () {
         });
     })());
 
-    $sql = $grammar->compileTables(null);
+    $sql = $grammar->compileTables(null); // TODO make real test, dont call compile function directly
 
     expect($sql)->toContain('information_schema.tables');
     expect($sql)->not->toContain('table_schema =');
@@ -113,7 +113,7 @@ it('compileTables with string schema filters by schema', function () {
         });
     })());
 
-    $sql = $grammar->compileTables('main');
+    $sql = $grammar->compileTables('main'); // TODO make real test, dont call compile function directly
 
     expect($sql)->toContain("table_schema = 'main'");
 });
@@ -125,7 +125,7 @@ it('compileTables with array schema uses IN clause', function () {
         });
     })());
 
-    $sql = $grammar->compileTables(['main', 'temp']);
+    $sql = $grammar->compileTables(['main', 'temp']); // TODO make real test, dont call compile function directly
 
     expect($sql)->toContain('table_schema in');
     expect($sql)->toContain("'main'");
@@ -142,7 +142,7 @@ it('compileTables returns actual tables from DuckDB', function () {
 
     $connection->getPdo()->exec('CREATE TABLE ct_a (id INTEGER)');
     $connection->getPdo()->exec('CREATE TABLE ct_b (id INTEGER)');
-    $result = $connection->getPdo()->query($grammar->compileTables('main'))->fetchAll(PDO::FETCH_ASSOC);
+    $result = $connection->getPdo()->query($grammar->compileTables('main'))->fetchAll(PDO::FETCH_ASSOC); // TODO make real test, dont call compile function directly
     $names = array_column($result, 'name');
 
     expect($names)->toContain('ct_a');
@@ -158,7 +158,7 @@ it('compileTables excludes internal duckdb tables', function () {
     $grammar = new DuckDBGrammar($connection);
 
     $connection->getPdo()->exec('CREATE TABLE user_test (id INTEGER)');
-    $result = $connection->getPdo()->query($grammar->compileTables('main'))->fetchAll(PDO::FETCH_ASSOC);
+    $result = $connection->getPdo()->query($grammar->compileTables('main'))->fetchAll(PDO::FETCH_ASSOC); // TODO make real test, dont call compile function directly
     $names = array_column($result, 'name');
 
     expect($names)->not->toBeEmpty();
@@ -174,7 +174,7 @@ it('compileViews queries information_schema views', function () {
         });
     })());
 
-    $sql = $grammar->compileViews('main');
+    $sql = $grammar->compileViews('main'); // TODO make real test, dont call compile function directly
 
     expect($sql)->toContain('information_schema.views');
     expect($sql)->toContain("'main'");
@@ -191,7 +191,7 @@ it('compileViews returns actual views from DuckDB', function () {
 
     $connection->getPdo()->exec('CREATE TABLE vt_src (id INTEGER)');
     $connection->getPdo()->exec('CREATE VIEW v_test_view AS SELECT * FROM vt_src');
-    $result = $connection->getPdo()->query($grammar->compileViews('main'))->fetchAll(PDO::FETCH_ASSOC);
+    $result = $connection->getPdo()->query($grammar->compileViews('main'))->fetchAll(PDO::FETCH_ASSOC); // TODO make real test, dont call compile function directly
     $names = array_column($result, 'name');
 
     expect($names)->toContain('v_test_view');
@@ -204,7 +204,7 @@ it('compileViews defaults to empty string when schema is falsy', function () {
         });
     })());
 
-    $sql = $grammar->compileViews('');
+    $sql = $grammar->compileViews(''); // TODO make real test, dont call compile function directly
 
     expect($sql)->toContain("''");
 });
@@ -216,7 +216,7 @@ it('compileColumns queries information_schema columns', function () {
         });
     })());
 
-    $sql = $grammar->compileColumns('main', 'test_tbl');
+    $sql = $grammar->compileColumns('main', 'test_tbl'); // TODO make real test, dont call compile function directly
 
     expect($sql)->toContain('information_schema.columns');
     expect($sql)->toContain("'test_tbl'");
@@ -234,7 +234,7 @@ it('compileColumns defaults to main schema when null', function () {
         });
     })());
 
-    $sql = $grammar->compileColumns(null, 'test_tbl');
+    $sql = $grammar->compileColumns(null, 'test_tbl'); // TODO make real test, dont call compile function directly
 
     expect($sql)->toContain("'main'");
 });
@@ -248,7 +248,7 @@ it('compileColumns returns actual columns from DuckDB', function () {
     $grammar = new DuckDBGrammar($connection);
 
     $connection->getPdo()->exec('CREATE TABLE cc_t (id INTEGER, name TEXT, val DOUBLE)');
-    $result = $connection->getPdo()->query($grammar->compileColumns('main', 'cc_t'))->fetchAll(PDO::FETCH_ASSOC);
+    $result = $connection->getPdo()->query($grammar->compileColumns('main', 'cc_t'))->fetchAll(PDO::FETCH_ASSOC); // TODO make real test, dont call compile function directly
     $colNames = array_column($result, 'name');
 
     expect($colNames)->toBe(['id', 'name', 'val']);
@@ -261,7 +261,7 @@ it('compileIndexes queries index information', function () {
         });
     })());
 
-    $sql = $grammar->compileIndexes('main', 'test_tbl');
+    $sql = $grammar->compileIndexes('main', 'test_tbl'); // TODO make real test, dont call compile function directly
 
     expect($sql)->toContain('information_schema.index_columns');
     expect($sql)->toContain('information_schema.indexes');
@@ -280,7 +280,7 @@ it('compileForeignKeys queries key_column_usage', function () {
         });
     })());
 
-    $sql = $grammar->compileForeignKeys('main', 'test_tbl');
+    $sql = $grammar->compileForeignKeys('main', 'test_tbl'); // TODO make real test, dont call compile function directly
 
     expect($sql)->toContain('information_schema.key_column_usage');
     expect($sql)->toContain("'test_tbl'");
@@ -330,10 +330,9 @@ it('dropAllViews drops all user views', function () {
     $connection->getPdo()->exec('CREATE TABLE davs (id INTEGER)');
     $connection->getPdo()->exec('CREATE VIEW dav1 AS SELECT * FROM davs');
     $connection->getPdo()->exec('CREATE VIEW dav2 AS SELECT * FROM davs');
-
     $connection->getSchemaBuilder()->dropAllViews();
 
-    $views = $connection->getPdo()->query("select table_name from information_schema.views where table_name in ('dav1', 'dav2')")->fetchAll(PDO::FETCH_COLUMN);
+    $views = $connection->getPdo()->query("select table_name from information_schema.views where table_schema = 'main' and table_name in ('dav1', 'dav2')")->fetchAll(PDO::FETCH_COLUMN);
     expect($views)->not->toContain('dav1');
     expect($views)->not->toContain('dav2');
 });
@@ -347,10 +346,9 @@ it('dropAllViews defaults to main schema', function () {
 
     $connection->getPdo()->exec('CREATE TABLE davs2 (id INTEGER)');
     $connection->getPdo()->exec('CREATE VIEW dav3 AS SELECT * FROM davs2');
-
     $connection->getSchemaBuilder()->dropAllViews();
 
-    $views = $connection->getPdo()->query("select table_name from information_schema.views where table_name = 'dav3'")->fetchAll(PDO::FETCH_COLUMN);
+    $views = $connection->getPdo()->query("select table_name from information_schema.views where table_schema = 'main' and table_name = 'dav3'")->fetchAll(PDO::FETCH_COLUMN);
     expect($views)->not->toContain('dav3');
 });
 
@@ -1315,7 +1313,7 @@ it('compileComment returns null when no comment and not changing', function () {
     $column = new Fluent(['name' => 'test_col', 'comment' => null, 'change' => false]);
     $command = new Fluent(['column' => $column]);
 
-    $sql = $grammar->compileComment($blueprint, $command);
+    $sql = $grammar->compileComment($blueprint, $command); // TODO make real test, dont call compile function directly
 
     expect($sql)->toBeNull();
 });
@@ -1431,7 +1429,7 @@ it('compileUnique compiles unique index SQL', function () {
     $blueprint = new Blueprint($connection, 'uniq_compile');
     $command = new Fluent(['index' => 'uniq_email', 'columns' => ['email']]);
 
-    $sql = $grammar->compileUnique($blueprint, $command);
+    $sql = $grammar->compileUnique($blueprint, $command); // TODO make real test, dont call compile function directly
 
     expect($sql)->toContain('create unique index');
     expect($sql)->toContain('uniq_email');
@@ -1449,7 +1447,7 @@ it('compileDropIndex compiles drop index SQL', function () {
     $blueprint = new Blueprint($connection, 'di_compile');
     $command = new Fluent(['index' => 'idx_to_drop']);
 
-    $sql = $grammar->compileDropIndex($blueprint, $command);
+    $sql = $grammar->compileDropIndex($blueprint, $command); // TODO make real test, dont call compile function directly
 
     expect($sql)->toContain('drop index');
     expect($sql)->toContain('idx_to_drop');
@@ -1466,7 +1464,7 @@ it('compileDropUnique compiles drop index SQL', function () {
     $blueprint = new Blueprint($connection, 'du_compile');
     $command = new Fluent(['index' => 'uniq_to_drop']);
 
-    $sql = $grammar->compileDropUnique($blueprint, $command);
+    $sql = $grammar->compileDropUnique($blueprint, $command); // TODO make real test, dont call compile function directly
 
     expect($sql)->toContain('drop index');
     expect($sql)->toContain('uniq_to_drop');
@@ -1645,7 +1643,7 @@ it('compileComment returns null for column without comment and no change', funct
     $column = new Fluent(['name' => 'col', 'comment' => null, 'change' => false]);
     $command = new Fluent(['column' => $column]);
 
-    expect($grammar->compileComment($blueprint, $command))->toBeNull();
+    expect($grammar->compileComment($blueprint, $command))->toBeNull(); // TODO make real test, dont call compile function directly
 });
 
 it('compileCreate creates a complete table with multiple features', function () {
@@ -1836,7 +1834,7 @@ it('compileDropAllViews with custom schema', function () {
         });
     })());
 
-    $sql = $grammar->compileDropAllViews('custom');
+    $sql = $grammar->compileDropAllViews('custom'); // TODO make real test, dont call compile function directly
 
     expect($sql)->toContain("'custom'");
     expect($sql)->toContain('drop view if exists');
