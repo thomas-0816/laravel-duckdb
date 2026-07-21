@@ -75,22 +75,38 @@ it('compileRandom returns RANDOM()', function () {
     expect($grammar->compileRandom(42))->toBe('RANDOM()');
 });
 
-it('compileSavepoint returns correct SQL', function () {
+it('nested beginTransaction does not use savepoints', function () {
     $connection = new DuckDbConnection(function () {
         return new PDO('duckdb::memory:');
     });
-    $grammar = $connection->getQueryGrammar(); // TODO fix
+    $grammar = $connection->getQueryGrammar();
+    expect($grammar->supportsSavepoints())->toBeFalse();
 
-    expect($grammar->compileSavepoint('sp1'))->toBe('SAVEPOINT sp1');
+    $connection->getPdo()->exec('CREATE TABLE spc (id INTEGER, val TEXT)');
+    $connection->table('spc')->insert(['id' => 1, 'val' => 'original']);
+
+    $connection->beginTransaction();
+    $connection->table('spc')->where('id', 1)->update(['val' => 'changed']);
+    expect($connection->table('spc')->where('id', 1)->value('val'))->toBe('changed');
+
+    $connection->beginTransaction();
+    expect($connection->transactionLevel())->toBe(2);
+    $connection->rollBack();
+    expect($connection->transactionLevel())->toBe(1);
+
+    expect($connection->table('spc')->where('id', 1)->value('val'))->toBe('changed');
+    $connection->rollBack();
+
+    expect($connection->table('spc')->where('id', 1)->value('val'))->toBe('original');
 });
 
-it('compileSavepointRollBack returns correct SQL', function () {
+it('supportsSavepoints returns false', function () {
     $connection = new DuckDbConnection(function () {
         return new PDO('duckdb::memory:');
     });
-    $grammar = $connection->getQueryGrammar(); // TODO fix
+    $grammar = $connection->getQueryGrammar();
 
-    expect($grammar->compileSavepointRollBack('sp1'))->toBe('ROLLBACK TO SAVEPOINT sp1');
+    expect($grammar->supportsSavepoints())->toBeFalse();
 });
 
 it('compileJoinLateral throws RuntimeException', function () {

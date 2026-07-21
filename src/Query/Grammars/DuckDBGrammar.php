@@ -11,6 +11,12 @@ use Illuminate\Support\Str;
 class DuckDBGrammar extends Grammar
 {
     /** {@inheritdoc} */
+    public function supportsSavepoints()
+    {
+        return false;
+    }
+
+    /** {@inheritdoc} */
     protected $operators = [
         '=', '<', '>', '<=', '>=', '<>', '!=',
         'like', 'not like', 'ilike',

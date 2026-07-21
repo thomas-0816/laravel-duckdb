@@ -284,7 +284,7 @@ it('supportsSavepoints returns true', function () {
     });
     $grammar = $connection->getQueryGrammar();
 
-    expect($grammar->supportsSavepoints())->toBeTrue();
+    expect($grammar->supportsSavepoints())->toBeFalse();
 });
 
 it('savepoint and rollback work in real queries', function () {
