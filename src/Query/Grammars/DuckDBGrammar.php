@@ -179,42 +179,45 @@ class DuckDBGrammar extends Grammar
     protected function compileUpdateWithJoinsOrLimit(Builder $query, array $values): string
     {
         $table = $this->wrapTable($query->from);
-
         $columns = $this->compileUpdateColumns($query, $values);
 
-        if (isset($query->joins)) {
-            $sql = "update {$table} set {$columns}";
-
-            $fromTables = collect($query->joins)
-                ->map(fn($join) => $this->wrapTable($join->table))
-                ->implode(', ');
-
-            $sql .= " from {$fromTables}";
-
+        if (isset($query->joins) && isset($query->limit)) {
+            $subQuery = "select {$table}.rowid from {$table} " . $this->compileJoins($query, $query->joins);
             $allConditions = [];
-
             foreach ($query->joins as $join) {
                 $allConditions = array_merge($allConditions, $this->compileWheresToArray($join));
             }
-
             if (! empty($query->wheres)) {
                 $allConditions = array_merge($allConditions, $this->compileWheresToArray($query));
             }
+            if (! empty($allConditions)) {
+                $subQuery .= ' where ' . $this->removeLeadingBoolean(implode(' ', $allConditions));
+            }
+            $subQuery .= ' limit ' . (int) $query->limit;
 
+            return "update {$table} set {$columns} where {$table}.rowid in ({$subQuery})";
+        }
+
+        if (isset($query->joins)) {
+            $sql = "update {$table} set {$columns} from " . collect($query->joins)
+                ->map(fn($join) => $this->wrapTable($join->table))
+                ->implode(', ');
+            $allConditions = [];
+            foreach ($query->joins as $join) {
+                $allConditions = array_merge($allConditions, $this->compileWheresToArray($join));
+            }
+            if (! empty($query->wheres)) {
+                $allConditions = array_merge($allConditions, $this->compileWheresToArray($query));
+            }
             if (! empty($allConditions)) {
                 $sql .= ' where ' . $this->removeLeadingBoolean(implode(' ', $allConditions));
-            }
-
-            if (isset($query->limit)) {
-                $sql .= ' limit ' . $this->parameter($query->limit);
             }
 
             return $sql;
         }
 
-        $whereClause = $this->compileWheres($query);
-
         if (isset($query->limit)) {
+            $whereClause = $this->compileWheres($query);
             $subQuery = "select rowid from {$table}";
             if ($whereClause !== '') {
                 $subQuery .= ' ' . $whereClause;
@@ -263,37 +266,43 @@ class DuckDBGrammar extends Grammar
     {
         $table = $this->wrapTable($query->from);
 
-        if (isset($query->joins)) {
-            $sql = "delete from {$table}";
-
-            $sql .= ' using ' . collect($query->joins)
-                ->map(fn($join) => $this->wrapTable($join->table))
-                ->implode(', ');
-
+        if (isset($query->joins) && isset($query->limit)) {
+            $subQuery = "select {$table}.rowid from {$table} " . $this->compileJoins($query, $query->joins);
             $allConditions = [];
-
             foreach ($query->joins as $join) {
                 $allConditions = array_merge($allConditions, $this->compileWheresToArray($join));
             }
-
             if (! empty($query->wheres)) {
                 $allConditions = array_merge($allConditions, $this->compileWheresToArray($query));
             }
+            if (! empty($allConditions)) {
+                $subQuery .= ' where ' . $this->removeLeadingBoolean(implode(' ', $allConditions));
+            }
+            $subQuery .= ' limit ' . (int) $query->limit;
 
+            return "delete from {$table} where {$table}.rowid in ({$subQuery})";
+        }
+
+        if (isset($query->joins)) {
+            $sql = "delete from {$table} using " . collect($query->joins)
+                ->map(fn($join) => $this->wrapTable($join->table))
+                ->implode(', ');
+            $allConditions = [];
+            foreach ($query->joins as $join) {
+                $allConditions = array_merge($allConditions, $this->compileWheresToArray($join));
+            }
+            if (! empty($query->wheres)) {
+                $allConditions = array_merge($allConditions, $this->compileWheresToArray($query));
+            }
             if (! empty($allConditions)) {
                 $sql .= ' where ' . $this->removeLeadingBoolean(implode(' ', $allConditions));
-            }
-
-            if (isset($query->limit)) {
-                $sql .= ' limit ' . $this->parameter($query->limit);
             }
 
             return $sql;
         }
 
-        $whereClause = $this->compileWheres($query);
-
         if (isset($query->limit)) {
+            $whereClause = $this->compileWheres($query);
             $subQuery = "select rowid from {$table}";
             if ($whereClause !== '') {
                 $subQuery .= ' ' . $whereClause;

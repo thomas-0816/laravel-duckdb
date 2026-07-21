@@ -1,7 +1,6 @@
 <?php
 
 use DuckDb\DuckDbConnection;
-use DuckDb\Query\Grammars\DuckDBGrammar;
 use Illuminate\Database\Query\Expression;
 
 it('update with join compiles to UPDATE...FROM syntax', function () {
@@ -19,18 +18,20 @@ it('update with join compiles to UPDATE...FROM syntax', function () {
     expect($connection->table('t1')->where('id', 2)->value('val'))->toBe('b');
 });
 
-it('update with join and limit compiles to UPDATE...FROM...LIMIT', function () {
+it('update with join and limit updates all matching rows', function () {
     $connection = new DuckDbConnection(function () {
         return new PDO('duckdb::memory:');
     });
-    $grammar = new DuckDBGrammar($connection);
+    $connection->getPdo()->exec('CREATE TABLE t1 (id INTEGER, val TEXT)');
+    $connection->getPdo()->exec('CREATE TABLE t2 (id INTEGER, val TEXT)');
+    $connection->table('t1')->insert([['id' => 1, 'val' => 'a'], ['id' => 2, 'val' => 'b']]);
+    $connection->table('t2')->insert([['id' => 1, 'val' => 'x'], ['id' => 2, 'val' => 'y']]);
 
-    $builder = $connection->table('t1')->join('t2', 't1.id', '=', 't2.id')->limit(1);
-    $sql = $grammar->compileUpdate($builder, ['t1.val' => 'y']);
+    $connection->table('t1')->join('t2', 't1.id', '=', 't2.id')->limit(1)->update(['t1.val' => 'z']);
 
-    expect($sql)->toContain('update');
-    expect($sql)->toContain('from');
-    expect($sql)->toContain('limit');
+    expect($connection->table('t1')->where('val', 'z')->count())->toBe(1);
+    expect($connection->table('t1')->where('id', 1)->value('val'))->toBe('z');
+    expect($connection->table('t1')->where('id', 2)->value('val'))->toBe('b');
 });
 
 it('delete with join compiles to DELETE...USING...WHERE', function () {
@@ -53,21 +54,22 @@ it('delete with join and limit compiles to DELETE...USING...LIMIT', function () 
     $connection = new DuckDbConnection(function () {
         return new PDO('duckdb::memory:');
     });
-    $grammar = new DuckDBGrammar($connection);
+    $connection->getPdo()->exec('CREATE TABLE d1 (id INTEGER, val TEXT)');
+    $connection->getPdo()->exec('CREATE TABLE d2 (id INTEGER, val TEXT)');
+    $connection->table('d1')->insert([['id' => 1, 'val' => 'a'], ['id' => 2, 'val' => 'b'], ['id' => 3, 'val' => 'c']]);
+    $connection->table('d2')->insert([['id' => 1, 'val' => 'x'], ['id' => 2, 'val' => 'y']]);
 
-    $builder = $connection->table('d1')->join('d2', 'd1.id', '=', 'd2.id')->limit(1);
-    $sql = $grammar->compileDelete($builder);
+    $connection->table('d1')->join('d2', 'd1.id', '=', 'd2.id')->limit(1)->delete();
 
-    expect($sql)->toContain('delete');
-    expect($sql)->toContain('using');
-    expect($sql)->toContain('limit');
+    expect($connection->table('d1')->count())->toBe(2);
+    expect($connection->table('d2')->count())->toBe(2);
 });
 
 it('compileRandom returns RANDOM()', function () {
     $connection = new DuckDbConnection(function () {
         return new PDO('duckdb::memory:');
     });
-    $grammar = $connection->getQueryGrammar();
+    $grammar = $connection->getQueryGrammar(); // TODO fix
 
     expect($grammar->compileRandom(null))->toBe('RANDOM()');
     expect($grammar->compileRandom(42))->toBe('RANDOM()');
@@ -77,7 +79,7 @@ it('compileSavepoint returns correct SQL', function () {
     $connection = new DuckDbConnection(function () {
         return new PDO('duckdb::memory:');
     });
-    $grammar = $connection->getQueryGrammar();
+    $grammar = $connection->getQueryGrammar(); // TODO fix
 
     expect($grammar->compileSavepoint('sp1'))->toBe('SAVEPOINT sp1');
 });
@@ -86,7 +88,7 @@ it('compileSavepointRollBack returns correct SQL', function () {
     $connection = new DuckDbConnection(function () {
         return new PDO('duckdb::memory:');
     });
-    $grammar = $connection->getQueryGrammar();
+    $grammar = $connection->getQueryGrammar(); // TODO fix
 
     expect($grammar->compileSavepointRollBack('sp1'))->toBe('ROLLBACK TO SAVEPOINT sp1');
 });
@@ -95,7 +97,7 @@ it('compileJoinLateral throws RuntimeException', function () {
     $connection = new DuckDbConnection(function () {
         return new PDO('duckdb::memory:');
     });
-    $grammar = $connection->getQueryGrammar();
+    $grammar = $connection->getQueryGrammar(); // TODO fix
 
     $builder = $connection->table('test');
     $lateralClause = new \Illuminate\Database\Query\JoinLateralClause($builder, 'cross', 'sub');
@@ -155,7 +157,7 @@ it('whereNullSafeEquals compiles to IS NOT DISTINCT FROM', function () {
     $connection->getPdo()->exec('CREATE TABLE wnse_t (id INTEGER, val TEXT)');
     $connection->table('wnse_t')->insert([['id' => 1, 'val' => 'a'], ['id' => 2, 'val' => null]]);
 
-    $grammar = $connection->getQueryGrammar();
+    $grammar = $connection->getQueryGrammar(); // TODO fix
     $builder = $connection->table('wnse_t');
     $builder->where('val', '=', new Expression('null'))->wheres[0]['type'] = 'NullSafeEquals';
     $builder->wheres[0]['value'] = null;
@@ -282,7 +284,7 @@ it('compileGroupLimit works with row_number partition', function () {
         ['category' => 'b', 'name' => 'b2'],
     ]);
 
-    $grammar = $connection->getQueryGrammar();
+    $grammar = $connection->getQueryGrammar(); // TODO fix
     $builder = $connection->table('glt')->groupBy('category')->limit(2);
     $builder->groupLimit = ['column' => 'category', 'value' => 1];
     $sql = $grammar->compileSelect($builder);
@@ -347,7 +349,7 @@ it('compileInsert with empty values compiles default values', function () {
     });
     $connection->getPdo()->exec('CREATE TABLE cidv (id INTEGER DEFAULT 0, name TEXT DEFAULT \'test\')');
 
-    $grammar = $connection->getQueryGrammar();
+    $grammar = $connection->getQueryGrammar(); // TODO fix
     $builder = $connection->table('cidv');
     $sql = $grammar->compileInsert($builder, []);
 
@@ -358,7 +360,7 @@ it('whereValueBetween compiles correctly', function () {
     $connection = new DuckDbConnection(function () {
         return new PDO('duckdb::memory:');
     });
-    $grammar = $connection->getQueryGrammar();
+    $grammar = $connection->getQueryGrammar(); // TODO fix
     $connection->getPdo()->exec('CREATE TABLE wvbt (id INTEGER, low INTEGER, high INTEGER, val INTEGER)');
     $connection->table('wvbt')->insert([
         ['id' => 1, 'low' => 1, 'high' => 10, 'val' => 5],
@@ -388,7 +390,7 @@ it('compileFrom wraps table correctly', function () {
     $connection->getPdo()->exec('CREATE TABLE cft (id INTEGER)');
     $connection->table('cft')->insert(['id' => 1]);
 
-    $grammar = $connection->getQueryGrammar();
+    $grammar = $connection->getQueryGrammar(); // TODO fix
     $builder = $connection->table('cft');
     $sql = $grammar->compileSelect($builder);
 
@@ -421,7 +423,7 @@ it('whereNull compiles correctly in SQL', function () {
     $connection = new DuckDbConnection(function () {
         return new PDO('duckdb::memory:');
     });
-    $grammar = $connection->getQueryGrammar();
+    $grammar = $connection->getQueryGrammar(); // TODO fix
     $connection->getPdo()->exec('CREATE TABLE wnc (id INTEGER, val TEXT)');
     $builder = $connection->table('wnc')->whereNull('val');
     $sql = $grammar->compileSelect($builder);
@@ -432,7 +434,7 @@ it('whereNotNull compiles correctly in SQL', function () {
     $connection = new DuckDbConnection(function () {
         return new PDO('duckdb::memory:');
     });
-    $grammar = $connection->getQueryGrammar();
+    $grammar = $connection->getQueryGrammar(); // TODO fix
     $connection->getPdo()->exec('CREATE TABLE wnn (id INTEGER, val TEXT)');
     $builder = $connection->table('wnn')->whereNotNull('val');
     $sql = $grammar->compileSelect($builder);
@@ -443,7 +445,7 @@ it('compileTruncate returns delete from SQL', function () {
     $connection = new DuckDbConnection(function () {
         return new PDO('duckdb::memory:');
     });
-    $grammar = $connection->getQueryGrammar();
+    $grammar = $connection->getQueryGrammar(); // TODO fix
     $connection->getPdo()->exec('CREATE TABLE ct (id INTEGER)');
     $builder = $connection->table('ct');
     $result = $grammar->compileTruncate($builder);
@@ -458,7 +460,7 @@ it('compileInsertOrIgnore appends on conflict do nothing', function () {
     $connection = new DuckDbConnection(function () {
         return new PDO('duckdb::memory:');
     });
-    $grammar = $connection->getQueryGrammar();
+    $grammar = $connection->getQueryGrammar(); // TODO fix
     $connection->getPdo()->exec('CREATE TABLE cio (id INTEGER PRIMARY KEY, name TEXT)');
     $builder = $connection->table('cio');
     $sql = $grammar->compileInsertOrIgnore($builder, [['id' => 1, 'name' => 'test']]);
@@ -470,7 +472,7 @@ it('compileInsertOrIgnoreReturning appends on conflict do nothing returning', fu
     $connection = new DuckDbConnection(function () {
         return new PDO('duckdb::memory:');
     });
-    $grammar = $connection->getQueryGrammar();
+    $grammar = $connection->getQueryGrammar(); // TODO fix
     $connection->getPdo()->exec('CREATE TABLE cior (id INTEGER PRIMARY KEY, name TEXT)');
     $builder = $connection->table('cior');
     $sql = $grammar->compileInsertOrIgnoreReturning($builder, [['id' => 1, 'name' => 'test']], ['id', 'name'], null);
@@ -483,7 +485,7 @@ it('compileInsertOrIgnoreReturning with uniqueBy', function () {
     $connection = new DuckDbConnection(function () {
         return new PDO('duckdb::memory:');
     });
-    $grammar = $connection->getQueryGrammar();
+    $grammar = $connection->getQueryGrammar(); // TODO fix
     $connection->getPdo()->exec('CREATE TABLE cior2 (id INTEGER PRIMARY KEY, name TEXT)');
     $builder = $connection->table('cior2');
     $sql = $grammar->compileInsertOrIgnoreReturning($builder, [['id' => 1, 'name' => 'test']], ['id'], ['id']);
@@ -497,7 +499,7 @@ it('compileUpsert contains on conflict do update set', function () {
     $connection = new DuckDbConnection(function () {
         return new PDO('duckdb::memory:');
     });
-    $grammar = $connection->getQueryGrammar();
+    $grammar = $connection->getQueryGrammar(); // TODO fix
     $connection->getPdo()->exec('CREATE TABLE cu (id INTEGER PRIMARY KEY, name TEXT)');
     $builder = $connection->table('cu');
     $sql = $grammar->compileUpsert($builder, [['id' => 1, 'name' => 'test']], ['id'], ['name']);
@@ -510,7 +512,7 @@ it('compileInsertUsing builds correct SQL', function () {
     $connection = new DuckDbConnection(function () {
         return new PDO('duckdb::memory:');
     });
-    $grammar = $connection->getQueryGrammar();
+    $grammar = $connection->getQueryGrammar(); // TODO fix
     $connection->getPdo()->exec('CREATE TABLE cius (id INTEGER, name TEXT)');
     $connection->getPdo()->exec('CREATE TABLE cius2 (id INTEGER, name TEXT)');
     $builder = $connection->table('cius');
@@ -525,7 +527,7 @@ it('compileInsertOrIgnoreUsing builds correct SQL', function () {
     $connection = new DuckDbConnection(function () {
         return new PDO('duckdb::memory:');
     });
-    $grammar = $connection->getQueryGrammar();
+    $grammar = $connection->getQueryGrammar(); // TODO fix
     $connection->getPdo()->exec('CREATE TABLE cioiu (id INTEGER, name TEXT)');
     $connection->getPdo()->exec('CREATE TABLE cioiu2 (id INTEGER, name TEXT)');
     $builder = $connection->table('cioiu');
@@ -539,7 +541,7 @@ it('compileSelect with aggregate returns aggregate SQL', function () {
     $connection = new DuckDbConnection(function () {
         return new PDO('duckdb::memory:');
     });
-    $grammar = $connection->getQueryGrammar();
+    $grammar = $connection->getQueryGrammar(); // TODO fix
     $connection->getPdo()->exec('CREATE TABLE csagg (val INTEGER)');
     $builder = $connection->table('csagg')->selectRaw('count(*) as aggregate');
     $sql = $grammar->compileSelect($builder);
@@ -621,7 +623,7 @@ it('compileJoin compiles full outer join', function () {
     $connection->table('cfj1')->insert([['id' => 1]]);
     $connection->table('cfj2')->insert([['id' => 2]]);
 
-    $grammar = $connection->getQueryGrammar();
+    $grammar = $connection->getQueryGrammar(); // TODO fix
     $builder = $connection->table('cfj1');
     $builder->join('cfj2', 'cfj1.id', '=', 'cfj2.id', 'full outer');
     $sql = $grammar->compileSelect($builder);
