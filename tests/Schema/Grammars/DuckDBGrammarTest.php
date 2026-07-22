@@ -2836,7 +2836,7 @@ it('change column on empty table', function () {
     });
 
     $connection->getSchemaBuilder()->table('chg_empty', function (Blueprint $table) {
-        $table->integer('val');
+        $table->integer('val')->change();
     });
 
     expect($connection->table('chg_empty')->count())->toBe(0);
@@ -2855,7 +2855,7 @@ it('change column preserves existing unique constraint', function () {
     $connection->table('chg_unique_preserve')->insert([['id' => 1, 'email' => 'test@example.com']]);
 
     $connection->getSchemaBuilder()->table('chg_unique_preserve', function (Blueprint $table) {
-        $table->text('email');
+        $table->text('email')->change();
     });
 
     try {
