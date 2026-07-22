@@ -1828,41 +1828,37 @@ it('compileCreate with virtualAs expression', function () {
     expect((int) $result['total'])->toBe(2);
 });
 
-it('compileComment sets column comment via grammar', function () {
+it('compileComment sets column comment via schema builder', function () {
     $connection = (function () {
         return new DuckDbConnection(function () {
             return new PDO('duckdb::memory:');
         });
     })();
 
-    $grammar = new DuckDBGrammar($connection);
-    $connection->getSchemaBuilder();
-    $blueprint = new Blueprint($connection, 'comment_raw');
-    $command = new Fluent(['column' => new Fluent(['name' => 'name', 'comment' => 'The user name', 'change' => false])]);
+    $connection->getSchemaBuilder()->create('comment_raw', function (Blueprint $table) {
+        $table->string('name');
+    });
 
-    $connection->getPdo()->exec('CREATE TABLE comment_raw (name TEXT)');
-    $sql = $grammar->compileComment($blueprint, $command);
-    $connection->getPdo()->exec($sql);
+    $connection->getSchemaBuilder()->table('comment_raw', function (Blueprint $table) {
+        $table->string('name')->comment('The user name')->change();
+    });
 
     $result = $connection->getPdo()->query("select * from duckdb_columns() where table_name = 'comment_raw' and column_name = 'name'")->fetch(PDO::FETCH_ASSOC);
 
     expect($result)->not->toBeFalse();
 });
 
-it('compileTableComment via grammar', function () {
+it('compileTableComment sets table comment via schema builder', function () {
     $connection = (function () {
         return new DuckDbConnection(function () {
             return new PDO('duckdb::memory:');
         });
     })();
-    $grammar = new DuckDBGrammar($connection);
-    $connection->getSchemaBuilder();
-    $blueprint = new Blueprint($connection, 'tcomment_raw');
-    $command = new Fluent(['comment' => 'This is a test table']);
 
-    $connection->getPdo()->exec('CREATE TABLE tcomment_raw (name TEXT)');
-    $sql = $grammar->compileTableComment($blueprint, $command);
-    $connection->getPdo()->exec($sql);
+    $connection->getSchemaBuilder()->create('tcomment_raw', function (Blueprint $table) {
+        $table->string('name');
+        $table->comment('This is a test table');
+    });
 
     $result = $connection->getPdo()->query("select * from duckdb_tables() where table_name = 'tcomment_raw'")->fetch(PDO::FETCH_ASSOC);
 
@@ -2320,16 +2316,11 @@ it('renameUniqueIndex succeeds', function () {
 it('compileModifyNullable with storedAs and nullable false throws RuntimeException', function () {
     $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
 
-    $connection->getSchemaBuilder();
-
-    $blueprint = new Blueprint($connection, 'stored_nn_tbl', function (Blueprint $table) {
+    $connection->getSchemaBuilder()->create('stored_nn_tbl', function (Blueprint $table) {
         $table->integer('a');
         $table->integer('b');
         $table->integer('total')->storedAs(new Expression('a + b'))->nullable(false);
     });
-
-    $grammar = $connection->getSchemaGrammar();
-    $grammar->compileCreate($blueprint, new Fluent(['name' => 'create']));
 })->throws(RuntimeException::class, 'DuckDB does not support stored generated columns');
 
 it('compileModifyDefault returns null when virtualAs is set', function () {
