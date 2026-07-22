@@ -237,7 +237,6 @@ class DuckDBGrammar extends Grammar
         }
 
         $statements = array_merge($statements, array_filter([
-            'begin transaction',
             sprintf(
                 'create table %s (%s%s%s)',
                 $tempTable,
@@ -248,7 +247,6 @@ class DuckDBGrammar extends Grammar
             sprintf('insert into %s (%s) select %s from %s', $tempTable, $columnNames, $columnNames, $table),
             sprintf('drop table %s', $table),
             sprintf('alter table %s rename to %s', $tempTable, $this->wrapTable($tableName)),
-            'commit',
         ]));
 
         return array_merge($statements, $indexes);

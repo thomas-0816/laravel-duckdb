@@ -11,12 +11,11 @@ class DuckDBBlueprint extends Blueprint
     /** {@inheritdoc} */
     public function build()
     {
-        try {
-            parent::build();
-        } catch (\Exception $e) {
-            $this->connection->getPdo()->exec('ROLLBACK');
-            throw $e;
-        }
+        $this->connection->transaction(function () {
+            foreach ($this->toSql() as $statement) {
+                $this->connection->statement($statement);
+            }
+        });
     }
 
     public function addAlterCommands(): void

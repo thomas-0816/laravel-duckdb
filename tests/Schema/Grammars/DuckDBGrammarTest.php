@@ -2559,8 +2559,8 @@ it('change multiple columns in one migration preserves data', function () {
     ]);
 
     $connection->getSchemaBuilder()->table('chg_multi', function (Blueprint $table) {
-        $table->string('col_a')->nullable();
-        $table->string('col_b')->default('fallback');
+        $table->string('col_a')->nullable()->change();
+        $table->string('col_b')->default('fallback')->change();
     });
 
     expect($connection->table('chg_multi')->count())->toBe(2);
