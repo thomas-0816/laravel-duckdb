@@ -170,13 +170,35 @@ class DuckDBGrammar extends Grammar
         return null;
     }
 
-    public function compileAdd(Blueprint $blueprint, Fluent $command): string
+    public function compileAdd(Blueprint $blueprint, Fluent $command): array
     {
-        return sprintf(
-            'alter table %s add column %s',
-            $this->wrapTable($blueprint),
-            $this->getColumn($blueprint, $command->column)
-        );
+        $column = $command->column;
+        $table = $this->wrapTable($blueprint);
+        $wrapped = $this->wrap($column);
+
+        $columnSql = $wrapped . ' ' . ($column->full_type_definition ?? $this->getType($column));
+
+        if (! is_null($column->collation)) {
+            $columnSql .= " collate \"{$column->collation}\"";
+        }
+
+        if (! is_null($column->default) && is_null($column->virtualAs) && is_null($column->virtualAsJson) && is_null($column->storedAs)) {
+            $columnSql .= ' default ' . $this->getDefaultValue($column->default);
+        }
+
+        $statements = [
+            sprintf('alter table %s add column %s', $table, $columnSql),
+        ];
+
+        if (! $column->nullable
+            && is_null($column->virtualAs)
+            && is_null($column->virtualAsJson)
+            && is_null($column->storedAs)
+            && is_null($column->storedAsJson)) {
+            $statements[] = sprintf('alter table %s alter column %s set not null', $table, $wrapped);
+        }
+
+        return $statements;
     }
 
     /** @inheritDoc */

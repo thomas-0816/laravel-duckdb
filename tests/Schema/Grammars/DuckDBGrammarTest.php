@@ -2605,7 +2605,7 @@ it('change column type with data and add column simultaneously', function () {
 
     $connection->getSchemaBuilder()->table('chg_combo', function (Blueprint $table) {
         $table->integer('val')->change();
-        $table->boolean('active')->default(true)->change();
+        $table->boolean('active')->default(true);
     });
 
     expect($connection->getSchemaBuilder()->hasColumn('chg_combo', 'active'))->toBeTrue();
@@ -2621,7 +2621,7 @@ it('change column from integer to string preserves data', function () {
         $table->integer('score');
     });
 
-    $connection->table('chg_int_str')->insert([['id' => 1, 'score' => 100], ['score' => 200]]);
+    $connection->table('chg_int_str')->insert([['id' => 1, 'score' => 100], ['id' => 2, 'score' => 200]]);
 
     $connection->getSchemaBuilder()->table('chg_int_str', function (Blueprint $table) {
         $table->string('score')->change();
