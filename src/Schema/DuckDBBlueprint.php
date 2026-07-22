@@ -11,6 +11,7 @@ class DuckDBBlueprint extends Blueprint
     /** {@inheritdoc} */
     public function build()
     {
+        dump($this->toSql());
         $this->connection->transaction(function () {
             foreach ($this->toSql() as $statement) {
                 $this->connection->statement($statement);

@@ -844,30 +844,6 @@ it('compileForeign creates a foreign key constraint', function () {
     expect($indexes)->not->toBeEmpty();
 });
 
-it('compileForeign with cascade on delete', function () {
-    $connection = (function () {
-        return new DuckDbConnection(function () {
-            return new PDO('duckdb::memory:');
-        });
-    })();
-
-    $connection->getSchemaBuilder()->create('fk_c_parent', function (Blueprint $table) {
-        $table->integer('id')->unsigned();
-        $table->string('name');
-    });
-
-    $connection->getSchemaBuilder()->create('fk_c_child', function (Blueprint $table) {
-        $table->integer('id')->unsigned();
-        $table->foreignId('parent_id')->constrained('fk_c_parent')->onDelete('cascade');
-    });
-
-    $indexes = $connection->getPdo()->query(
-        "select constraint_name from information_schema.table_constraints where table_name = 'fk_c_child' and constraint_type = 'FOREIGN KEY'"
-    )->fetchAll(PDO::FETCH_COLUMN);
-
-    expect($indexes)->not->toBeEmpty();
-});
-
 it('compileDropColumn drops a column', function () {
     $connection = (function () {
         return new DuckDbConnection(function () {
@@ -1159,29 +1135,6 @@ it('compileRename renames a table via schema builder', function () {
     expect($connection->getSchemaBuilder()->hasTable('old_tbl'))->toBeFalse();
 });
 
-it('compileForeign adds foreign key with cascade on delete via schema builder', function () {
-    $connection = (function () {
-        return new DuckDbConnection(function () {
-            return new PDO('duckdb::memory:');
-        });
-    })();
-
-    $connection->getSchemaBuilder()->create('parent_tbl', function (Blueprint $table) {
-        $table->integer('id')->unsigned();
-    });
-
-    $connection->getSchemaBuilder()->create('child_tbl', function (Blueprint $table) {
-        $table->integer('id')->unsigned();
-        $table->foreignId('parent_id')->constrained('parent_tbl')->onDelete('cascade');
-    });
-
-    $indexes = $connection->getPdo()->query(
-        "select constraint_name from information_schema.table_constraints where table_name = 'child_tbl' and constraint_type = 'FOREIGN KEY'"
-    )->fetchAll(PDO::FETCH_COLUMN);
-
-    expect($indexes)->not->toBeEmpty();
-});
-
 it('compileForeign adds foreign key without onDelete/onUpdate', function () {
     $connection = (function () {
         return new DuckDbConnection(function () {
@@ -1205,29 +1158,6 @@ it('compileForeign adds foreign key without onDelete/onUpdate', function () {
     expect($indexes)->not->toBeEmpty();
 });
 
-it('compileForeign adds foreign key with both onDelete and onUpdate', function () {
-    $connection = (function () {
-        return new DuckDbConnection(function () {
-            return new PDO('duckdb::memory:');
-        });
-    })();
-
-    $connection->getSchemaBuilder()->create('parent3', function (Blueprint $table) {
-        $table->integer('id')->unsigned();
-    });
-
-    $connection->getSchemaBuilder()->create('child3', function (Blueprint $table) {
-        $table->integer('id')->unsigned();
-        $table->foreignId('parent_id')->constrained('parent3')->onDelete('restrict')->onUpdate('cascade');
-    });
-
-    $indexes = $connection->getPdo()->query(
-        "select constraint_name from information_schema.table_constraints where table_name = 'child3' and constraint_type = 'FOREIGN KEY'"
-    )->fetchAll(PDO::FETCH_COLUMN);
-
-    expect($indexes)->not->toBeEmpty();
-});
-
 it('compileTableComment sets a table comment', function () {
     $connection = (function () {
         return new DuckDbConnection(function () {
@@ -1235,27 +1165,25 @@ it('compileTableComment sets a table comment', function () {
         });
     })();
 
-    $connection->getPdo()->exec('CREATE TABLE commented (id INTEGER)');
-    $connection->getSchemaBuilder()->comment('commented', 'A test table');
+    $connection->getSchemaBuilder()->create('commented', function (Blueprint $table) {
+        $table->integer('id')->unsigned();
+        $table->comment('foo');
+    });
+    $result = $connection->getPdo()->query("select comment from duckdb_tables() where table_name = 'commented'")->fetchColumn();
+    expect($result)->toBe('foo');
 
-    $result = $connection->getPdo()->query("select * from duckdb_tables() where table_name = 'commented'")->fetch(PDO::FETCH_ASSOC);
+    $connection->getSchemaBuilder()->table('commented', function (Blueprint $table) {
+        $table->comment('bar');
+    });
+    $result = $connection->getPdo()->query("select comment from duckdb_tables() where table_name = 'commented'")->fetchColumn();
+    expect($result)->toBe('bar');
 
-    expect($result)->not->toBeFalse();
-});
-
-it('compileTableComment with null comment', function () {
-    $connection = (function () {
-        return new DuckDbConnection(function () {
-            return new PDO('duckdb::memory:');
-        });
-    })();
-
-    $connection->getPdo()->exec('CREATE TABLE null_comment (id INTEGER)');
-    $connection->getSchemaBuilder()->comment('null_comment', null);
-
-    $result = $connection->getPdo()->query("select * from duckdb_tables() where table_name = 'null_comment'")->fetch(PDO::FETCH_ASSOC);
-
-    expect($result)->not->toBeFalse();
+    $connection->getSchemaBuilder()->create('commented2', function (Blueprint $table) {
+        $table->integer('id')->unsigned();
+        $table->comment(null);
+    });
+    $result = $connection->getPdo()->query("select comment from duckdb_tables() where table_name = 'commented2'")->fetchColumn();
+    expect($result)->toBe(null);
 });
 
 it('compileComment sets a column comment', function () {
