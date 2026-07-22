@@ -45,7 +45,7 @@ class DuckDBGrammar extends Grammar
                 ! empty($schema) => ' t.table_schema = ' . $this->quoteString($schema) . ' and',
                 default => '',
             })
-            . " t.table_type = 'BASE TABLE' and t.table_name not like 'duckdb\_%' escape '\' "
+            . " t.table_type = 'BASE TABLE' "
             . 'order by t.table_schema, t.table_name';
 
         return $sql;
@@ -172,9 +172,9 @@ class DuckDBGrammar extends Grammar
     }
 
     /** @inheritDoc */
-    public function compileChange(Blueprint $blueprint, Fluent $command): string
+    public function compileChange(Blueprint $blueprint, Fluent $command)
     {
-        return '';
+        // Handled on table alteration...
     }
 
     /** @inheritDoc */
@@ -189,31 +189,32 @@ class DuckDBGrammar extends Grammar
 
                 $autoIncrementColumn = $column->autoIncrement ? $column->name : $autoIncrementColumn;
 
-                if (is_null($column->virtualAs) && is_null($column->virtualAsJson) &&
-                    is_null($column->storedAs) && is_null($column->storedAsJson)) {
+                if (is_null($column->virtualAs) && is_null($column->virtualAsJson)
+                    && is_null($column->storedAs) && is_null($column->storedAsJson)) {
                     $columnNames[] = $name;
                 }
 
                 return $this->addModifiers(
-                    $this->wrap($column).' '.($column->full_type_definition ?? $this->getType($column)),
+                    $this->wrap($column) . ' ' . ($column->full_type_definition ?? $this->getType($column)),
                     $blueprint,
                     $column
                 );
             })->all();
 
         $indexes = (new Collection($blueprint->getState()->getIndexes()))
-            ->reject(fn ($index) => str_starts_with('duckdb_', $index->index))
-            ->map(fn ($index) => $this->{'compile'.ucfirst($index->name)}($blueprint, $index))
+            ->reject(fn($index) => str_starts_with('duckdb_', $index->index))
+            ->map(fn($index) => $this->{'compile' . ucfirst($index->name)}($blueprint, $index))
             ->all();
 
         [, $tableName] = $this->connection->getSchemaBuilder()->parseSchemaAndTable($blueprint->getTable());
-        $tempTable = $this->wrapTable($blueprint, '__temp__'.$this->connection->getTablePrefix());
+        $tempTable = $this->wrapTable($blueprint, '__temp__' . $this->connection->getTablePrefix());
         $table = $this->wrapTable($blueprint);
         $columnNames = implode(', ', $columnNames);
 
         return array_filter(array_merge([
             'begin transaction',
-            sprintf('create table %s (%s%s%s)',
+            sprintf(
+                'create table %s (%s%s%s)',
                 $tempTable,
                 implode(', ', $columns),
                 $this->addForeignKeys($blueprint->getState()->getForeignKeys()),
@@ -253,13 +254,27 @@ class DuckDBGrammar extends Grammar
     }
 
     /** @inheritDoc */
-    public function compileForeign(Blueprint $blueprint, Fluent $command): string
+    public function compilePrimary(Blueprint $blueprint, Fluent $command)
     {
-        return sprintf(
-            'alter table %s add %s',
-            $this->wrapTable($blueprint),
-            $this->getForeignKey($command)
-        );
+        // Handled on table creation or alteration...
+    }
+
+    /** @inheritDoc */
+    public function compileForeign(Blueprint $blueprint, Fluent $command)
+    {
+        // Handled on table creation or alteration...
+    }
+
+    /** @inheritDoc */
+    public function compileDropPrimary(Blueprint $blueprint, Fluent $command)
+    {
+        // Handled on table alteration...
+    }
+
+    /** @inheritDoc */
+    public function compileDropForeign(Blueprint $blueprint, Fluent $command)
+    {
+        // Handled on table alteration...
     }
 
     public function compileDrop(Blueprint $blueprint, Fluent $command): string
