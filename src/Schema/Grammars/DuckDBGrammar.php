@@ -109,11 +109,12 @@ class DuckDBGrammar extends Grammar
     {
         $statements = [];
         $statements[] = sprintf(
-            '%s table %s (%s%s%s)',
+            '%s table %s (%s%s%s%s)',
             $blueprint->temporary ? 'create temporary' : 'create',
             $this->wrapTable($blueprint),
             implode(', ', $this->getColumns($blueprint)),
             $this->addForeignKeys($this->getCommandsByName($blueprint, 'foreign')),
+            $this->addUniqueConstraints($this->getCommandsByName($blueprint, 'unique')),
             $this->addPrimaryKeys($this->getCommandByName($blueprint, 'primary'))
         );
 
@@ -158,6 +159,13 @@ class DuckDBGrammar extends Grammar
         }
 
         return null;
+    }
+
+    protected function addUniqueConstraints(array $uniques): string
+    {
+        return array_reduce($uniques, function ($sql, $unique) {
+            return $sql . sprintf(', unique (%s)', $this->columnize($unique->columns));
+        }, '');
     }
 
     public function compileAdd(Blueprint $blueprint, Fluent $command): array
