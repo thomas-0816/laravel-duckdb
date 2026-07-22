@@ -140,7 +140,7 @@ class DuckDBGrammar extends Grammar
 
     protected function getForeignKey(Fluent $foreign): string
     {
-        $name = $foreign->index ?: 'fk_'.implode('_', (array) $foreign->columns);
+        $name = $foreign->index ?: 'fk_' . implode('_', (array) $foreign->columns);
 
         $sql = sprintf(
             ', constraint %s foreign key(%s) references %s(%s)',

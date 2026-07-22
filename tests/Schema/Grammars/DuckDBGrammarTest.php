@@ -2684,11 +2684,11 @@ it('change column transactional atomicity rolls back on error', function () {
         $table->string('val');
     });
 
-    $connection->table('chg_rollback')->insert([['val' => 'original']]);
+    $connection->table('chg_rollback')->insert([['id' => 1, 'val' => 'original']]);
 
     try {
         $connection->getSchemaBuilder()->table('chg_rollback', function (Blueprint $table) {
-            $table->integer('val');
+            $table->integer('val')->change();
             $table->string('nonexistent_col');
         });
     } catch (\Exception $e) {
@@ -2707,7 +2707,7 @@ it('change column type from boolean to string', function () {
         $table->boolean('flag');
     });
 
-    $connection->table('chg_bool')->insert([['flag' => true], ['flag' => false]]);
+    $connection->table('chg_bool')->insert([['id' => 1, 'flag' => true], ['id' => 2, 'flag' => false]]);
 
     $connection->getSchemaBuilder()->table('chg_bool', function (Blueprint $table) {
         $table->string('flag')->change();
