@@ -22,7 +22,7 @@ class DuckDBGrammar extends Grammar
     /** @inheritDoc */
     public function compileSchemas()
     {
-        return "select schema_name as name, schema_name = 'main' as \"default\" from information_schema.schemata order by schema_name";
+        return "select schema_name as name, schema_name = 'main' as \"default\" from duckdb_schemas() order by schema_name";
     }
 
     /** @inheritDoc */
@@ -64,8 +64,8 @@ class DuckDBGrammar extends Grammar
     public function compileColumns($schema, $table)
     {
         return sprintf(
-            "select column_name as name, data_type as type, is_nullable = 'YES' as \"nullable\", column_default as \"default\", ordinal_position as \"cid\" "
-            . "from information_schema.columns where table_name = %s and table_schema = %s order by ordinal_position asc",
+            "select column_name as name, data_type as type, is_nullable = 1 as \"nullable\", column_default as \"default\", column_index as \"cid\" "
+            . "from duckdb_columns() where table_name = %s and schema_name = %s order by column_index asc",
             $this->quoteString($table),
             $this->quoteString($schema ?? 'main')
         );
@@ -330,7 +330,7 @@ class DuckDBGrammar extends Grammar
     public function compileDropAllViews(?string $schema = null): string
     {
         return sprintf(
-            "select 'drop view if exists ' || table_name from information_schema.views where table_schema = %s",
+            "select 'drop view if exists ' || view_name from duckdb_views() where schema_name = %s",
             $this->quoteString($schema ?? 'main')
         );
     }
