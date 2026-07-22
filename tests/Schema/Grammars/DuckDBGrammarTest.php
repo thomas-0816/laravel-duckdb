@@ -2601,7 +2601,7 @@ it('change column type with data and add column simultaneously', function () {
         $table->string('val');
     });
 
-    $connection->table('chg_combo')->insert([['val' => '42']]);
+    $connection->table('chg_combo')->insert([['id' => 1, 'val' => '42']]);
 
     $connection->getSchemaBuilder()->table('chg_combo', function (Blueprint $table) {
         $table->integer('val');
@@ -2621,7 +2621,7 @@ it('change column from integer to string preserves data', function () {
         $table->integer('score');
     });
 
-    $connection->table('chg_int_str')->insert([['score' => 100], ['score' => 200]]);
+    $connection->table('chg_int_str')->insert([['id' => 1, 'score' => 100], ['score' => 200]]);
 
     $connection->getSchemaBuilder()->table('chg_int_str', function (Blueprint $table) {
         $table->string('score')->change();
@@ -2644,7 +2644,7 @@ it('change column with special characters in data', function () {
         $table->string('content');
     });
 
-    $connection->table('chg_special')->insert([['content' => "It's a test with 'quotes' and \"double quotes\""]]);
+    $connection->table('chg_special')->insert([['id' => 1, 'content' => "It's a test with 'quotes' and \"double quotes\""]]);
 
     $connection->getSchemaBuilder()->table('chg_special', function (Blueprint $table) {
         $table->text('content')->change();
@@ -2689,9 +2689,10 @@ it('change column transactional atomicity rolls back on error', function () {
     try {
         $connection->getSchemaBuilder()->table('chg_rollback', function (Blueprint $table) {
             $table->integer('val')->change();
-            $table->string('nonexistent_col');
+            $table->string('nonexistent_col')->change();
         });
     } catch (\Exception $e) {
+        // dump($e->getMessage());
         // expected
     }
 
@@ -2729,7 +2730,7 @@ it('change column with nullable and default simultaneously', function () {
         $table->string('val');
     });
 
-    $connection->table('chg_nullable_default')->insert([['val' => 'test']]);
+    $connection->table('chg_nullable_default')->insert([['id' => 1, 'val' => 'test']]);
 
     $connection->getSchemaBuilder()->table('chg_nullable_default', function (Blueprint $table) {
         $table->string('val')->nullable()->default('unknown')->change();

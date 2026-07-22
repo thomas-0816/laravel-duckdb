@@ -8,6 +8,17 @@ use DuckDb\Schema\Grammars\DuckDBGrammar;
 
 class DuckDBBlueprint extends Blueprint
 {
+    /** {@inheritdoc} */
+    public function build()
+    {
+        try {
+            parent::build();
+        } catch (\Exception $e) {
+            $this->connection->getPdo()->exec('ROLLBACK');
+            throw $e;
+        }
+    }
+
     public function addAlterCommands(): void
     {
         if (! $this->grammar instanceof DuckDBGrammar) {
