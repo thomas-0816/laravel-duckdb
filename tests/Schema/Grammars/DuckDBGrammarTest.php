@@ -1402,7 +1402,7 @@ it('compileIndex creates an index via schema builder', function () {
     $connection->getSchemaBuilder()->create('idx_compile', function (Blueprint $table) {
         $table->string('name');
         $table->string('email');
-        $table->index('idx_name', ['name', 'email']);
+        $table->index(['name', 'email'], 'idx_name');
     });
 
     $indexes = $connection->getPdo()->query(
