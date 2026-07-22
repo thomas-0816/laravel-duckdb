@@ -976,6 +976,29 @@ it('update with join and where on main query compiles correctly', function () {
     expect($connection->table('ujw1')->where('id', 2)->value('val'))->toBe('keep');
 });
 
+it('update with join and limit and skip and where on main query compiles correctly', function () {
+    $connection = new DuckDbConnection(function () {
+        return new PDO('duckdb::memory:');
+    });
+    $connection->getPdo()->exec('CREATE TABLE ujw1 (id INTEGER, status TEXT, val TEXT)');
+    $connection->getPdo()->exec('CREATE TABLE ujw2 (id INTEGER, ref TEXT)');
+    $connection->table('ujw1')->insert([
+        ['id' => 1, 'status' => 'active', 'val' => 'old'],
+        ['id' => 2, 'status' => 'inactive', 'val' => 'keep'],
+    ]);
+    $connection->table('ujw2')->insert([['id' => 1, 'ref' => 'r1']]);
+
+    $connection->table('ujw1')
+        ->join('ujw2', 'ujw1.id', '=', 'ujw2.id')
+        ->where('ujw1.status', 'active')
+        ->limit(1)
+        ->skip(1)
+        ->update(['ujw1.val' => 'updated']);
+
+    expect($connection->table('ujw1')->where('id', 1)->value('val'))->toBe('updated');
+    expect($connection->table('ujw1')->where('id', 2)->value('val'))->toBe('keep');
+});
+
 it('delete with join and where on main query compiles correctly', function () {
     $connection = new DuckDbConnection(function () {
         return new PDO('duckdb::memory:');
@@ -1013,4 +1036,21 @@ it('delete with limit and where clause compiles correctly', function () {
 
     expect($connection->table('dlw')->count())->toBe(2);
     expect($connection->table('dlw')->where('keep', 'no')->count())->toBe(1);
+});
+
+it('delete with limit and skip and where clause compiles correctly', function () {
+    $connection = new DuckDbConnection(function () {
+        return new PDO('duckdb::memory:');
+    });
+    $connection->getPdo()->exec('CREATE TABLE dlw (id INTEGER, keep TEXT)');
+    $connection->table('dlw')->insert([
+        ['id' => 1, 'keep' => 'no'],
+        ['id' => 2, 'keep' => 'no'],
+        ['id' => 3, 'keep' => 'no'],
+    ]);
+
+    $connection->table('dlw')->where('keep', 'no')->limit(1)->skip(2)->delete();
+
+    expect($connection->table('dlw')->count())->toBe(2);
+    expect($connection->table('dlw')->where('keep', 'no')->count())->toBe(2);
 });
