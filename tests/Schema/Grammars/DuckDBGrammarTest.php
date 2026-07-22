@@ -2534,7 +2534,7 @@ it('change column rename preserves all data', function () {
     ]);
 
     $connection->getSchemaBuilder()->table('chg_rename', function (Blueprint $table) {
-        $table->string('new_name')->change();
+        $table->renameColumn('old_name', 'new_name');
     });
 
     expect($connection->getSchemaBuilder()->hasColumn('chg_rename', 'new_name'))->toBeTrue();
