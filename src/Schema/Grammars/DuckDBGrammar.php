@@ -590,6 +590,11 @@ class DuckDBGrammar extends Grammar
 
     protected function modifyIncrement(Blueprint $blueprint, Fluent $column): ?string
     {
+        if (! $column->change && ! $this->hasCommand($blueprint, 'primary')
+            && in_array($column->type, $this->serials) && $column->autoIncrement) {
+            return ' primary key';
+        }
+
         return null;
     }
 

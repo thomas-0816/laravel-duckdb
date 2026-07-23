@@ -68,7 +68,7 @@ class DuckDBBuilder extends Builder
         return '';
     }
 
-    public function createSequence(string $name, int $start = 1, int $increment = 1): void
+    public function createSequence(string $name, int $start, int $increment): void
     {
         $this->connection->statement(
             "CREATE SEQUENCE IF NOT EXISTS {$name} START WITH {$start} INCREMENT BY {$increment}"
