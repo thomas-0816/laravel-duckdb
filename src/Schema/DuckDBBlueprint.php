@@ -3,8 +3,6 @@
 namespace DuckDb\Schema;
 
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Database\Schema\BlueprintState;
-use DuckDb\Schema\Grammars\DuckDBGrammar;
 
 class DuckDBBlueprint extends Blueprint
 {
