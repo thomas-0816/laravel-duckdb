@@ -53,7 +53,7 @@ class DuckDbProcessor extends Processor
             $indexes = array_filter($indexes, fn($index) => $index['name'] !== 'primary');
         }
 
-        /** @var list<array{name: string, columns: list<string>, type: string|null, unique: bool, primary: bool}> */
+        /** @var list<array{name: string, columns: list<string>, type: string, unique: bool, primary: bool}> */
         return $indexes;
     }
 

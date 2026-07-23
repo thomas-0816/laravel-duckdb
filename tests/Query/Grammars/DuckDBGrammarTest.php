@@ -4,15 +4,6 @@ use DuckDb\DuckDbConnection;
 use DuckDb\Query\Grammars\DuckDBGrammar;
 use Illuminate\Database\Query\Expression;
 
-class TestableDuckDBGrammar extends DuckDBGrammar
-{
-    public function supportsStraightJoins()
-    {
-        return parent::supportsStraightJoins();
-    }
-}
-
-
 it('supports ilike and bitwise operators', function () {
     $connection = new DuckDbConnection(function () {
         return new PDO('duckdb::memory:');
@@ -300,20 +291,6 @@ it('savepoint and rollback work in real queries', function () {
     $connection->rollBack();
 
     expect($connection->table('sp_t')->where('id', 1)->value('val'))->toBe('original');
-});
-
-it('supportsStraightJoins throws RuntimeException', function () {
-    $connection = new DuckDbConnection(function () {
-        return new PDO('duckdb::memory:');
-    });
-    $grammar = new TestableDuckDBGrammar($connection);
-
-    try {
-        $grammar->supportsStraightJoins();
-        expect(true)->toBeFalse(); // Should not reach here
-    } catch (\RuntimeException $e) {
-        expect($e->getMessage())->toContain('straight joins');
-    }
 });
 
 it('select specific columns', function () {

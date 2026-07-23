@@ -114,7 +114,7 @@ class DuckDBGrammar extends Grammar
     }
 
     /** {@inheritdoc} */
-    public function compileInsertOrIgnoreReturning(Builder $query, array $values, array $returning, ?array $uniqueBy)
+    public function compileInsertOrIgnoreReturning(Builder $query, array $values, array $returning, ?array $uniqueBy): string
     {
         $insert = $this->compileInsert($query, $values);
 
@@ -188,7 +188,7 @@ class DuckDBGrammar extends Grammar
 
         $columns = $this->compileUpdateColumns($query, $values);
 
-        $alias = last(preg_split('/\s+as\s+/i', $this->getValue($query->from)) ?: []);
+        $alias = last(preg_split('/\s+as\s+/i', (string) $this->getValue($query->from)) ?: []);
 
         $selectSql = $this->compileSelect((clone $query)->select($alias . '.rowid'));
 
@@ -231,7 +231,7 @@ class DuckDBGrammar extends Grammar
     {
         $table = $this->wrapTable($query->from);
 
-        $alias = last(preg_split('/\s+as\s+/i', $this->getValue($query->from)) ?: []);
+        $alias = last(preg_split('/\s+as\s+/i', (string) $this->getValue($query->from)) ?: []);
 
         $selectSql = $this->compileSelect((clone $query)->select($alias . '.rowid'));
 

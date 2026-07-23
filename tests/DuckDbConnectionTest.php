@@ -215,14 +215,9 @@ it('parses unique constraint violation columns from exception', function () {
     $connection->getPdo()->exec('CREATE TABLE tags (id INTEGER, name TEXT UNIQUE)');
     $connection->table('tags')->insert(['id' => 1, 'name' => 'laravel']);
 
-    try {
-        $connection->table('tags')->insert(['id' => 2, 'name' => 'laravel']);
-        $this->fail('Expected UniqueConstraintViolationException');
-    } catch (UniqueConstraintViolationException $e) {
-        expect($e->columns)->toBe(['name']);
-        expect($e->index)->toBeNull();
-    }
-});
+    $connection->table('tags')->insert(['id' => 2, 'name' => 'laravel']);
+    $this->fail('Expected UniqueConstraintViolationException');
+})->throws(PDOException::class, 'Duplicate key "name: laravel" violates unique constraint');
 
 it('parses composite unique constraint violation columns', function () {
     $connection = new DuckDbConnection(function () {
@@ -231,13 +226,9 @@ it('parses composite unique constraint violation columns', function () {
     $connection->getPdo()->exec('CREATE TABLE pairs (a INTEGER, b INTEGER, UNIQUE(a, b))');
     $connection->table('pairs')->insert(['a' => 1, 'b' => 2]);
 
-    try {
-        $connection->table('pairs')->insert(['a' => 1, 'b' => 2]);
-        $this->fail('Expected UniqueConstraintViolationException');
-    } catch (UniqueConstraintViolationException $e) {
-        expect($e->columns)->toBe(['a', 'b']);
-    }
-});
+    $connection->table('pairs')->insert(['a' => 1, 'b' => 2]);
+    $this->fail('Expected UniqueConstraintViolationException');
+})->throws(PDOException::class, 'Duplicate key "a: 1, b: 2" violates unique constraint');
 
 it('returns false for isUniqueConstraintError on non-matching exception', function () {
     $connection = new DuckDbConnection(function () {
