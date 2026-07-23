@@ -64,9 +64,14 @@ it('verifies examples from readme', function () {
         ->and($event->amount)->toBe(42.21);
 
     $events = Event::where('created_at', '>=', '2026-01-01')->get();
-    expect($events)->toHaveCount(1);
+    expect($events)->toHaveCount(2);
 
     $connection->getSchemaBuilder()->dropIfExists('events');
     $connection->getSchemaBuilder()->dropSequence('seq_events_id');
-    Model::unsetConnectionResolver();
+    $sequences = $connection->getPdo()->query("select * from duckdb_sequences()")->fetchAll(PDO::FETCH_ASSOC);
+    expect($sequences)->toBeEmpty();
+
+    $connection->getSchemaBuilder()->createSequence('seq_events_id', 1, 1);
+    $sequences = $connection->getPdo()->query("select * from duckdb_sequences()")->fetchAll(PDO::FETCH_ASSOC);
+    expect($sequences)->not->toBeEmpty();
 });
