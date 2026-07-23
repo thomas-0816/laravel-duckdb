@@ -29,7 +29,7 @@ pie install thomas-0816/pdo-duckdb-php
 Install `Laravel DuckDB` with Composer:
 
 ```bash
-composer require thomas-0816/laravel-duckdb
+composer require thomas-0816/laravel-pdo-duckdb
 
 php artisan package:discover
 ```
