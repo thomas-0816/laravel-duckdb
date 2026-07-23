@@ -1,4 +1,4 @@
-## Laravel DuckDB
+## Laravel PDO DuckDB
 
 A [DuckDB](https://duckdb.org/) database driver for [Laravel](https://laravel.com/).
 
@@ -12,9 +12,9 @@ Integrates DuckDB's analytical database engine into Laravel's Eloquent ORM and S
 - Laravel 12+
 - `pdo_duckdb` PHP extension
 
-### Install and setup `pdo_duckdb` PHP extension with [PIE](https://github.com/php/pie)
+### Install and setup pdo_duckdb PHP extension with [PIE](https://github.com/php/pie)
 
-`pdo_duckdb` is a native DuckDB database driver for the PHP Data Objects (PDO) interface.\
+[pdo_duckdb](https://github.com/thomas-0816/pdo-duckdb-php) is a native DuckDB database driver for the PHP Data Objects (PDO) interface.\
 As a native PHP extension, it is implemented in C/C++ and does not require PHP FFI or preloading.\
 It is also thread safe and fully tested with FrankenPHP (PHP-ZTS).\
 The release packages contain pre-compiled binaries for all supported platforms and DuckDB is directly included.\
@@ -24,9 +24,9 @@ DuckDB extensions work the same way as they do in DuckDB CLI.
 pie install thomas-0816/pdo-duckdb-php
 ```
 
-### Install `Laravel DuckDB` with Composer
+### Install Laravel PDO DuckDB with Composer
 
-Install `Laravel DuckDB` with Composer:
+Install `Laravel PDO DuckDB` with Composer:
 
 ```bash
 composer require thomas-0816/laravel-pdo-duckdb
