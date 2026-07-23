@@ -44,7 +44,7 @@
     "scripts": {
         "phpcsfixer": "php-cs-fixer fix --dry-run --allow-risky=yes --diff",
         "phpstan": "phpstan analyse",
-        "pest": "pest --coverage",
+        "pest": "pest --coverage -min=100",
         "test": ["@phpcsfixer", "@phpstan", "@pest"]
     },
     "config": {
