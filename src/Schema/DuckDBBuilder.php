@@ -68,6 +68,18 @@ class DuckDBBuilder extends Builder
         return '';
     }
 
+    public function createSequence(string $name, int $start = 1, int $increment = 1): void
+    {
+        $this->connection->statement(
+            "CREATE SEQUENCE IF NOT EXISTS {$name} START WITH {$start} INCREMENT BY {$increment}"
+        );
+    }
+
+    public function dropSequence(string $name): void
+    {
+        $this->connection->statement("DROP SEQUENCE IF EXISTS {$name}");
+    }
+
     /** {@inheritdoc} */
     protected function createBlueprint($table, ?Closure $callback = null)
     {
