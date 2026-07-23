@@ -106,6 +106,14 @@ class DuckDBGrammar extends Grammar
     public function compileCreate(Blueprint $blueprint, Fluent $command): array
     {
         $statements = [];
+
+        foreach ($blueprint->getColumns() as $column) {
+            if ($column->autoIncrement && in_array($column->type, $this->serials)) {
+                $sequence = $this->wrapSequence($blueprint, $column);
+                $statements[] = "create sequence if not exists {$sequence}";
+            }
+        }
+
         $statements[] = sprintf(
             '%s table %s (%s%s%s%s)',
             $blueprint->temporary ? 'create temporary' : 'create',
@@ -123,6 +131,11 @@ class DuckDBGrammar extends Grammar
         }
 
         return $statements;
+    }
+
+    protected function wrapSequence(Blueprint $blueprint, Fluent $column): string
+    {
+        return 'seq_' . $blueprint->getTable() . '_' . $column->name;
     }
 
     /** {@inheritdoc} */
@@ -564,6 +577,10 @@ class DuckDBGrammar extends Grammar
 
     protected function modifyDefault(Blueprint $blueprint, Fluent $column): ?string
     {
+        if ($column->autoIncrement && is_null($column->default)) {
+            return " default nextval('" . $this->wrapSequence($blueprint, $column) . "')";
+        }
+
         if (! is_null($column->default) && is_null($column->virtualAs) && is_null($column->virtualAsJson)) {
             return ' default ' . $this->getDefaultValue($column->default);
         }
@@ -573,10 +590,6 @@ class DuckDBGrammar extends Grammar
 
     protected function modifyIncrement(Blueprint $blueprint, Fluent $column): ?string
     {
-        if (in_array($column->type, $this->serials) && $column->autoIncrement) {
-            throw new RuntimeException('DuckDB does not support auto_increment');
-        }
-
         return null;
     }
 
