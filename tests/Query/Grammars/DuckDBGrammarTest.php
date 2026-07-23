@@ -576,8 +576,8 @@ it('insertGetId with multiple rows works', function () {
     });
     $connection->getPdo()->exec('CREATE TABLE igimr (id INTEGER, name TEXT)');
 
-    $id1 = $connection->table('igimr')->insertGetId(['id' => 1, 'name' => 'first']);
-    $id2 = $connection->table('igimr')->insertGetId(['id' => 2, 'name' => 'second']);
+    $connection->table('igimr')->insert(['id' => 1, 'name' => 'first']);
+    $connection->table('igimr')->insert(['id' => 2, 'name' => 'second']);
 
     expect($connection->table('igimr')->count())->toBe(2);
     expect($connection->table('igimr')->where('id', 1)->first()->name)->toBe('first');

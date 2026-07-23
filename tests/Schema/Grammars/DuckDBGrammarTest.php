@@ -1345,7 +1345,7 @@ it('compileAdd with default value', function () {
     $connection->getPdo()->exec('CREATE TABLE add_default (id INTEGER PRIMARY KEY, name TEXT)');
     $connection->getPdo()->exec("ALTER TABLE add_default ADD COLUMN color TEXT DEFAULT 'blue'");
 
-    $result = $connection->table('add_default')->insertGetId(['id' => 1, 'name' => 'test']);
+    $connection->table('add_default')->insert(['id' => 1, 'name' => 'test']);
     $row = $connection->table('add_default')->where('id', 1)->first();
 
     expect($row->color)->toBe('blue');
