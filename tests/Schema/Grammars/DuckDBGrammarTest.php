@@ -2623,3 +2623,54 @@ it('compileAdd adds a column with comment', function () {
     expect($connection->getSchemaBuilder()->hasColumn('add_comment_test', 'name'))->toBeTrue();
 });
 
+it('compileAdd adds a column with default value via schema builder', function () {
+    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+
+    $connection->getSchemaBuilder()->create('add_def_test', function (Blueprint $table) {
+        $table->integer('id');
+    });
+
+    $connection->getSchemaBuilder()->table('add_def_test', function (Blueprint $table) {
+        $table->string('status')->default('active');
+    });
+
+    expect($connection->getSchemaBuilder()->hasColumn('add_def_test', 'status'))->toBeTrue();
+
+    $connection->table('add_def_test')->insert(['id' => 1]);
+
+    expect($connection->table('add_def_test')->where('id', 1)->value('status'))->toBe('active');
+});
+
+it('compileChange returns empty for non-existent column', function () {
+    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+
+    $connection->getSchemaBuilder()->create('chg_nonexist', function (Blueprint $table) {
+        $table->integer('id');
+    });
+
+    $connection->getSchemaBuilder()->table('chg_nonexist', function (Blueprint $table) {
+        $table->string('nope')->default('x')->change();
+    });
+
+    expect($connection->getSchemaBuilder()->hasColumn('chg_nonexist', 'nope'))->toBeFalse();
+});
+
+it('compileChange with collation on type change', function () {
+    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+
+    $connection->getSchemaBuilder()->create('chg_collate', function (Blueprint $table) {
+        $table->integer('id')->unsigned();
+        $table->string('name');
+    });
+
+    $connection->table('chg_collate')->insert([['id' => 1, 'name' => 'Alice'], ['id' => 2, 'name' => 'bob']]);
+
+    $connection->getSchemaBuilder()->table('chg_collate', function (Blueprint $table) {
+        $table->string('name')->collation('nocase')->change();
+    });
+
+    $result = $connection->getPdo()->query("SELECT name FROM chg_collate WHERE name = 'alice' ORDER BY id")->fetchAll(PDO::FETCH_COLUMN);
+
+    expect($result)->toBe(['Alice']);
+    expect($connection->table('chg_collate')->where('id', 2)->value('name'))->toBe('bob');
+});
