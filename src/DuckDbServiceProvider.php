@@ -17,6 +17,6 @@ class DuckDbServiceProvider extends ServiceProvider
     /** {@inheritdoc} */
     public function register()
     {
-        //
+        $this->app->bind('db.connector.duckdb', fn () => new DuckDbConnector);
     }
 }
