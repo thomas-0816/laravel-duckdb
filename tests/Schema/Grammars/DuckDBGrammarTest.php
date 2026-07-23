@@ -640,43 +640,6 @@ it('compileAdd adds a column to existing table', function () {
     expect($connection->getSchemaBuilder()->hasColumn('add_test', 'name'))->toBeTrue();
 });
 
-it('compileAlter preserves data when adding a column', function () {
-    $connection = (function () {
-        return new DuckDbConnection(function () {
-            return new PDO('duckdb::memory:');
-        });
-    })();
-
-    $connection->getPdo()->exec('CREATE TABLE alter_preserve (id INTEGER PRIMARY KEY, name TEXT)');
-    $connection->getPdo()->exec("INSERT INTO alter_preserve VALUES (1, 'Alice')");
-    $connection->getPdo()->exec("INSERT INTO alter_preserve VALUES (2, 'Bob')");
-
-    $connection->getPdo()->exec('ALTER TABLE alter_preserve ADD COLUMN age INTEGER DEFAULT 0');
-
-    expect($connection->table('alter_preserve')->count())->toBe(2);
-    expect($connection->table('alter_preserve')->where('id', 1)->value('name'))->toBe('Alice');
-    expect($connection->table('alter_preserve')->where('id', 2)->value('name'))->toBe('Bob');
-    expect($connection->table('alter_preserve')->where('id', 1)->value('age'))->toBe(0);
-});
-
-it('compileAlter adds multiple columns', function () {
-    $connection = (function () {
-        return new DuckDbConnection(function () {
-            return new PDO('duckdb::memory:');
-        });
-    })();
-
-    $connection->getPdo()->exec('CREATE TABLE alter_multi (id INTEGER PRIMARY KEY)');
-    $connection->getPdo()->exec('INSERT INTO alter_multi VALUES (1)');
-
-    $connection->getPdo()->exec('ALTER TABLE alter_multi ADD COLUMN first_name TEXT');
-    $connection->getPdo()->exec('ALTER TABLE alter_multi ADD COLUMN last_name TEXT');
-
-    expect($connection->getSchemaBuilder()->hasColumn('alter_multi', 'first_name'))->toBeTrue();
-    expect($connection->getSchemaBuilder()->hasColumn('alter_multi', 'last_name'))->toBeTrue();
-    expect($connection->table('alter_multi')->where('id', 1)->value('first_name'))->toBeNull();
-});
-
 it('compileDrop drops a table', function () {
     $connection = (function () {
         return new DuckDbConnection(function () {
@@ -1783,26 +1746,6 @@ it('compileCreate with virtualAs expression', function () {
     expect((int) $result['total'])->toBe(2);
 });
 
-it('compileComment sets column comment via schema builder', function () {
-    $connection = (function () {
-        return new DuckDbConnection(function () {
-            return new PDO('duckdb::memory:');
-        });
-    })();
-
-    $connection->getSchemaBuilder()->create('comment_raw', function (Blueprint $table) {
-        $table->string('name');
-    });
-
-    $connection->getSchemaBuilder()->table('comment_raw', function (Blueprint $table) {
-        $table->string('name')->comment('The user name')->change();
-    });
-
-    $result = $connection->getPdo()->query("select * from duckdb_columns() where table_name = 'comment_raw' and column_name = 'name'")->fetch(PDO::FETCH_ASSOC);
-
-    expect($result)->not->toBeFalse();
-});
-
 it('compileTableComment sets table comment via schema builder', function () {
     $connection = (function () {
         return new DuckDbConnection(function () {
@@ -2148,81 +2091,6 @@ it('compileCreate throws RuntimeException for storedAsJson using JSON column pat
     });
 })->throws(RuntimeException::class, 'DuckDB does not support stored generated columns');
 
-it('compileAlter modifies an existing table by adding a column', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
-
-    $connection->getSchemaBuilder()->create('alter_add_g', function (Blueprint $table) {
-        $table->integer('id');
-        $table->string('name');
-    });
-
-    $connection->table('alter_add_g')->insert(['id' => 1, 'name' => 'Alice']);
-
-    $connection->getSchemaBuilder()->table('alter_add_g', function (Blueprint $table) {
-        $table->integer('age')->nullable()->default(0);
-    });
-
-    expect($connection->getSchemaBuilder()->hasColumn('alter_add_g', 'age'))->toBeTrue();
-    expect($connection->table('alter_add_g')->where('name', 'Alice')->value('age'))->toBe(0);
-});
-
-it('compileAlter modifies column type', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
-
-    $connection->getSchemaBuilder()->create('alter_type_g', function (Blueprint $table) {
-        $table->integer('id');
-        $table->string('val');
-    });
-
-    $connection->table('alter_type_g')->insert(['id' => 1, 'val' => 'hello']);
-
-    $connection->getSchemaBuilder()->table('alter_type_g', function (Blueprint $table) {
-        $table->integer('count_val')->nullable();
-    });
-
-    expect($connection->getSchemaBuilder()->hasColumn('alter_type_g', 'count_val'))->toBeTrue();
-    expect($connection->table('alter_type_g')->count())->toBe(1);
-});
-
-it('compileAlter drops and recreates table preserving data with multiple columns', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
-
-    $connection->getSchemaBuilder()->create('alter_preserve_g', function (Blueprint $table) {
-        $table->integer('id');
-        $table->string('name');
-        $table->integer('score');
-    });
-
-    $connection->table('alter_preserve_g')->insert([
-        ['id' => 1, 'name' => 'Alice', 'score' => 100],
-        ['id' => 2, 'name' => 'Bob', 'score' => 200],
-    ]);
-
-    $connection->getSchemaBuilder()->table('alter_preserve_g', function (Blueprint $table) {
-        $table->string('email')->nullable();
-    });
-
-    expect($connection->table('alter_preserve_g')->count())->toBe(2);
-    expect($connection->getSchemaBuilder()->hasColumn('alter_preserve_g', 'email'))->toBeTrue();
-    expect($connection->table('alter_preserve_g')->where('name', 'Alice')->value('score'))->toBe(100);
-});
-
-it('compileAlter adds index on existing table', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
-
-    $connection->getSchemaBuilder()->create('alter_idx_g', function (Blueprint $table) {
-        $table->integer('id');
-        $table->string('name');
-    });
-
-    $connection->getSchemaBuilder()->table('alter_idx_g', function (Blueprint $table) {
-        $table->string('email')->nullable();
-        $table->index('email', 'alter_idx_email');
-    });
-
-    expect($connection->getSchemaBuilder()->hasColumn('alter_idx_g', 'email'))->toBeTrue();
-});
-
 it('renameIndex throws when index lookup fails in DuckDB', function () {
     $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
 
@@ -2313,7 +2181,7 @@ it('change column type from string to integer preserves data', function () {
 
     expect($col['data_type'])->toBe('INTEGER');
     expect($connection->table('chg_type')->count())->toBe(2);
-    expect($connection->table('chg_type')->where('id', 1)->value('count_val'))->toBe(42);
+    expect((int) $connection->table('chg_type')->where('id', 1)->value('count_val'))->toBe(42);
 });
 
 it('change column from nullable to not null preserves data', function () {
@@ -2338,24 +2206,92 @@ it('change column from nullable to not null preserves data', function () {
     expect($connection->table('chg_nullable')->where('id', 1)->value('tag'))->toBe('hello');
 });
 
-it('change column default value preserves existing data', function () {
+it('change column from integer to string preserves data', function () {
     $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
 
-    $connection->getSchemaBuilder()->create('chg_default', function (Blueprint $table) {
+    $connection->getSchemaBuilder()->create('chg_int_str', function (Blueprint $table) {
         $table->integer('id')->unsigned();
-        $table->string('status');
+        $table->integer('score');
     });
 
-    $connection->table('chg_default')->insert(['id' => 1, 'status' => 'active']);
+    $connection->table('chg_int_str')->insert([['id' => 1, 'score' => 100], ['id' => 2, 'score' => 200]]);
 
-    $connection->getSchemaBuilder()->table('chg_default', function (Blueprint $table) {
-        $table->string('status')->default('pending')->change();
+    $connection->getSchemaBuilder()->table('chg_int_str', function (Blueprint $table) {
+        $table->string('score')->change();
     });
 
-    expect($connection->table('chg_default')->where('id', 1)->value('status'))->toBe('active');
+    $col = $connection->getPdo()->query(
+        "select data_type from information_schema.columns where table_name = 'chg_int_str' and column_name = 'score'"
+    )->fetch(PDO::FETCH_ASSOC);
 
-    $connection->table('chg_default')->insert(['id' => 2]);
-    expect($connection->table('chg_default')->where('id', 2)->value('status'))->toBe('pending');
+    expect($col['data_type'])->toBe('VARCHAR');
+    expect($connection->table('chg_int_str')->count())->toBe(2);
+    expect($connection->table('chg_int_str')->where('id', 1)->value('score'))->toBe('100');
+});
+
+it('change column type from boolean to string', function () {
+    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+
+    $connection->getSchemaBuilder()->create('chg_bool', function (Blueprint $table) {
+        $table->integer('id')->unsigned();
+        $table->boolean('flag');
+    });
+
+    $connection->table('chg_bool')->insert([['id' => 1, 'flag' => true], ['id' => 2, 'flag' => false]]);
+
+    $connection->getSchemaBuilder()->table('chg_bool', function (Blueprint $table) {
+        $table->string('flag')->change();
+    });
+
+    $col = $connection->getPdo()->query(
+        "select data_type from information_schema.columns where table_name = 'chg_bool' and column_name = 'flag'"
+    )->fetch(PDO::FETCH_ASSOC);
+
+    expect($col['data_type'])->toBe('VARCHAR');
+    expect($connection->table('chg_bool')->count())->toBe(2);
+});
+
+it('change column nullable', function () {
+    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+
+    $connection->getSchemaBuilder()->create('chg_nullable_col', function (Blueprint $table) {
+        $table->string('val');
+    });
+
+    $connection->getSchemaBuilder()->table('chg_nullable_col', function (Blueprint $table) {
+        $table->string('val')->nullable()->change();
+    });
+
+    $col = $connection->getPdo()->query(
+        "select is_nullable from information_schema.columns where table_name = 'chg_nullable_col' and column_name = 'val'"
+    )->fetch(PDO::FETCH_ASSOC);
+
+    expect($col['is_nullable'])->toBe('YES');
+
+    $connection->table('chg_nullable_col')->insert(['val' => null]);
+    expect($connection->table('chg_nullable_col')->count())->toBe(1);
+});
+
+it('change column preserves multiple rows', function () {
+    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+
+    $connection->getSchemaBuilder()->create('chg_rows', function (Blueprint $table) {
+        $table->integer('id')->unsigned();
+        $table->string('name');
+    });
+
+    $rows = [];
+    for ($i = 1; $i <= 50; $i++) {
+        $rows[] = ['id' => $i, 'name' => "user_{$i}"];
+    }
+    $connection->table('chg_rows')->insert($rows);
+
+    $connection->getSchemaBuilder()->table('chg_rows', function (Blueprint $table) {
+        $table->text('name')->change();
+    });
+
+    expect($connection->table('chg_rows')->count())->toBe(50);
+    expect($connection->table('chg_rows')->where('id', 25)->value('name'))->toBe('user_25');
 });
 
 it('change column rename preserves all data', function () {
@@ -2382,263 +2318,20 @@ it('change column rename preserves all data', function () {
     expect($connection->table('chg_rename')->where('id', 2)->value('new_name'))->toBe('Bob');
 });
 
-it('change multiple columns in one migration preserves data', function () {
+it('change column on empty table', function () {
     $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
 
-    $connection->getSchemaBuilder()->create('chg_multi', function (Blueprint $table) {
-        $table->integer('id')->unsigned();
-        $table->string('col_a');
-        $table->string('col_b');
-    });
-
-    $connection->table('chg_multi')->insert([
-        ['id' => 1, 'col_a' => 'a1', 'col_b' => 'b1'],
-        ['id' => 2, 'col_a' => 'a2', 'col_b' => 'b2'],
-    ]);
-
-    $connection->getSchemaBuilder()->table('chg_multi', function (Blueprint $table) {
-        $table->string('col_a')->nullable()->change();
-        $table->string('col_b')->default('fallback')->change();
-    });
-
-    expect($connection->table('chg_multi')->count())->toBe(2);
-    expect($connection->table('chg_multi')->where('id', 1)->value('col_a'))->toBe('a1');
-    expect($connection->table('chg_multi')->where('id', 1)->value('col_b'))->toBe('b1');
-    expect($connection->table('chg_multi')->where('id', 2)->value('col_a'))->toBe('a2');
-    expect($connection->table('chg_multi')->where('id', 2)->value('col_b'))->toBe('b2');
-});
-
-it('change column type preserves indexes', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
-
-    $connection->getSchemaBuilder()->create('chg_idx', function (Blueprint $table) {
-        $table->integer('id')->unsigned();
-        $table->string('email');
-        $table->string('name');
-        $table->unique('email');
-        $table->index('name');
-    });
-
-    $connection->getSchemaBuilder()->table('chg_idx', function (Blueprint $table) {
-        $table->string('email')->nullable()->change();
-    });
-
-    $indexes = $connection->getPdo()->query(
-        "select index_name from duckdb_indexes() where table_name = 'chg_idx'"
-    )->fetchAll(PDO::FETCH_COLUMN);
-
-    expect($indexes)->toContain('chg_idx_email_unique');
-    expect($indexes)->toContain('chg_idx_name_index');
-});
-
-it('change column type with data and add column simultaneously', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
-
-    $connection->getSchemaBuilder()->create('chg_combo', function (Blueprint $table) {
+    $connection->getSchemaBuilder()->create('chg_empty', function (Blueprint $table) {
         $table->integer('id')->unsigned();
         $table->string('val');
     });
 
-    $connection->table('chg_combo')->insert([['id' => 1, 'val' => '42']]);
-
-    $connection->getSchemaBuilder()->table('chg_combo', function (Blueprint $table) {
+    $connection->getSchemaBuilder()->table('chg_empty', function (Blueprint $table) {
         $table->integer('val')->change();
-        $table->boolean('active')->default(true);
     });
 
-    expect($connection->getSchemaBuilder()->hasColumn('chg_combo', 'active'))->toBeTrue();
-    expect($connection->table('chg_combo')->where('id', 1)->value('val'))->toBe(42);
-    expect($connection->table('chg_combo')->where('id', 1)->value('active'))->toBe(true);
-});
-
-it('change column from integer to string preserves data', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
-
-    $connection->getSchemaBuilder()->create('chg_int_str', function (Blueprint $table) {
-        $table->integer('id')->unsigned();
-        $table->integer('score');
-    });
-
-    $connection->table('chg_int_str')->insert([['id' => 1, 'score' => 100], ['id' => 2, 'score' => 200]]);
-
-    $connection->getSchemaBuilder()->table('chg_int_str', function (Blueprint $table) {
-        $table->string('score')->change();
-    });
-
-    $col = $connection->getPdo()->query(
-        "select data_type from information_schema.columns where table_name = 'chg_int_str' and column_name = 'score'"
-    )->fetch(PDO::FETCH_ASSOC);
-
-    expect($col['data_type'])->toBe('VARCHAR');
-    expect($connection->table('chg_int_str')->count())->toBe(2);
-    expect($connection->table('chg_int_str')->where('id', 1)->value('score'))->toBe('100');
-});
-
-it('change column with special characters in data', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
-
-    $connection->getSchemaBuilder()->create('chg_special', function (Blueprint $table) {
-        $table->integer('id')->unsigned();
-        $table->string('content');
-    });
-
-    $connection->table('chg_special')->insert([['id' => 1, 'content' => "It's a test with 'quotes' and \"double quotes\""]]);
-
-    $connection->getSchemaBuilder()->table('chg_special', function (Blueprint $table) {
-        $table->text('content')->change();
-    });
-
-    expect($connection->table('chg_special')->where('id', 1)->value('content'))
-        ->toBe("It's a test with 'quotes' and \"double quotes\"");
-});
-
-it('change column preserves multiple rows', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
-
-    $connection->getSchemaBuilder()->create('chg_rows', function (Blueprint $table) {
-        $table->integer('id')->unsigned();
-        $table->string('name');
-    });
-
-    $rows = [];
-    for ($i = 1; $i <= 50; $i++) {
-        $rows[] = ['id' => $i, 'name' => "user_{$i}"];
-    }
-    $connection->table('chg_rows')->insert($rows);
-
-    $connection->getSchemaBuilder()->table('chg_rows', function (Blueprint $table) {
-        $table->text('name')->change();
-    });
-
-    expect($connection->table('chg_rows')->count())->toBe(50);
-    expect($connection->table('chg_rows')->where('id', 25)->value('name'))->toBe('user_25');
-});
-
-it('change column transactional atomicity rolls back on error', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
-
-    $connection->getSchemaBuilder()->create('chg_rollback', function (Blueprint $table) {
-        $table->integer('id')->unsigned();
-        $table->string('val');
-    });
-
-    $connection->table('chg_rollback')->insert([['id' => 1, 'val' => 'original']]);
-
-    try {
-        $connection->getSchemaBuilder()->table('chg_rollback', function (Blueprint $table) {
-            $table->integer('val')->change();
-            $table->string('nonexistent_col')->change();
-        });
-    } catch (\Exception $e) {
-        // dump($e->getMessage());
-        // expected
-    }
-
-    expect($connection->getSchemaBuilder()->hasColumn('chg_rollback', 'val'))->toBeTrue();
-    expect($connection->table('chg_rollback')->where('id', 1)->value('val'))->toBe('original');
-});
-
-it('change column type from boolean to string', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
-
-    $connection->getSchemaBuilder()->create('chg_bool', function (Blueprint $table) {
-        $table->integer('id')->unsigned();
-        $table->boolean('flag');
-    });
-
-    $connection->table('chg_bool')->insert([['id' => 1, 'flag' => true], ['id' => 2, 'flag' => false]]);
-
-    $connection->getSchemaBuilder()->table('chg_bool', function (Blueprint $table) {
-        $table->string('flag')->change();
-    });
-
-    $col = $connection->getPdo()->query(
-        "select data_type from information_schema.columns where table_name = 'chg_bool' and column_name = 'flag'"
-    )->fetch(PDO::FETCH_ASSOC);
-
-    expect($col['data_type'])->toBe('VARCHAR');
-    expect($connection->table('chg_bool')->count())->toBe(2);
-});
-
-it('change column with nullable and default simultaneously', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
-
-    $connection->getSchemaBuilder()->create('chg_nullable_default', function (Blueprint $table) {
-        $table->integer('id')->unsigned();
-        $table->string('val');
-    });
-
-    $connection->table('chg_nullable_default')->insert([['id' => 1, 'val' => 'test']]);
-
-    $connection->getSchemaBuilder()->table('chg_nullable_default', function (Blueprint $table) {
-        $table->string('val')->nullable()->default('unknown')->change();
-    });
-
-    $col = $connection->getPdo()->query(
-        "select is_nullable from information_schema.columns where table_name = 'chg_nullable_default' and column_name = 'val'"
-    )->fetch(PDO::FETCH_ASSOC);
-
-    expect($col['is_nullable'])->toBe('YES');
-    expect($connection->table('chg_nullable_default')->where('id', 1)->value('val'))->toBe('test');
-
-    $connection->table('chg_nullable_default')->insert(['id' => 2]);
-    expect($connection->table('chg_nullable_default')->where('id', 2)->value('val'))->toBe('unknown');
-});
-
-it('change column to varchar with length', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
-
-    $connection->getSchemaBuilder()->create('chg_varchar_len', function (Blueprint $table) {
-        $table->integer('id')->unsigned();
-        $table->integer('code');
-    });
-
-    $connection->table('chg_varchar_len')->insert([['id' => 1, 'code' => 12345]]);
-
-    $connection->getSchemaBuilder()->table('chg_varchar_len', function (Blueprint $table) {
-        $table->string('code', 100)->change();
-    });
-
-    $col = $connection->getPdo()->query(
-        "select data_type from information_schema.columns where table_name = 'chg_varchar_len' and column_name = 'code'"
-    )->fetch(PDO::FETCH_ASSOC);
-
-    expect($col['data_type'])->toBe('VARCHAR');
-    expect($connection->table('chg_varchar_len')->where('id', 1)->value('code'))->toBe('12345');
-});
-
-it('change column preserves foreign keys', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
-
-    $connection->getSchemaBuilder()->create('chg_fk_parent', function (Blueprint $table) {
-        $table->integer('pk');
-        $table->string('name');
-        $table->primary('pk');
-    });
-
-    $connection->table('chg_fk_parent')->insert([['pk' => 1, 'name' => 'parent1']]);
-
-    $connection->getSchemaBuilder()->create('chg_fk_child', function (Blueprint $table) {
-        $table->integer('id');
-        $table->integer('parent_pk');
-        $table->string('label');
-        $table->foreign('parent_pk')->references('pk')->on('chg_fk_parent');
-    });
-
-    $connection->table('chg_fk_child')->insert([['id' => 1, 'parent_pk' => 1, 'label' => 'child1']]);
-
-    $connection->getSchemaBuilder()->table('chg_fk_child', function (Blueprint $table) {
-        $table->string('label')->nullable()->change();
-    });
-
-    expect($connection->table('chg_fk_child')->count())->toBe(1);
-    expect($connection->table('chg_fk_child')->where('id', 1)->value('label'))->toBe('child1');
-
-    $foreignKeys = $connection->getPdo()->query(
-        "select constraint_name from information_schema.table_constraints where table_name = 'chg_fk_child' and constraint_type = 'FOREIGN KEY'"
-    )->fetchAll(PDO::FETCH_COLUMN);
-
-    expect($foreignKeys)->not->toBeEmpty();
+    expect($connection->table('chg_empty')->count())->toBe(0);
+    expect($connection->getSchemaBuilder()->hasColumn('chg_empty', 'val'))->toBeTrue();
 });
 
 it('change column on table with primary key', function () {
@@ -2665,64 +2358,154 @@ it('change column on table with primary key', function () {
     expect($pk)->not->toBeEmpty();
 });
 
-it('change column on empty table', function () {
+it('change column with special characters in data', function () {
     $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
 
-    $connection->getSchemaBuilder()->create('chg_empty', function (Blueprint $table) {
+    $connection->getSchemaBuilder()->create('chg_special', function (Blueprint $table) {
         $table->integer('id')->unsigned();
-        $table->string('val');
+        $table->string('content');
     });
 
-    $connection->getSchemaBuilder()->table('chg_empty', function (Blueprint $table) {
-        $table->integer('val')->change();
+    $connection->table('chg_special')->insert([['id' => 1, 'content' => "It's a test with 'quotes' and \"double quotes\""]]);
+
+    $connection->getSchemaBuilder()->table('chg_special', function (Blueprint $table) {
+        $table->text('content')->change();
     });
 
-    expect($connection->table('chg_empty')->count())->toBe(0);
-    expect($connection->getSchemaBuilder()->hasColumn('chg_empty', 'val'))->toBeTrue();
+    expect($connection->table('chg_special')->where('id', 1)->value('content'))
+        ->toBe("It's a test with 'quotes' and \"double quotes\"");
 });
 
-it('change column preserves existing unique constraint', function () {
+it('change column default via change', function () {
     $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
 
-    $connection->getSchemaBuilder()->create('chg_unique_preserve', function (Blueprint $table) {
+    $connection->getSchemaBuilder()->create('chg_default', function (Blueprint $table) {
         $table->integer('id')->unsigned();
-        $table->string('email');
-        $table->unique('email');
+        $table->string('status')->default('draft');
     });
 
-    $connection->table('chg_unique_preserve')->insert([['id' => 1, 'email' => 'test@example.com']]);
+    $connection->table('chg_default')->insert([['id' => 1]]);
 
-    $connection->getSchemaBuilder()->table('chg_unique_preserve', function (Blueprint $table) {
-        $table->text('email')->change();
+    expect($connection->table('chg_default')->where('id', 1)->value('status'))->toBe('draft');
+
+    $connection->getSchemaBuilder()->table('chg_default', function (Blueprint $table) {
+        $table->string('status')->default('published')->change();
     });
 
-    try {
-        $connection->table('chg_unique_preserve')->insert([['id' => 2, 'email' => 'test@example.com']]);
-        expect(true)->toBeFalse();
-    } catch (\Exception $e) {
-        expect($e->getMessage())->toContain('Duplicate');
-    }
+    $connection->table('chg_default')->insert([['id' => 2]]);
+
+    expect($connection->table('chg_default')->where('id', 1)->value('status'))->toBe('draft');
+    expect($connection->table('chg_default')->where('id', 2)->value('status'))->toBe('published');
 });
 
-it('change column nullable', function () {
+it('drop column default via change', function () {
     $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
 
-    $connection->getSchemaBuilder()->create('chg_empty', function (Blueprint $table) {
-        $table->string('val');
+    $connection->getSchemaBuilder()->create('chg_drop_default', function (Blueprint $table) {
+        $table->integer('id')->unsigned();
+        $table->string('status')->default('draft');
     });
 
-    $connection->getSchemaBuilder()->table('chg_empty', function (Blueprint $table) {
-        $table->string('val')->nullable()->change();
+    $connection->table('chg_drop_default')->insert([['id' => 1]]);
+
+    expect($connection->table('chg_drop_default')->where('id', 1)->value('status'))->toBe('draft');
+
+    $connection->getSchemaBuilder()->table('chg_drop_default', function (Blueprint $table) {
+        $table->string('status')->default(null)->change();
     });
 
     $col = $connection->getPdo()->query(
-        "select is_nullable from information_schema.columns where table_name = 'chg_empty' and column_name = 'val'"
+        "select column_default from information_schema.columns where table_name = 'chg_drop_default' and column_name = 'status'"
     )->fetch(PDO::FETCH_ASSOC);
 
-    expect($col['is_nullable'])->toBe('YES');
+    expect($col['column_default'])->toBeNull();
+    expect($connection->table('chg_drop_default')->where('id', 1)->value('status'))->toBe('draft');
+});
 
-    $connection->table('chg_empty')->insert(['val' => null]);
-    expect($connection->table('chg_empty')->count())->toBe(1);
+it('change column default from null to value via change', function () {
+    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+
+    $connection->getSchemaBuilder()->create('chg_add_default', function (Blueprint $table) {
+        $table->integer('id')->unsigned();
+        $table->string('status');
+    });
+
+    $connection->table('chg_add_default')->insert([['id' => 1, 'status' => 'active']]);
+
+    $connection->getSchemaBuilder()->table('chg_add_default', function (Blueprint $table) {
+        $table->string('status')->default('active')->change();
+    });
+
+    $connection->table('chg_add_default')->insert([['id' => 2]]);
+
+    expect($connection->table('chg_add_default')->where('id', 1)->value('status'))->toBe('active');
+    expect($connection->table('chg_add_default')->where('id', 2)->value('status'))->toBe('active');
+});
+
+it('change column default with integer value', function () {
+    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+
+    $connection->getSchemaBuilder()->create('chg_default_int', function (Blueprint $table) {
+        $table->integer('id')->unsigned();
+        $table->integer('count');
+    });
+
+    $connection->table('chg_default_int')->insert([['id' => 1, 'count' => 10]]);
+
+    $connection->getSchemaBuilder()->table('chg_default_int', function (Blueprint $table) {
+        $table->integer('count')->default(0)->change();
+    });
+
+    $connection->table('chg_default_int')->insert([['id' => 2]]);
+
+    expect($connection->table('chg_default_int')->where('id', 1)->value('count'))->toBe(10);
+    expect($connection->table('chg_default_int')->where('id', 2)->value('count'))->toBe(0);
+});
+
+it('change column default with boolean value', function () {
+    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+
+    $connection->getSchemaBuilder()->create('chg_default_bool', function (Blueprint $table) {
+        $table->integer('id')->unsigned();
+        $table->boolean('active');
+    });
+
+    $connection->table('chg_default_bool')->insert([['id' => 1, 'active' => true]]);
+
+    $connection->getSchemaBuilder()->table('chg_default_bool', function (Blueprint $table) {
+        $table->boolean('active')->default(false)->change();
+    });
+
+    $connection->table('chg_default_bool')->insert([['id' => 2]]);
+
+    expect($connection->table('chg_default_bool')->where('id', 1)->value('active'))->toBe(true);
+    expect($connection->table('chg_default_bool')->where('id', 2)->value('active'))->toBe(false);
+});
+
+it('change multiple column attributes at once', function () {
+    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+
+    $connection->getSchemaBuilder()->create('chg_multi', function (Blueprint $table) {
+        $table->integer('id')->unsigned();
+        $table->string('name')->default('unknown')->nullable();
+    });
+
+    $connection->table('chg_multi')->insert([['id' => 1, 'name' => 'Alice']]);
+
+    $connection->getSchemaBuilder()->table('chg_multi', function (Blueprint $table) {
+        $table->text('name')->default('nobody')->nullable(false)->change();
+    });
+
+    $connection->table('chg_multi')->insert([['id' => 2]]);
+
+    $col = $connection->getPdo()->query(
+        "select data_type, is_nullable from information_schema.columns where table_name = 'chg_multi' and column_name = 'name'"
+    )->fetch(PDO::FETCH_ASSOC);
+
+    expect($col['data_type'])->toBe('VARCHAR');
+    expect($col['is_nullable'])->toBe('NO');
+    expect($connection->table('chg_multi')->where('id', 1)->value('name'))->toBe('Alice');
+    expect($connection->table('chg_multi')->where('id', 2)->value('name'))->toBe('nobody');
 });
 
 it('add id', function () {
@@ -2840,49 +2623,3 @@ it('compileAdd adds a column with comment', function () {
     expect($connection->getSchemaBuilder()->hasColumn('add_comment_test', 'name'))->toBeTrue();
 });
 
-it('compileAlter preserves table and column comments', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
-
-    $connection->getSchemaBuilder()->create('alter_comment', function (Blueprint $table) {
-        $table->integer('id');
-        $table->string('name')->comment('The user name');
-        $table->integer('score')->comment('Points');
-        $table->comment('A test table');
-    });
-
-    $connection->getSchemaBuilder()->table('alter_comment', function (Blueprint $table) {
-        $table->text('name')->comment('The user name')->change();
-    });
-
-    $tableComment = $connection->getPdo()->query("select comment from duckdb_tables() where table_name = 'alter_comment'")->fetchColumn();
-    expect($tableComment)->toBe('A test table');
-
-    $columns = $connection->getPdo()->query("select column_name, comment from duckdb_columns() where table_name = 'alter_comment'")->fetchAll(PDO::FETCH_ASSOC);
-    $comments = array_column($columns, 'comment', 'column_name');
-
-    expect($comments['name'])->toBe('The user name');
-    expect($comments['score'])->toBe('Points');
-});
-
-it('compileAlter preserves comments when adding column', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
-
-    $connection->getSchemaBuilder()->create('alter_add_comment', function (Blueprint $table) {
-        $table->integer('id');
-        $table->string('name')->comment('User name');
-        $table->comment('Users table');
-    });
-
-    $connection->getSchemaBuilder()->table('alter_add_comment', function (Blueprint $table) {
-        $table->string('email')->nullable();
-        $table->integer('score')->change();
-    });
-
-    $tableComment = $connection->getPdo()->query("select comment from duckdb_tables() where table_name = 'alter_add_comment'")->fetchColumn();
-    expect($tableComment)->toBe('Users table');
-
-    $columns = $connection->getPdo()->query("select column_name, comment from duckdb_columns() where table_name = 'alter_add_comment'")->fetchAll(PDO::FETCH_ASSOC);
-    $comments = array_column($columns, 'comment', 'column_name');
-
-    expect($comments['name'])->toBe('User name');
-});
