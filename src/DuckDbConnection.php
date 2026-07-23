@@ -5,6 +5,7 @@ namespace DuckDb;
 use Exception;
 use Illuminate\Database\Connection;
 use DuckDb\Query\Grammars\DuckDBGrammar as QueryGrammar;
+use PDO;
 use DuckDb\Query\Processors\DuckDbProcessor;
 use DuckDb\Schema\Grammars\DuckDBGrammar as SchemaGrammar;
 use DuckDb\Schema\DuckDBBuilder;
@@ -88,5 +89,21 @@ class DuckDbConnection extends Connection
     protected function getDefaultPostProcessor()
     {
         return new DuckDbProcessor();
+    }
+
+    /** {@inheritdoc} */
+    public function bindValues($statement, $bindings)
+    {
+        foreach ($bindings as $key => $value) {
+            $statement->bindValue(
+                is_string($key) ? $key : $key + 1,
+                $value,
+                match (true) {
+                    is_int($value) => PDO::PARAM_INT,
+                    is_array($value) || is_object($value) => PDO::PARAM_LOB,
+                    default => PDO::PARAM_STR,
+                },
+            );
+        }
     }
 }

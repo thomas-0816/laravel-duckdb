@@ -98,6 +98,12 @@ class DuckDBGrammar extends Grammar
     }
 
     /** {@inheritdoc} */
+    public function compileInsertGetId(Builder $query, $values, $sequence)
+    {
+        return $this->compileInsert($query, $values).' returning '.$this->wrap($sequence ?: 'id');
+    }
+
+    /** {@inheritdoc} */
     public function compileUpdate(Builder $query, array $values)
     {
         if (isset($query->joins) || isset($query->limit)) {
