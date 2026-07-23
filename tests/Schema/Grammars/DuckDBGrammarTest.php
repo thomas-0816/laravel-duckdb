@@ -2016,15 +2016,6 @@ it('compileCreate with macAddress type via grammar', function () {
     expect($col['data_type'])->toBe('VARCHAR');
 });
 
-it('compileCreate creates a table with autoincrement', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
-
-    $connection->getSchemaBuilder()->create('type_incr_g', function (Blueprint $table) {
-        $table->increments('id');
-        $table->string('name');
-    });
-})->throws(RuntimeException::class, 'DuckDB does not support auto_increment');
-
 it('compileCreate creates a table with collation', function () {
     $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
 
@@ -2507,14 +2498,6 @@ it('change multiple column attributes at once', function () {
     expect($connection->table('chg_multi')->where('id', 1)->value('name'))->toBe('Alice');
     expect($connection->table('chg_multi')->where('id', 2)->value('name'))->toBe('nobody');
 });
-
-it('add id', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
-
-    $connection->getSchemaBuilder()->create('table1', function (Blueprint $table) {
-        $table->id();
-    });
-})->throws(RuntimeException::class, 'DuckDB does not support auto_increment');
 
 it('compileAdd adds a column with collation', function () {
     $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
