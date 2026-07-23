@@ -130,6 +130,25 @@ it('detects whether migration table exists', function () {
     expect($state->hasMigrationTable())->toBeTrue();
 });
 
+it('dump skips migration inserts when migration table is empty', function () {
+    $connection = new DuckDbConnection(function () {
+        return new PDO('duckdb::memory:');
+    });
+    $connection->getPdo()->exec('CREATE TABLE data (id INTEGER, val TEXT)');
+    $connection->getPdo()->exec("INSERT INTO data VALUES (1, 'x')");
+    $connection->getPdo()->exec('CREATE TABLE migrations (id INTEGER, migration TEXT, batch INTEGER)');
+
+    $state = new DuckDBSchemaState($connection);
+    $path = tempnam(sys_get_temp_dir(), 'duckdb_dump_');
+    $state->dump($connection, $path);
+
+    $contents = file_get_contents($path);
+    expect($contents)->toContain('data');
+    expect($contents)->not->toContain('INSERT INTO');
+
+    unlink($path);
+});
+
 it('handles output callback without breaking load', function () {
     $connection = new DuckDbConnection(function () {
         return new PDO('duckdb::memory:');
