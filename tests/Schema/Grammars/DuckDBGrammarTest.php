@@ -2839,3 +2839,50 @@ it('compileAdd adds a column with comment', function () {
 
     expect($connection->getSchemaBuilder()->hasColumn('add_comment_test', 'name'))->toBeTrue();
 });
+
+it('compileAlter preserves table and column comments', function () {
+    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+
+    $connection->getSchemaBuilder()->create('alter_comment', function (Blueprint $table) {
+        $table->integer('id');
+        $table->string('name')->comment('The user name');
+        $table->integer('score')->comment('Points');
+        $table->comment('A test table');
+    });
+
+    $connection->getSchemaBuilder()->table('alter_comment', function (Blueprint $table) {
+        $table->text('name')->comment('The user name')->change();
+    });
+
+    $tableComment = $connection->getPdo()->query("select comment from duckdb_tables() where table_name = 'alter_comment'")->fetchColumn();
+    expect($tableComment)->toBe('A test table');
+
+    $columns = $connection->getPdo()->query("select column_name, comment from duckdb_columns() where table_name = 'alter_comment'")->fetchAll(PDO::FETCH_ASSOC);
+    $comments = array_column($columns, 'comment', 'column_name');
+
+    expect($comments['name'])->toBe('The user name');
+    expect($comments['score'])->toBe('Points');
+});
+
+it('compileAlter preserves comments when adding column', function () {
+    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+
+    $connection->getSchemaBuilder()->create('alter_add_comment', function (Blueprint $table) {
+        $table->integer('id');
+        $table->string('name')->comment('User name');
+        $table->comment('Users table');
+    });
+
+    $connection->getSchemaBuilder()->table('alter_add_comment', function (Blueprint $table) {
+        $table->string('email')->nullable();
+        $table->integer('score')->change();
+    });
+
+    $tableComment = $connection->getPdo()->query("select comment from duckdb_tables() where table_name = 'alter_add_comment'")->fetchColumn();
+    expect($tableComment)->toBe('Users table');
+
+    $columns = $connection->getPdo()->query("select column_name, comment from duckdb_columns() where table_name = 'alter_add_comment'")->fetchAll(PDO::FETCH_ASSOC);
+    $comments = array_column($columns, 'comment', 'column_name');
+
+    expect($comments['name'])->toBe('User name');
+});

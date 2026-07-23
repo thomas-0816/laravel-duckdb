@@ -9,6 +9,7 @@ use Illuminate\Database\Schema\IndexDefinition;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Fluent;
+use PDO;
 use RuntimeException;
 
 class DuckDBGrammar extends Grammar
@@ -237,6 +238,9 @@ class DuckDBGrammar extends Grammar
         $table = $this->wrapTable($blueprint);
         $columnNames = implode(', ', $columnNames);
 
+        $existingComments = $this->getExistingColumnComments($blueprint);
+        $existingTableComment = $this->getExistingTableComment($blueprint);
+
         $statements = [];
         $statements = array_merge($statements, array_filter([
             sprintf(
@@ -250,6 +254,23 @@ class DuckDBGrammar extends Grammar
             sprintf('drop table %s', $table),
             sprintf('alter table %s rename to %s', $tempTable, $this->wrapTable($tableName)),
         ]));
+
+        if (! is_null($existingTableComment)) {
+            $statements[] = sprintf(
+                'comment on table %s is %s',
+                $table,
+                $this->quoteString($existingTableComment)
+            );
+        }
+
+        foreach ($existingComments as $column => $comment) {
+            $statements[] = sprintf(
+                'comment on column %s.%s is %s',
+                $table,
+                $this->wrap($column),
+                $this->quoteString($comment)
+            );
+        }
 
         return array_merge($statements, $indexes);
     }
@@ -633,6 +654,46 @@ class DuckDBGrammar extends Grammar
             $this->wrapTable($blueprint),
             is_null($command->comment) ? 'NULL' : $this->quoteString($command->comment)
         );
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    protected function getExistingColumnComments(Blueprint $blueprint): array
+    {
+        [$schema, $table] = $this->connection->getSchemaBuilder()->parseSchemaAndTable($blueprint->getTable());
+
+        $statement = $this->connection->getPdo()->query(sprintf(
+            "select column_name, comment from duckdb_columns() where table_name = %s and schema_name = %s",
+            $this->quoteString($table),
+            $this->quoteString($schema ?? 'main')
+        ));
+
+        $comments = [];
+        if ($statement !== false) {
+            foreach ($statement->fetchAll(PDO::FETCH_ASSOC) as $row) {
+                if (! is_null($row['comment'])) {
+                    $comments[$row['column_name']] = $row['comment'];
+                }
+            }
+        }
+
+        return $comments;
+    }
+
+    protected function getExistingTableComment(Blueprint $blueprint): ?string
+    {
+        [$schema, $table] = $this->connection->getSchemaBuilder()->parseSchemaAndTable($blueprint->getTable());
+
+        $statement = $this->connection->getPdo()->query(sprintf(
+            "select comment from duckdb_tables() where table_name = %s and schema_name = %s",
+            $this->quoteString($table),
+            $this->quoteString($schema ?? 'main')
+        ));
+
+        $comment = $statement !== false ? $statement->fetchColumn() : null;
+
+        return $comment !== false ? (string) $comment : null;
     }
 
     protected function wrapJsonSelector($value): string
