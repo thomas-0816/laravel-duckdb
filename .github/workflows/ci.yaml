@@ -57,17 +57,16 @@ jobs:
           tools: composer, pie
         env:
           phpts: ${{ matrix.thread-safety }}
-          laravel: ${{ matrix.laravel }}
       - name: Test
         env:
           os: ${{ matrix.os }}
+          laravel: ${{ matrix.laravel }}
         run: |
           uname -a
           php -v
           sudo pie install thomas-0816/pdo-duckdb-php
           php -m | grep duckdb
           rm composer.lock
-
           composer require illuminate/database:^${laravel}
           composer test
   zizmor:
