@@ -288,6 +288,35 @@ dump($rows->toArray());
 #         [log] => log text 2
 ```
 
+## Read PARQUET files with Eloquent Models
+
+```php
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class LogsParquet extends Model
+{
+    protected $connection = 'duckdb';
+    protected $table = '/tmp/logs.parquet'; // or multiple files using '/tmp/*.parquet'
+}
+
+file_put_contents('/tmp/logs.json', json_encode(['log' => 'log text']) . PHP_EOL, FILE_APPEND);
+file_put_contents('/tmp/logs.json', json_encode(['log' => 'log text 2']) . PHP_EOL, FILE_APPEND);
+
+// Convert JSON file to PARQUET file
+DB::connection('duckdb')->statement("COPY (SELECT * FROM '/tmp/logs.json') TO '/tmp/logs.parquet'");
+
+$rows = LogsParquet::select('log')->get();
+dump($rows->toArray());
+
+# Array
+#     [0] => Array
+#         [log] => log text
+#     [1] => Array
+#         [log] => log text 2
+```
+
 ## Read and write PARQUET files with SQL Query Builder
 
 ```php
