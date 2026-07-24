@@ -160,7 +160,7 @@ $events = Event::where('created_at', '>=', now()->subWeek())->get();
 dump($events->toArray());
 ```
 
-## Read CSV files with SQL with Query Builder
+## Read CSV files with SQL Query Builder
 
 ```php
 use Illuminate\Support\Facades\DB;
@@ -189,7 +189,7 @@ print_r($result->toArray());
 #         [aaa] => aaa
 ```
 
-## Read CSV files with SQL with Eloquent Models:
+## Read CSV files with Eloquent Models:
 
 ```php
 namespace App\Models;
@@ -226,7 +226,7 @@ dump($rows->toArray());
 #         [aaa] => ddd
 ```
 
-## Read JSON files with SQL with Query Builder
+## Read JSON files with SQL Query Builder
 
 ```php
 use Illuminate\Support\Facades\DB;
@@ -262,7 +262,7 @@ print_r($result->toArray());
 #         [log] => log text 2
 ```
 
-## Read JSON files with SQL with Eloquent Models
+## Read JSON files with Eloquent Models
 
 ```php
 namespace App\Models;
@@ -288,7 +288,7 @@ dump($rows->toArray());
 #         [log] => log text 2
 ```
 
-## Schema Builder with special types
+## Schema Builder for special types
 
 Special types can be defined by using rawColumn():
 
