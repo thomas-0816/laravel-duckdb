@@ -160,9 +160,7 @@ $events = Event::where('created_at', '>=', now()->subWeek())->get();
 dump($events->toArray());
 ```
 
-## Read CSV files with SQL
-
-Query Builder:
+## Read CSV files with SQL with Query Builder
 
 ```php
 use Illuminate\Support\Facades\DB;
@@ -191,7 +189,7 @@ print_r($result->toArray());
 #         [aaa] => aaa
 ```
 
-Eloquent models:
+## Read CSV files with SQL with Eloquent Models:
 
 ```php
 namespace App\Models;
@@ -228,9 +226,7 @@ dump($rows->toArray());
 #         [aaa] => ddd
 ```
 
-## Read JSON files with SQL
-
-Query Builder:
+## Read JSON files with SQL with Query Builder
 
 ```php
 use Illuminate\Support\Facades\DB;
@@ -266,7 +262,7 @@ print_r($result->toArray());
 #         [log] => log text 2
 ```
 
-Eloquent models:
+## Read JSON files with SQL with Eloquent Models
 
 ```php
 namespace App\Models;
