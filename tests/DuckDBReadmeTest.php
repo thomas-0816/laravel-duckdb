@@ -189,3 +189,24 @@ it('verifies special schema types', function () {
             'person' => ['v' => 'foo', 'i' => 42, 'va' => ['foo', 'bar'], 'd' => 42.21]]
     );
 });
+
+it('verifies parquet read and write', function () {
+    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+
+    $connection->getSchemaBuilder()->create('table1', function (Blueprint $table) {
+        $table->id();
+        $table->string('text');
+        $table->json('data');
+    });
+    $connection->table('table1')->insert([[
+        'text' => 'Hello DuckDB 🦆',
+        'data' => ['foo' => 'bar', 'baz' => 42],
+    ]]);
+    $connection->statement("COPY (SELECT * FROM table1) TO '/tmp/table1.parquet' (COMPRESSION zstd)");
+
+    $result = $connection->query()
+        ->from('/tmp/table1.parquet')
+        ->get()
+        ->toArray();
+    expect((array) $result[0])->toBe(['id' => 1, 'text' => 'Hello DuckDB 🦆', 'data' => ['foo' => 'bar', 'baz' => 42]]);
+});

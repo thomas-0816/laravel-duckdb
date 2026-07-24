@@ -288,6 +288,34 @@ dump($rows->toArray());
 #         [log] => log text 2
 ```
 
+## Read and write PARQUET files with SQL Query Builder
+
+```php
+Schema::connection('duckdb')->create('table1', function (Blueprint $table) {
+    $table->id();
+    $table->string('text');
+    $table->json('data');
+});
+DB::connection('duckdb')->table('table1')->insert([[
+    'text' => 'Hello DuckDB 🦆',
+    'data' => ['foo' => 'bar', 'baz' => 42],
+]]);
+DB::connection('duckdb')->statement("COPY (SELECT * FROM table1) TO '/tmp/table1.parquet' (COMPRESSION zstd)");
+
+$result = DB::connection('duckdb')->query()
+    ->from('/tmp/table1.parquet')
+    ->get();
+print_r($result->toArray());
+
+# Array
+#     [0] => stdClass Object
+#         [id] => 1
+#         [text] => Hello DuckDB 🦆
+#         [data] => Array
+#             [foo] => bar
+#             [baz] => 42
+```
+
 ## Schema Builder for special types
 
 Special types can be defined by using rawColumn():
@@ -385,10 +413,10 @@ A complete list is available in the DuckDB documentation: [Securing DuckDB](http
 
 ## Development
 
-Testing:
-
 ```bash
+# testing
 composer test
+composer test_fix
 ./vendor/bin/pest --coverage
 ```
 
