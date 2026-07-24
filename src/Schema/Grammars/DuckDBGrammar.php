@@ -405,27 +405,27 @@ class DuckDBGrammar extends Grammar
 
     protected function typeInteger(Fluent $column): string
     {
-        return 'integer';
+        return $column->unsigned ? 'uinteger' : 'integer';
     }
 
     protected function typeBigInteger(Fluent $column): string
     {
-        return 'bigint';
+        return $column->unsigned ? 'ubigint' : 'bigint';
     }
 
     protected function typeMediumInteger(Fluent $column): string
     {
-        return 'integer';
+        return $column->unsigned ? 'uinteger' : 'integer';
     }
 
     protected function typeTinyInteger(Fluent $column): string
     {
-        return 'tinyint';
+        return $column->unsigned ? 'utinyint' : 'tinyint';
     }
 
     protected function typeSmallInteger(Fluent $column): string
     {
-        return 'smallint';
+        return $column->unsigned ? 'usmallint' : 'smallint';
     }
 
     protected function typeFloat(Fluent $column): string
