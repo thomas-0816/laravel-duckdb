@@ -246,7 +246,7 @@ it('getForeignKeys returns foreign keys for a table', function () {
     $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('fk_query_parent', function (Blueprint $table) {
-        $table->bigInteger('id')->unique();
+        $table->unsignedBigInteger('id')->unique();
     });
 
     $connection->getSchemaBuilder()->create('fk_query_child', function (Blueprint $table) {
@@ -1529,7 +1529,7 @@ it('compileForeign creates compound foreign key', function () {
     })();
 
     $connection->getSchemaBuilder()->create('compound_parent', function (Blueprint $table) {
-        $table->integer('id')->unsigned();
+        $table->integer('id');
         $table->integer('parent_type');
         $table->unique(['id', 'parent_type']);
     });
@@ -2656,4 +2656,73 @@ it('compileChange with collation on type change', function () {
 
     expect($result)->toBe(['100']);
     expect($connection->table('chg_collate')->where('id', 2)->value('code'))->toBe('200');
+});
+
+it('compile special types', function () {
+    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+
+    $connection->getSchemaBuilder()->create('table1', function (Blueprint $table) {
+        $table->integer('id', true, true);
+        $table->decimal('decimal13', 11, 3);
+        $table->string('varchar242', 242);
+        $table->uuid('uuid1');
+        $table->ulid('ulid1');
+        $table->rawColumn('string_array', 'varchar[]');
+        $table->rawColumn('int_array', 'integer[]');
+        $table->rawColumn('struct_type', 'struct(v varchar, i integer, a varchar[], d decimal)');
+    });
+
+    $result = $connection->getPdo()->query('select * from duckdb_columns() where internal = false')->fetchAll(PDO::FETCH_ASSOC);
+
+    expect($result)->toHaveCount(8);
+
+    expect($result[0]['column_name'])->toBe('id');
+    expect($result[0]['data_type'])->toBe('UINTEGER');
+
+    expect($result[1]['column_name'])->toBe('decimal13');
+    expect($result[1]['data_type'])->toBe('DECIMAL(11,3)');
+
+    expect($result[2]['column_name'])->toBe('varchar242');
+    expect($result[2]['data_type'])->toBe('VARCHAR');
+
+    expect($result[3]['column_name'])->toBe('uuid1');
+    expect($result[3]['data_type'])->toBe('UUID');
+
+    expect($result[4]['column_name'])->toBe('ulid1');
+    expect($result[4]['data_type'])->toBe('VARCHAR');
+
+    expect($result[5]['column_name'])->toBe('string_array');
+    expect($result[5]['data_type'])->toBe('VARCHAR[]');
+
+    expect($result[6]['column_name'])->toBe('int_array');
+    expect($result[6]['data_type'])->toBe('INTEGER[]');
+
+    expect($result[7]['column_name'])->toBe('struct_type');
+    expect($result[7]['data_type'])->toBe('STRUCT(v VARCHAR, i INTEGER, a VARCHAR[], d DECIMAL(18,3))');
+});
+
+it('compile unsigned types', function () {
+    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+
+    $connection->getSchemaBuilder()->create('table1', function (Blueprint $table) {
+        $table->integer('id')->unsigned();
+        $table->bigInteger('id2')->unsigned();
+        $table->tinyInteger('id3')->unsigned();
+        $table->smallInteger('id4')->unsigned();
+        $table->mediumInteger('id5')->unsigned();
+    });
+
+    $result = $connection->getPdo()->query('select * from duckdb_columns() where internal = false')->fetchAll(PDO::FETCH_ASSOC);
+
+    expect($result)->toHaveKeys(['0', '1', '2', '3', '4']);
+    expect($result[0]['column_name'])->toBe('id');
+    expect($result[0]['data_type'])->toBe('UINTEGER');
+    expect($result[1]['column_name'])->toBe('id2');
+    expect($result[1]['data_type'])->toBe('UBIGINT');
+    expect($result[2]['column_name'])->toBe('id3');
+    expect($result[2]['data_type'])->toBe('UTINYINT');
+    expect($result[3]['column_name'])->toBe('id4');
+    expect($result[3]['data_type'])->toBe('USMALLINT');
+    expect($result[4]['column_name'])->toBe('id5');
+    expect($result[4]['data_type'])->toBe('UINTEGER');
 });

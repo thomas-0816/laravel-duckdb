@@ -440,11 +440,7 @@ class DuckDBGrammar extends Grammar
 
     protected function typeDecimal(Fluent $column): string
     {
-        if ($column->total && $column->places) {
-            return "decimal({$column->total}, {$column->places})";
-        }
-
-        return 'decimal';
+        return ($column->total && $column->places) ? "decimal({$column->total}, {$column->places})" : 'decimal';
     }
 
     protected function typeBoolean(Fluent $column): string

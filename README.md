@@ -292,6 +292,63 @@ dump($rows->toArray());
 #         [log] => log text 2
 ```
 
+## Schema Builder with special types
+
+Special types can be defined by using rawColumn():
+
+```php
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+
+Schema::connection('duckdb')->create('employees', function (Blueprint $table) {
+    $table->id();
+    $table->rawColumn('categories', 'varchar[]');
+    $table->rawColumn('numbers', 'integer[]');
+    $table->rawColumn('person', 'STRUCT(v VARCHAR, i INTEGER, va VARCHAR[], d DECIMAL)');
+});
+
+class Person {
+    public string $v;
+    public int $i;
+    public array $va;
+    public float $d;
+}
+
+$person = new Person();
+$person->v = 'foo';
+$person->i = 42;
+$person->va = ['foo', 'bar'];
+$person->d = 42.21;
+
+DB::connection('duckdb')->table('employees')->insert([[
+    'categories' => ['foo', 'bar'],
+    'numbers' => [42, 21],
+    'person' => $person,
+]]);
+$employees = $DB::connection('duckdb')->query()
+    ->from('employees')
+    ->get();
+print_r($employees->toArray());
+
+# Array
+#     [0] => stdClass Object
+#         [id] => 1
+#         [categories] => Array
+#             [0] => foo
+#             [1] => bar
+#         [numbers] => Array
+#             [0] => 42
+#             [1] => 21
+#         [person] => Array
+#             [v] => foo
+#             [i] => 42
+#             [va] => Array
+#                 [0] => foo
+#                 [1] => bar
+#             [d] => 42.21
+```
+
 ## Schema Dump
 
 The package supports `schema:dump` Artisan command using DuckDB's `EXPORT DATABASE` SQL statement via PDO:

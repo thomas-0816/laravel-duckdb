@@ -34,6 +34,14 @@ class LogsJson extends Model
     protected $table = '/tmp/logs.json';
 }
 
+class Person
+{
+    public string $v;
+    public int $i;
+    public array $va;
+    public float $d;
+}
+
 it('verifies examples from readme', function () {
     $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getSchemaBuilder()->create('events', function (Blueprint $table) {
@@ -147,4 +155,37 @@ it('verifies examples from readme, json files', function () {
     $result = LogsJson::select('log')->get()->toArray();
     expect($result[0])->toBe(['log' => 'log text']);
     expect($result[1])->toBe(['log' => 'log text 2']);
+});
+
+it('verifies special schema types', function () {
+    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+
+    $connection->getSchemaBuilder()->create('employees', function (Blueprint $table) {
+        $table->id();
+        $table->rawColumn('categories', 'varchar[]');
+        $table->rawColumn('numbers', 'integer[]');
+        $table->rawColumn('person', 'STRUCT(v VARCHAR, i INTEGER, va VARCHAR[], d DECIMAL)');
+    });
+
+    $person = new Person();
+    $person->v = 'foo';
+    $person->i = 42;
+    $person->va = ['foo', 'bar'];
+    $person->d = 42.21;
+
+    $connection->table('employees')->insert([[
+        'categories' => ['foo', 'bar'],
+        'numbers' => [42, 21],
+        'person' => $person,
+    ]]);
+
+    $result = $connection->query()
+        ->from('employees')
+        ->get()
+        ->toArray();
+
+    expect((array) $result[0])->toBe(
+        ['id' => 1, 'categories' => ['foo', 'bar'], 'numbers' => [42, 21],
+            'person' => ['v' => 'foo', 'i' => 42, 'va' => ['foo', 'bar'], 'd' => 42.21]]
+    );
 });
