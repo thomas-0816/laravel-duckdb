@@ -375,12 +375,12 @@ class DuckDBGrammar extends Grammar
 
     protected function typeChar(Fluent $column): string
     {
-        return 'varchar';
+        return $column->length ? "char({$column->length})" : 'char';
     }
 
     protected function typeString(Fluent $column): string
     {
-        return 'varchar';
+        return $column->length ? "varchar({$column->length})" : 'varchar';
     }
 
     protected function typeTinyText(Fluent $column): string
@@ -440,6 +440,10 @@ class DuckDBGrammar extends Grammar
 
     protected function typeDecimal(Fluent $column): string
     {
+        if ($column->total && $column->places) {
+            return "decimal({$column->total}, {$column->places})";
+        }
+
         return 'decimal';
     }
 
