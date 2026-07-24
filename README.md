@@ -189,7 +189,7 @@ print_r($result->toArray());
 #         [aaa] => aaa
 ```
 
-## Read CSV files with Eloquent Models:
+## Read CSV files with Eloquent Models
 
 ```php
 namespace App\Models;
