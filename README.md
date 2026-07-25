@@ -363,10 +363,10 @@ $result = DB::connection('duckdb')->query()
     ->select(['hour', 'temp'])
     ->fromRaw("read_csv('https://data.meteostat.net/hourly/2026/10381.csv.gz')")
     ->where('year', 2026)->where('month', 7)->where('day', 25)->where('hour', '>', 9)
-    ->limit(4);
+    ->limit(3);
 echo json_encode($result->get()->toArray()), PHP_EOL;
 
-# [{"hour":10,"temp":24.1},{"hour":11,"temp":25.5},{"hour":12,"temp":26.4},{"hour":13,"temp":27.4}]
+# [{"hour":10,"temp":24.1},{"hour":11,"temp":25.5},{"hour":12,"temp":26.4}]
 ```
 
 ## Schema Builder for special types
