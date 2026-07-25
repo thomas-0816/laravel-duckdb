@@ -262,6 +262,8 @@ print_r($result->toArray());
 #         [log] => log text 2
 ```
 
+Note: You can read and save Parquet files on local file systems or directly on [S3 object storage](https://duckdb.org/docs/lts/core_extensions/httpfs/s3api).
+
 ## Read JSON files with Eloquent Models
 
 ```php
@@ -343,6 +345,28 @@ print_r($result->toArray());
 #         [data] => Array
 #             [foo] => bar
 #             [baz] => 42
+```
+
+## Read public data using HTTPs, JSON and CSV
+
+```php
+$result = DB::connection('duckdb')->query()
+    ->select(['id', 'name.en'])
+    ->fromRaw("read_json('https://bulk.meteostat.net/v2/stations/lite.json.gz')")
+    ->whereLike('name.en', '%Berlin%')
+    ->limit(2);
+echo json_encode($result->get()->toArray()), PHP_EOL;
+
+# [{"id":"10381","en":"Berlin \/ Dahlem"},{"id":"10382","en":"Berlin \/ Tegel"}]
+
+$result = DB::connection('duckdb')->query()
+    ->select(['hour', 'temp'])
+    ->fromRaw("read_csv('https://data.meteostat.net/hourly/2026/10381.csv.gz')")
+    ->where('year', 2026)->where('month', 7)->where('day', 25)->where('hour', '>', 9)
+    ->limit(4);
+echo json_encode($result->get()->toArray()), PHP_EOL;
+
+# [{"hour":10,"temp":24.1},{"hour":11,"temp":25.5},{"hour":12,"temp":26.4},{"hour":13,"temp":27.4}]
 ```
 
 ## Schema Builder for special types
