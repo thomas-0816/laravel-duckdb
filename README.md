@@ -331,7 +331,7 @@ DB::connection('duckdb')->table('table1')->insert([[
     'text' => 'Hello DuckDB 🦆',
     'data' => ['foo' => 'bar', 'baz' => 42],
 ]]);
-DB::connection('duckdb')->statement("COPY (SELECT * FROM table1) TO '/tmp/table1.parquet' (COMPRESSION zstd)");
+DB::connection('duckdb')->statement("COPY (SELECT * FROM table1) TO '/tmp/table1.parquet'");
 
 $result = DB::connection('duckdb')->query()
     ->from('/tmp/table1.parquet')
