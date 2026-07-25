@@ -369,6 +369,45 @@ echo json_encode($result->get()->toArray()), PHP_EOL;
 # [{"hour":10,"temp":24.1},{"hour":11,"temp":25.5},{"hour":12,"temp":26.4}]
 ```
 
+## Copy data from MariaDB to a parquet file
+
+Start a MariaDB container, create and fill "orders" table:
+
+```bash
+docker run --rm -it -p 3306:3306 -e MARIADB_ROOT_PASSWORD=secret -e MARIADB_DATABASE=testdb mariadb:12
+mysql -h 127.0.0.1 -u root -psecret testdb -e "
+    CREATE TABLE orders (id integer primary key, customer integer, amount decimal(12, 2), origin varchar(255));
+    INSERT INTO orders VALUES (1, 42, 123.42, 'shop');
+    INSERT INTO orders VALUES (2, 21, 12.21, 'offline');
+"
+```
+
+Use DuckDB MySQL extension to copy "orders" table from MariaDB to a parquet file:
+
+```php
+DB::connection('duckdb')->unprepared("
+    INSTALL mysql;
+    ATTACH 'host=127.0.0.1 port=3306 user=root password=secret database=testdb' AS testdb (TYPE mysql);
+    COPY (select * from testdb.orders) TO '/tmp/orders.parquet' (FORMAT parquet);
+");
+$rows = DB::connection('duckdb')->query()
+    ->from('/tmp/orders.parquet')
+    ->get();
+print_r($rows->toArray());
+
+# Array
+#     [0] => stdClass Object
+#         [id] => 1
+#         [customerId] => 42
+#         [amount] => 123.42
+#         [origin] => shop
+#     [1] => stdClass Object
+#         [id] => 2
+#         [customerId] => 21
+#         [amount] => 12.21
+#         [origin] => offline
+```
+
 ## Schema Builder for special types
 
 Special types can be defined by using rawColumn():
