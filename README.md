@@ -319,6 +319,10 @@ dump($rows->toArray());
 #         [log] => log text 2
 ```
 
+__Apache Parquet__: very fast and efficient column based storage file format containing one table of data.\
+Each column is split into several column groups. Depending on the query, the file can be read partially by certain columns groups.\
+Different compression or dictionary algorithms can be applied to each column. Also supports encryption.
+
 ## Read and write PARQUET files with SQL Query Builder
 
 ```php
