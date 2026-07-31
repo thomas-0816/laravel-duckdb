@@ -27,6 +27,7 @@ jobs:
           - 8.5
         thread-safety:
           - nts
+          - zts
         laravel-version:
           - 12
           - 13
@@ -51,8 +52,8 @@ jobs:
           sudo pie install thomas-0816/pdo-duckdb-php
           php -m | grep duckdb
           composer create-project laravel/laravel:^${laravel_version} example-app
-          composer show laravel/framework | grep versions
           cd example-app
+          composer show laravel/framework | grep versions
           composer require thomas-0816/laravel-duckdb
           php artisan package:discover
           sed -i 's/sqlite/duckdb/g' .env

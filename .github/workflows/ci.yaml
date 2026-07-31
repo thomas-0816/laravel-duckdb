@@ -43,6 +43,7 @@ jobs:
           - 8.5
         thread-safety:
           - nts
+          - zts
         laravel-version:
           - 12
           - 13
