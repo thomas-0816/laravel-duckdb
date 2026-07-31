@@ -23,7 +23,7 @@ pie install thomas-0816/pdo-duckdb-php
 Install and setup DuckDB driver for Laravel:
 
 ```bash
-composer require thomas-0816/laravel-pdo-duckdb
+composer require thomas-0816/laravel-duckdb
 
 php artisan package:discover
 ```
