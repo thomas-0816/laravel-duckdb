@@ -63,15 +63,14 @@ jobs:
           phpts: ${{ matrix.thread-safety }}
       - name: Test
         env:
-          os: ${{ matrix.os }}
-          laravel-version: ${{ matrix.laravel-version }}
+          laravel_version: ${{ matrix.laravel-version }}
         run: |
           uname -a
           php -v
           sudo pie install thomas-0816/pdo-duckdb-php
           php -m | grep duckdb
           rm composer.lock
-          composer require illuminate/database:^${laravel-version}
+          composer require illuminate/database:^${laravel_version}
           composer test
 
   zizmor:

@@ -43,13 +43,14 @@ jobs:
           phpts: ${{ matrix.thread-safety }}
       - name: Test
         env:
-          os: ${{ matrix.os }}
+          laravel_version: ${{ matrix.laravel-version }}
         run: |
           uname -a
           php -v
           sudo pie install thomas-0816/pdo-duckdb-php
           php -m | grep duckdb
-          composer create-project laravel/laravel:^${laravel-version} example-app
+          composer create-project laravel/laravel:^${laravel_version} example-app
+          composer show laravel/framework | grep versions
           cd example-app
           composer require thomas-0816/laravel-duckdb
           php artisan package:discover
