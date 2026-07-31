@@ -513,7 +513,7 @@ class DuckDBGrammar extends Grammar
     protected function typeYear(Fluent $column): string
     {
         if ($column->useCurrent) {
-            $column->default(new Expression("date_part('year', current_date)"));
+            $column->default(new Expression("year(current_date)"));
         }
 
         return 'integer';
