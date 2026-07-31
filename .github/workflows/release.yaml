@@ -34,4 +34,4 @@ jobs:
           TOKEN: ${{ secrets.PACKAGIST_TOKEN }}
         run: |
           curl -fsSL -X POST -H 'content-type:application/json' -H "Authorization: Bearer thomas-0816:${TOKEN}" \
-            "https://packagist.org/api/update-package" -d'{"repository":{"url":"https://packagist.org/packages/thomas-0816/laravel-pdo-duckdb"}}'
+            "https://packagist.org/api/update-package" -d'{"repository":{"url":"https://packagist.org/packages/thomas-0816/laravel-duckdb"}}'
