@@ -29,7 +29,7 @@ jobs:
         run: composer validate --strict
 
   laravel:
-    name: "Laravel ${{ matrix.laravel-version }}"
+    name: Laravel
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -71,7 +71,7 @@ jobs:
           sudo pie install thomas-0816/pdo-duckdb-php
           php -m | grep duckdb
           rm composer.lock
-          composer require illuminate/database:^"${laravel-version}"
+          composer require illuminate/database:^${laravel-version}
           composer test
 
   zizmor:
