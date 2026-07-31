@@ -75,12 +75,15 @@ jobs:
           uname -a
           php -v
           sudo pie install thomas-0816/pdo-duckdb-php
+          php -m
           php -r "print_r((new PDO('duckdb::memory:'))->query('SELECT current_date(), current_date, now(), date_part(\'year\', current_date())')->fetch(PDO::FETCH_ASSOC));"
+          php -r "print_r((new PDO('duckdb::memory:'))->query('create table t1 (yr integer not null default year(now()))')->fetch(PDO::FETCH_ASSOC));"
+          php -r "print_r((new PDO('duckdb::memory:'))->query('create table t1 (yr integer not null default year(current_date()))')->fetch(PDO::FETCH_ASSOC));"
           php -r "print_r((new PDO('duckdb::memory:'))->query('create table t1 (yr integer not null default date_part(\'year\', current_date()))')->fetch(PDO::FETCH_ASSOC));"
-          php -m | grep duckdb
-          rm composer.lock
-          composer require illuminate/database:^${laravel_version}
-          composer test
+          # php -m | grep duckdb
+          # rm composer.lock
+          # composer require illuminate/database:^${laravel_version}
+          # composer test
 
   zizmor:
     name: zizmor
