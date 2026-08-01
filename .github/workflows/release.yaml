@@ -64,8 +64,8 @@ jobs:
           composer show laravel/framework | grep versions
           composer require thomas-0816/laravel-duckdb
           php artisan package:discover
-          sed -i '' 's/sqlite/duckdb/g' .env
-          sed -i '' 's/sqlite/duckdb/g' config/database.php
+          sed -i.bak 's/sqlite/duckdb/g' .env
+          sed -i.bak 's/sqlite/duckdb/g' config/database.php
           php artisan migrate
           echo "new User(['name' => 'foo', 'email' => 'foo@bar.invalid', 'password' => Hash::make('secret')])->save();" | php artisan tinker --execute
           echo "User::firstWhere('name', 'foo')->toArray();" | php artisan tinker --execute | grep foo
