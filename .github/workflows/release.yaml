@@ -76,7 +76,7 @@ jobs:
   clamav:
     name: "Docker: clamAV"
     runs-on: ubuntu-latest
-    needs: [laravel_setup]
+    needs: [laravel]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
