@@ -68,10 +68,15 @@ jobs:
       - name: Test
         env:
           laravel_version: ${{ matrix.laravel-version }}
+        shell: bash
         run: |
           uname -a
           php -v
-          pie install thomas-0816/pdo-duckdb-php
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            pie install thomas-0816/pdo-duckdb-php
+          else
+            sudo pie install thomas-0816/pdo-duckdb-php
+          fi
           php -m | grep duckdb
           rm composer.lock
           composer require illuminate/database:^${laravel_version}
