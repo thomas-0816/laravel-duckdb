@@ -33,6 +33,9 @@ jobs:
         laravel-version:
           - 12
           - 13
+        exclude:
+          - php-version: 8.2
+            laravel-version: 13
     steps:
       - name: Setup PHP ${{ matrix.php-version }} ${{ matrix.thread-safety }}
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
