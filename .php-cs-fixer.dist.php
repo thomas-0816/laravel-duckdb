@@ -6,7 +6,6 @@ use PhpCsFixer\Config;
 use PhpCsFixer\Finder;
 
 return (new Config())
-    ->setParallelConfig(PhpCsFixer\Runner\Parallel\ParallelConfigFactory::sequential())
     ->setRiskyAllowed(false)
     ->setRules([
         '@auto' => true
