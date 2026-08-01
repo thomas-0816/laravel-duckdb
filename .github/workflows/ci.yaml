@@ -80,9 +80,9 @@ jobs:
           php -m | grep duckdb
           rm composer.lock
           composer require illuminate/database:^${laravel_version}
-          php-cs-fixer fix --dry-run --allow-risky=yes --diff
-          phpstan analyse
-          pest --coverage --min=95
+          vendor/bin/php-cs-fixer fix --dry-run --allow-risky=yes --diff
+          vendor/bin/phpstan analyse
+          vendor/bin/pest --coverage --min=95
 
   zizmor:
     name: zizmor
