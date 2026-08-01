@@ -79,7 +79,6 @@ jobs:
           php <<'EOF'
               <?php
               $db = new PDO("duckdb::memory:");
-              $db->exec("set TimeZone = 'UTC'");
               $db->exec('create table t1 (yr integer not null default year(current_date))');
               echo 'ok', PHP_EOL;
           EOF
