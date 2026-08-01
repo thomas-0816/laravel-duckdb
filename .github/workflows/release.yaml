@@ -20,12 +20,9 @@ jobs:
       matrix:
         os:
           - ubuntu-24.04
-          - ubuntu-26.04
           - ubuntu-24.04-arm
-          - ubuntu-26.04-arm
           - macos-14
-          - macos-15
-          - macos-26
+          - windows-2022
         php-version:
           - 8.2
           - 8.3
@@ -52,10 +49,15 @@ jobs:
       - name: Test
         env:
           laravel_version: ${{ matrix.laravel-version }}
+        shell: bash
         run: |
           uname -a
           php -v
-          sudo pie install thomas-0816/pdo-duckdb-php
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            pie install thomas-0816/pdo-duckdb-php
+          else
+            sudo pie install thomas-0816/pdo-duckdb-php
+          fi
           php -m | grep duckdb
           composer create-project laravel/laravel:^${laravel_version} example-app
           cd example-app
