@@ -80,7 +80,7 @@ jobs:
               <?php
               $db = new PDO("duckdb::memory:");
               $db->exec("set TimeZone = 'UTC'");
-              $db->exec("select year(current_date)");
+              $db->exec("select current_date");
               $db->exec('create table t1 (yr integer not null default year(current_date))');
               echo 'ok', PHP_EOL;
           EOF
