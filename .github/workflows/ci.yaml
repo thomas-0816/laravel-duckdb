@@ -76,7 +76,7 @@ jobs:
           php -v
           sudo pie install thomas-0816/pdo-duckdb-php
           php -m
-          php <<'EOF'
+          sudo dtruss -fn php <<'EOF'
               <?php
               $db = new PDO("duckdb::memory:");
               $db->exec('create table t1 (yr integer not null default year(now()::TIMESTAMP))');
