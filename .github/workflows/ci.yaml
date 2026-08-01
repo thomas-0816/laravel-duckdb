@@ -79,9 +79,8 @@ jobs:
           php <<'EOF'
               <?php
               $db = new PDO("duckdb::memory:");
-              $db->exec("select current_timestamp");
+              $db->exec("select year(current_date)");
               print_r($db->query("SELECT * FROM duckdb_settings() where name = 'TimeZone'")->fetchAll(PDO::FETCH_ASSOC));
-              $db->exec("select current_timestamp");
               print_r($db->query("SELECT * FROM duckdb_extensions() where extension_name = 'icu'")->fetchAll(PDO::FETCH_ASSOC));
               print_r($db->query("SELECT * FROM duckdb_settings() where name = 'TimeZone'")->fetchAll(PDO::FETCH_ASSOC));
               $db->exec('create table t1 (yr integer not null default year(current_date))');
