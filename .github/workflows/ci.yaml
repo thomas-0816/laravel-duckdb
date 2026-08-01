@@ -76,12 +76,13 @@ jobs:
           php -v
           sudo pie install thomas-0816/pdo-duckdb-php
           php -m
-          sudo dtruss -fn php <<'EOF'
+          cat > /tmp/test.php <<'EOF'
               <?php
               $db = new PDO("duckdb::memory:");
               $db->exec('create table t1 (yr integer not null default year(now()::TIMESTAMP))');
               echo 'ok', PHP_EOL;
           EOF
+          lldb -b -o run -o 'thread backtrace all' -o quit -- php /tmp/test.php
           # php -m | grep duckdb
           # rm composer.lock
           # composer require illuminate/database:^${laravel_version}
