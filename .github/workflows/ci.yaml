@@ -81,8 +81,11 @@ jobs:
           rm composer.lock
           composer require illuminate/database:^${laravel_version}
           vendor/bin/php-cs-fixer fix --dry-run --allow-risky=yes --diff
+          echo test1
           vendor/bin/phpstan analyse
+          echo test2
           vendor/bin/pest --coverage --min=95
+          echo test3
 
   zizmor:
     name: zizmor
