@@ -35,23 +35,23 @@ jobs:
       fail-fast: false
       matrix:
         os:
-#          - ubuntu-24.04
-#          - ubuntu-26.04
-#          - ubuntu-24.04-arm
-#          - ubuntu-26.04-arm
+          - ubuntu-24.04
+          - ubuntu-26.04
+          - ubuntu-24.04-arm
+          - ubuntu-26.04-arm
           - macos-14
           - macos-15
           - macos-26
         php-version:
-#          - 8.2
-#          - 8.3
-#          - 8.4
+          - 8.2
+          - 8.3
+          - 8.4
           - 8.5
         thread-safety:
           - nts
           - zts
         laravel-version:
- #         - 12
+          - 12
           - 13
         exclude:
           - php-version: 8.2
@@ -75,17 +75,10 @@ jobs:
           uname -a
           php -v
           sudo pie install thomas-0816/pdo-duckdb-php
-          php -m
-          php <<'EOF'
-              <?php
-              $db = new PDO("duckdb::memory:");
-              $db->exec("create table t1 (yr integer not null default strftime(now(), '%Y'))");
-              echo 'ok', PHP_EOL;
-          EOF
-          # php -m | grep duckdb
-          # rm composer.lock
-          # composer require illuminate/database:^${laravel_version}
-          # composer test
+          php -m | grep duckdb
+          rm composer.lock
+          composer require illuminate/database:^${laravel_version}
+          composer test
 
   zizmor:
     name: zizmor
