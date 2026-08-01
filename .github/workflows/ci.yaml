@@ -79,6 +79,7 @@ jobs:
           php <<'EOF'
               <?php
               $db = new PDO("duckdb::memory:");
+              $db->exec("set TimeZone = 'UTC'");
               $db->exec("select year(current_date)");
               print_r($db->query("SELECT * FROM duckdb_settings() where name = 'TimeZone'")->fetchAll(PDO::FETCH_ASSOC));
               print_r($db->query("SELECT * FROM duckdb_extensions() where extension_name = 'icu'")->fetchAll(PDO::FETCH_ASSOC));
