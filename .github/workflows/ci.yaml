@@ -83,7 +83,7 @@ jobs:
               $db->exec('INSTALL icu');
               $db->exec('LOAD icu');
               print_r($db->query("SELECT * FROM duckdb_settings() where name = 'TimeZone'")->fetchAll(PDO::FETCH_ASSOC));
-              $db->exec('create table t1 (yr integer not null default year(current_timestamp))');
+              $db->exec('create table t1 (yr integer not null default year(current_date::varchar))');
               echo 'ok', PHP_EOL;
           EOF
           # php -m | grep duckdb
