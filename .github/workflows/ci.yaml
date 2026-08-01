@@ -79,7 +79,7 @@ jobs:
           php <<'EOF'
               <?php
               $db = new PDO("duckdb::memory:");
-              $db->exec('create table t1 (yr integer not null default year(now()))');
+              $db->exec('create table t1 (yr integer not null default year(now()::TIMESTAMP))');
               echo 'ok', PHP_EOL;
           EOF
           # php -m | grep duckdb
