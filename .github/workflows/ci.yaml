@@ -82,8 +82,8 @@ jobs:
           composer require illuminate/database:^${laravel_version}
           if [ "$RUNNER_OS" != "Windows" ]; then
             vendor/bin/php-cs-fixer fix --dry-run --allow-risky=yes --diff
+            vendor/bin/phpstan analyse
           fi
-          vendor/bin/phpstan analyse
           vendor/bin/pest --coverage --min=95
 
   zizmor:

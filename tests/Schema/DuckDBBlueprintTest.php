@@ -13,4 +13,4 @@ it('addAlterCommands falls back to parent when grammar is not DuckDBGrammar', fu
     $blueprint->addAlterCommands();
 
     expect(true)->toBeTrue();
-});
+})->skip(!extension_loaded('pdo_sqlite'), 'pdo_sqlite extension is not available');

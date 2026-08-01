@@ -25,13 +25,13 @@ class Event extends Model
 class TestCsv extends Model
 {
     protected $connection = 'duckdb';
-    protected $table = '/tmp/test.csv';
+    protected $table = '-';
 }
 
 class LogsJson extends Model
 {
     protected $connection = 'duckdb';
-    protected $table = '/tmp/logs.json';
+    protected $table = '-';
 }
 
 class Person
@@ -106,7 +106,9 @@ it('verifies examples from readme, csv files', function () {
         ['123', '456', '789'],
         ['ddd', 'eee', 'fff'],
     ];
-    $fp = fopen('/tmp/test.csv', 'w');
+    $tmpFile = sys_get_temp_dir() . '/test.csv';
+
+    $fp = fopen($tmpFile, 'w');
     foreach ($list as $fields) {
         fputcsv($fp, $fields, ',', '"', "");
     }
@@ -114,14 +116,16 @@ it('verifies examples from readme, csv files', function () {
 
     $result = $connection->query()
         ->select('aaa')
-        ->from('/tmp/test.csv')
+        ->from($tmpFile)
         ->get()
         ->toArray();
     expect((array) $result[0])->toBe(['aaa' => '123']);
     expect((array) $result[1])->toBe(['aaa' => 'ddd']);
 
     TestCsv::setConnectionResolver(new Resolver($connection));
-    $result = TestCsv::select('aaa')->get()->toArray();
+    $testCsv = new TestCsv();
+    $testCsv->setTable($tmpFile);
+    $result = $testCsv->newQuery()->select('aaa')->get()->toArray();
     expect($result[0])->toBe(['aaa' => '123']);
     expect($result[1])->toBe(['aaa' => 'ddd']);
 });
@@ -129,22 +133,25 @@ it('verifies examples from readme, csv files', function () {
 it('verifies examples from readme, json files', function () {
     $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
 
-    file_put_contents('/tmp/logs.json', json_encode(['log' => 'log text']) . PHP_EOL, FILE_APPEND);
-    file_put_contents('/tmp/logs.json', json_encode(['log' => 'log text 2']) . PHP_EOL, FILE_APPEND);
+    $tmpFile = sys_get_temp_dir() . '/logs.json';
+    $tmpFileParquet = sys_get_temp_dir() . '/logs_json.parquet';
+
+    file_put_contents($tmpFile, json_encode(['log' => 'log text']) . PHP_EOL, FILE_APPEND);
+    file_put_contents($tmpFile, json_encode(['log' => 'log text 2']) . PHP_EOL, FILE_APPEND);
 
     $result = $connection->query()
         ->select('log')
-        ->from('/tmp/logs.json')
+        ->from($tmpFile)
         ->get()
         ->toArray();
     expect((array) $result[0])->toBe(['log' => 'log text']);
     expect((array) $result[1])->toBe(['log' => 'log text 2']);
 
-    $connection->statement("COPY (SELECT * FROM '/tmp/logs.json') TO '/tmp/logs_json.parquet' (COMPRESSION zstd)");
+    $connection->statement("COPY (SELECT * FROM '{$tmpFile}') TO '{$tmpFileParquet}' (COMPRESSION zstd)");
 
     $result = $connection->query()
         ->select('log')
-        ->from('/tmp/logs_json.parquet')
+        ->from($tmpFileParquet)
         ->get()
         ->toArray();
 
@@ -152,7 +159,9 @@ it('verifies examples from readme, json files', function () {
     expect((array) $result[1])->toBe(['log' => 'log text 2']);
 
     LogsJson::setConnectionResolver(new Resolver($connection));
-    $result = LogsJson::select('log')->get()->toArray();
+    $logsJson = new LogsJson();
+    $logsJson->setTable($tmpFile);
+    $result = $logsJson->newQuery()->select('log')->get()->toArray();
     expect($result[0])->toBe(['log' => 'log text']);
     expect($result[1])->toBe(['log' => 'log text 2']);
 });
@@ -193,6 +202,8 @@ it('verifies special schema types', function () {
 it('verifies parquet read and write', function () {
     $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
 
+    $tmpFileParquet = sys_get_temp_dir() . '/table1.parquet';
+
     $connection->getSchemaBuilder()->create('table1', function (Blueprint $table) {
         $table->id();
         $table->string('text');
@@ -202,10 +213,10 @@ it('verifies parquet read and write', function () {
         'text' => 'Hello DuckDB 🦆',
         'data' => ['foo' => 'bar', 'baz' => 42],
     ]]);
-    $connection->statement("COPY (SELECT * FROM table1) TO '/tmp/table1.parquet' (COMPRESSION zstd)");
+    $connection->statement("COPY (SELECT * FROM table1) TO '{$tmpFileParquet}' (COMPRESSION zstd)");
 
     $result = $connection->query()
-        ->from('/tmp/table1.parquet')
+        ->from($tmpFileParquet)
         ->get()
         ->toArray();
     expect((array) $result[0])->toBe(['id' => 1, 'text' => 'Hello DuckDB 🦆', 'data' => ['foo' => 'bar', 'baz' => 42]]);
