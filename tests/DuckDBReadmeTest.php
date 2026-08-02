@@ -2,6 +2,7 @@
 
 use DuckDb\DuckDbConnection;
 use Illuminate\Database\ConnectionResolverInterface;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Schema\Blueprint;
 
@@ -16,10 +17,24 @@ class Resolver implements ConnectionResolverInterface
     public function setDefaultConnection($name) {}
 }
 
+class Person extends Model
+{
+    protected $guarded = [];
+}
+
 class Event extends Model
 {
     protected $connection = 'duckdb';
     protected $table = 'events';
+
+    protected function person(): Attribute
+    {
+        return Attribute::get(fn ($person) => new Person($person));
+    }
+    protected function persons(): Attribute
+    {
+        return Attribute::get(fn ($persons) => collect($persons)->map(fn ($person) => new Person($person)));
+    }
 }
 
 class TestCsv extends Model
@@ -32,14 +47,6 @@ class LogsJson extends Model
 {
     protected $connection = 'duckdb';
     protected $table = '-';
-}
-
-class Person
-{
-    public string $v;
-    public int $i;
-    public array $va;
-    public float $d;
 }
 
 it('verifies examples from readme', function () {
@@ -166,14 +173,15 @@ it('verifies examples from readme, json files', function () {
     expect($result[1])->toBe(['log' => 'log text 2']);
 });
 
-it('verifies special schema types', function () {
+it('verifies special schema types with query builder', function () {
     $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
 
-    $connection->getSchemaBuilder()->create('employees', function (Blueprint $table) {
+    $connection->getSchemaBuilder()->create('events', function (Blueprint $table) {
         $table->id();
         $table->rawColumn('categories', 'varchar[]');
         $table->rawColumn('numbers', 'integer[]');
         $table->rawColumn('person', 'STRUCT(v VARCHAR, i INTEGER, va VARCHAR[], d DECIMAL)');
+        $table->rawColumn('persons', 'STRUCT(v VARCHAR, i INTEGER, va VARCHAR[], d DECIMAL)[]');
     });
 
     $person = new Person();
@@ -182,21 +190,65 @@ it('verifies special schema types', function () {
     $person->va = ['foo', 'bar'];
     $person->d = 42.21;
 
-    $connection->table('employees')->insert([[
+    $connection->table('events')->insert([[
         'categories' => ['foo', 'bar'],
         'numbers' => [42, 21],
         'person' => $person,
+        'persons' => [$person],
     ]]);
 
     $result = $connection->query()
-        ->from('employees')
+        ->from('events')
         ->get()
         ->toArray();
 
     expect((array) $result[0])->toBe(
         ['id' => 1, 'categories' => ['foo', 'bar'], 'numbers' => [42, 21],
-            'person' => ['v' => 'foo', 'i' => 42, 'va' => ['foo', 'bar'], 'd' => 42.21]]
+            'person' => ['v' => 'foo', 'i' => 42, 'va' => ['foo', 'bar'], 'd' => 42.21],
+            'persons' => [['v' => 'foo', 'i' => 42, 'va' => ['foo', 'bar'], 'd' => 42.21]],
+        ]
     );
+});
+
+it('verifies special schema types with eloquent', function () {
+    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    Event::setConnectionResolver(new Resolver($connection));
+
+    $connection->getSchemaBuilder()->create('events', function (Blueprint $table) {
+        $table->id();
+        $table->rawColumn('categories', 'varchar[]');
+        $table->rawColumn('numbers', 'integer[]');
+        $table->rawColumn('number', 'integer');
+        $table->rawColumn('person', 'STRUCT(v VARCHAR, i INTEGER, va VARCHAR[], d DECIMAL)');
+        $table->rawColumn('persons', 'STRUCT(v VARCHAR, i INTEGER, va VARCHAR[], d DECIMAL)[]');
+        $table->timestamps();
+    });
+
+    $person = new Person();
+    $person->v = 'foo';
+    $person->i = 42;
+    $person->va = ['foo', 'bar'];
+    $person->d = 42.21;
+
+    $event = new Event();
+    $event->number = 41;
+    $event->categories = ['foo', 'bar'];
+    $event->numbers = [42, 21];
+    $event->person = $person;
+    $event->persons = [$person];
+    $event->save();
+
+    $event = Event::first();
+
+    $person = $event->person;
+    expect($person)->toBeInstanceOf(Person::class)
+        ->and($event->person)->toBe($person)
+        ->and($person->toArray())->toBe(['v' => 'foo', 'i' => 42, 'va' => ['foo', 'bar'], 'd' => 42.21]);
+
+    $persons = $event->persons;
+    expect($persons[0])->toBeInstanceOf(Person::class)
+        ->and($event->persons)->toBe($persons)
+        ->and($persons[0]->toArray())->toBe(['v' => 'foo', 'i' => 42, 'va' => ['foo', 'bar'], 'd' => 42.21]);
 });
 
 it('verifies parquet read and write', function () {
