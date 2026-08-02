@@ -33,7 +33,7 @@ class Event extends Model
     }
     protected function persons(): Attribute
     {
-        return Attribute::get(fn ($persons) => collect($persons)->map(fn ($person) => new Person($person)));
+        return Attribute::get(fn ($persons) => collect($persons)->map(fn ($values) => new Person($values)));
     }
 }
 
