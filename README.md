@@ -421,51 +421,124 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-Schema::connection('duckdb')->create('employees', function (Blueprint $table) {
+Schema::connection('duckdb')->create('events', function (Blueprint $table) {
     $table->id();
-    $table->rawColumn('categories', 'varchar[]');
     $table->rawColumn('numbers', 'integer[]');
-    $table->rawColumn('person', 'STRUCT(v VARCHAR, i INTEGER, va VARCHAR[], d DECIMAL)');
+    $table->rawColumn('categories', 'varchar[]');
+    $table->rawColumn('person', 'STRUCT(v VARCHAR, va VARCHAR[], d DECIMAL)');
 });
 
 class Person {
     public string $v;
-    public int $i;
     public array $va;
     public float $d;
 }
 
 $person = new Person();
 $person->v = 'foo';
-$person->i = 42;
-$person->va = ['foo', 'bar'];
-$person->d = 42.21;
+$person->va = ['bar', 'baz'];
+$person->d = 12.34;
 
-DB::connection('duckdb')->table('employees')->insert([[
-    'categories' => ['foo', 'bar'],
-    'numbers' => [42, 21],
+DB::connection('duckdb')->table('events')->insert([[
+    'numbers' => [21, 42],
+    'categories' => ['cat1', 'cat2'],
     'person' => $person,
 ]]);
-$employees = $DB::connection('duckdb')->query()
-    ->from('employees')
+$events = DB::connection('duckdb')->query()
+    ->from('events')
     ->get();
-print_r($employees->toArray());
+print_r($events->toArray());
 
 # Array
 #     [0] => stdClass Object
 #         [id] => 1
-#         [categories] => Array
-#             [0] => foo
-#             [1] => bar
 #         [numbers] => Array
-#             [0] => 42
-#             [1] => 21
+#             [0] => 21
+#             [1] => 42
+#         [categories] => Array
+#             [0] => cat1
+#             [1] => cat2
 #         [person] => Array
 #             [v] => foo
-#             [i] => 42
 #             [va] => Array
-#                 [0] => foo
-#                 [1] => bar
+#                 [0] => bar
+#                 [1] => baz
+#             [d] => 12.34
+```
+
+## Eloquent Model for special types
+
+Special types can be defined by using rawColumn():
+
+```php
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+Schema::connection('duckdb')->create('events', function (Blueprint $table) {
+    $table->id();
+    $table->rawColumn('numbers', 'integer[]');
+    $table->rawColumn('categories', 'varchar[]');
+    $table->rawColumn('person', 'STRUCT(v VARCHAR, va VARCHAR[], d DECIMAL)');
+    $table->rawColumn('persons', 'STRUCT(v VARCHAR, va VARCHAR[], d DECIMAL)[]');
+    $table->timestamps();
+});
+
+class Person extends Model
+{
+    protected $guarded = [];
+}
+
+class Event extends Model
+{
+    protected $connection = 'duckdb';
+    protected $table = 'events';
+
+    protected function person(): Attribute
+    {
+        return Attribute::get(fn ($person) => new Person($person));
+    }
+    protected function persons(): Attribute
+    {
+        return Attribute::get(fn ($persons) => collect($persons)->map(fn ($values) => new Person($values)));
+    }
+}
+
+$person = new Person();
+$person->v = 'foo';
+$person->va = ['bar', 'baz'];
+$person->d = 12.34;
+
+$event = new Event();
+$event->numbers = [21, 42];
+$event->categories = ['cat1', 'cat2'];
+$event->person = $person;
+$event->persons = [$person];
+$event->save();
+
+print_r(Event::first()->toArray());
+
+# Array
+#     [id] => 1
+#     [numbers] => Array
+#         [0] => 42
+#         [1] => 21
+#     [categories] => Array
+#         [0] => cat1
+#         [1] => cat2
+#     [person] => Person Object
+#         [v] => foo
+#         [va] => Array
+#             [0] => bar
+#             [1] => baz
+#         [d] => 42.21
+#     [persons] => Array
+#         [0] => Array
+#             [v] => foo
+#             [va] => Array
+#                 [0] => bar
+#                 [1] => baz
 #             [d] => 42.21
 ```
 
