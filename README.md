@@ -451,7 +451,7 @@ print_r($rows->toArray());
 #         [origin] => offline
 ```
 
-## Schema Builder for special types
+## Schema and Query Builder for special types
 
 Special types can be defined by using rawColumn():
 
@@ -505,7 +505,7 @@ print_r($events->toArray());
 #             [d] => 12.34
 ```
 
-## Eloquent Model for special types
+## Eloquent Models for special types
 
 Special types can be defined by using rawColumn():
 
