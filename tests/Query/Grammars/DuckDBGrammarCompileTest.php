@@ -182,7 +182,12 @@ it('compileGroups compiles GROUP BY correctly', function () {
     $connection->getPdo()->exec('CREATE TABLE grp_t (category TEXT, val INTEGER)');
     $connection->table('grp_t')->insert([['category' => 'a', 'val' => 1], ['category' => 'a', 'val' => 2], ['category' => 'b', 'val' => 3]]);
 
-    $results = $connection->table('grp_t')->selectRaw('category, count(*) as cnt')->groupBy('category')->orderBy('category')->get();
+    $results = $connection->table('grp_t')
+        ->select('category')
+        ->selectExpression('count(*)', 'cnt')
+        ->groupBy('category')
+        ->orderBy('category')
+        ->get();
     expect($results)->toHaveCount(2);
     expect($results[0]->category)->toBe('a');
     expect((int) $results[0]->cnt)->toBe(2);
@@ -203,7 +208,8 @@ it('compileHavings compiles HAVING correctly', function () {
     ]);
 
     $results = $connection->table('hav_t')
-        ->selectRaw('category, sum(val) as total')
+        ->select('category')
+        ->selectExpression('sum(val)', 'total')
         ->groupBy('category')
         ->having('total', '>', 4)
         ->orderBy('category')
