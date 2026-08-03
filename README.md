@@ -636,14 +636,14 @@ Schema::connection('duckdb')->create('customers', function (Blueprint $table) {
     $table->id();
     $table->string('first_name');
     $table->string('last_name');
-    $table->string('birth_date');
+    $table->date('birth_date');
 });
 $result = DB::connection('duckdb')->query()
     ->selectExpression("open_prompt('write duckdb sql, no markdown, find customers older than 30, schema: ' || group_concat(sql))", 'llm')
     ->fromRaw('duckdb_tables()')
     ->first();
 
-# SELECT * FROM customers WHERE age(birth_date) > 30;
+# SELECT * FROM customers WHERE birth_date < now() - INTERVAL '30 years';
 ```
 
 More extensions: [List of Core Extensions](https://duckdb.org/docs/lts/core_extensions/overview), [List of Community Extensions](https://duckdb.org/community_extensions/list_of_extensions)
