@@ -386,7 +386,7 @@ mysql -h 127.0.0.1 -u root -psecret testdb -e "
 "
 ```
 
-Use DuckDB MySQL extension to copy "orders" table from MariaDB to a parquet file:
+Use DuckDB [MySQL extension](https://duckdb.org/docs/lts/core_extensions/mysql) to copy "orders" table from MariaDB to a parquet file:
 
 ```php
 DB::connection('duckdb')->unprepared("
@@ -406,6 +406,45 @@ print_r($rows->toArray());
 #         [amount] => 123.42
 #         [origin] => shop
 #     [1] => stdClass Object
+#         [id] => 2
+#         [customerId] => 21
+#         [amount] => 12.21
+#         [origin] => offline
+```
+
+## Copy data from PostgreSQL to a parquet file
+
+Start PostgreSQL container, create and fill "orders" table:
+
+```bash
+docker run --rm -it -p 5432:5432 -e POSTGRES_PASSWORD=secret postgres:18
+PGPASSWORD=secret psql -h 127.0.0.1 -U postgres -c "
+    CREATE TABLE orders (id integer primary key, customer integer, amount decimal(12, 2), origin varchar(255));
+    INSERT INTO orders VALUES (1, 42, 123.42, 'shop');
+    INSERT INTO orders VALUES (2, 21, 12.21, 'offline');
+"
+```
+
+Use DuckDB [PostgreSQL extension](https://duckdb.org/docs/lts/core_extensions/postgres) to copy "orders" table from PostgreSQL to a parquet file:
+
+```php
+DB::connection('duckdb')->unprepared("
+    INSTALL postgres;
+    ATTACH 'host=127.0.0.1 port=5432 user=postgres password=secret' AS testdb (TYPE postgres);
+    COPY (select * from testdb.orders) TO '/tmp/orders.parquet' (FORMAT parquet);
+");
+$rows = DB::connection('duckdb')->query()
+    ->from('/tmp/orders.parquet')
+    ->get();
+print_r($rows->toArray());
+
+# Array
+#     [0] => Array
+#         [id] => 1
+#         [customerId] => 42
+#         [amount] => 123.42
+#         [origin] => shop
+#     [1] => Array
 #         [id] => 2
 #         [customerId] => 21
 #         [amount] => 12.21
@@ -489,12 +528,10 @@ class Person extends Model
 {
     protected $guarded = [];
 }
-
 class Event extends Model
 {
     protected $connection = 'duckdb';
     protected $table = 'events';
-
     protected function person(): Attribute
     {
         return Attribute::get(fn ($person) => new Person($person));
@@ -552,6 +589,65 @@ Schema::connection('duckdb')->createView('view1', 'SELECT * FROM events');
 Schema::connection('duckdb')->dropView('view1');
 ```
 
+## Community extensions
+
+Textplot brings text-based data visualization directly to your SQL queries:
+
+```php
+DB::connection('duckdb')->unprepared('
+    INSTALL textplot FROM community;
+    LOAD textplot;
+');
+$result = DB::connection('duckdb')->query()
+    ->selectExpression("tp_bar(0.8, thresholds := [ (0.7, 'green'), (0.5, 'yellow'), (0, 'red') ])", 'bar')
+    ->pluck('bar');
+print_r($result->toArray());
+
+# Array
+#     [0] => 🟩🟩🟩🟩🟩🟩🟩🟩⬜⬜
+
+$result = DB::connection('duckdb')->query()
+    ->selectExpression("tp_bar(n, shape := 'circle', off_color := 'black',
+        thresholds := [(0.8, 'green'), (0.65, 'orange'), (0.5, 'yellow'), (0.0, 'red')])", 'bar')
+    ->fromRaw('(VALUES (0.2), (0.4), (0.6), (0.8), (1.0)) t(n)')
+    ->pluck('bar');
+print_r($result->toArray());
+
+# Array
+#     [0] => 🔴🔴⚫⚫⚫⚫⚫⚫⚫⚫
+#     [1] => 🔴🔴🔴🔴⚫⚫⚫⚫⚫⚫
+#     [2] => 🟡🟡🟡🟡🟡🟡⚫⚫⚫⚫
+#     [3] => 🟢🟢🟢🟢🟢🟢🟢🟢⚫⚫
+#     [4] => 🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢
+```
+
+open_prompt integrates LLMs into your SQL queries:
+
+```php
+# start llama.cpp at 127.0.0.1:8080
+# ./llama-server -hf JetBrains/Mellum2-12B-A2.5B-Thinking-GGUF-Q4_K_M --parallel 1 --ctx-size 16384 --temp 0.6 --top-k 20 --reasoning off
+
+DB::connection('duckdb')->unprepared("
+    INSTALL open_prompt FROM community;
+    LOAD open_prompt;
+    SET VARIABLE openprompt_api_url = 'http://127.0.0.1:8080/v1/chat/completions';
+");
+Schema::connection('duckdb')->create('customers', function (Blueprint $table) {
+    $table->id();
+    $table->string('first_name');
+    $table->string('last_name');
+    $table->string('birth_date');
+});
+$result = DB::connection('duckdb')->query()
+    ->selectExpression("open_prompt('write duckdb sql, no markdown, find customers older than 30, schema: ' || group_concat(sql))", 'llm')
+    ->fromRaw('duckdb_tables()')
+    ->first();
+
+# SELECT * FROM customers WHERE age(birth_date) > 30;
+```
+
+More extensions: [List of Core Extensions](https://duckdb.org/docs/lts/core_extensions/overview), [List of Community Extensions](https://duckdb.org/community_extensions/list_of_extensions)
+
 ## Schema Dump
 
 The package supports `schema:dump` Artisan command using DuckDB's `EXPORT DATABASE` SQL statement via PDO:
@@ -566,6 +662,31 @@ You can add this line at the beginning of your script for local query debugging:
 
 ```bash
 \Illuminate\Support\Facades\DB::listen(fn ($query) => dump($query));
+```
+
+## Performance
+
+DuckDB is extremely fast when it comes to analytic queries.\
+Here is an example with 10M rows, performing in __170ms on 4 threads with 128M ram__:
+
+```sql
+.timer on
+/* generate 10M rows with random data */
+COPY (
+    SELECT i,
+        (random()*1_000)::decimal(11,2) as d1,
+        (random()*1_000)::int as i1,
+        to_hex((random()*100000)::int) as h1,
+        to_timestamp((i+1_0000_000) * random() * 100)::timestamp as created
+    FROM generate_series(10_000_000) s(i)
+) TO '/tmp/test.parquet' (format parquet, compression zstd);
+/* Run Time (s): real 4.158 user 4.002094 sys 0.154674 */
+
+SET threads = 4;
+SET memory_limit = '128M';
+SELECT count(*), sum(i), avg(d1), stddev(i1), avg(length(h1)), avg(date_diff('day', current_date, created))
+FROM '/tmp/test.parquet';
+/* Run Time (s): real 0.170 user 0.616465 sys 0.051658 */
 ```
 
 ## Security
