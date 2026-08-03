@@ -80,6 +80,16 @@ class DuckDBBuilder extends Builder
         $this->connection->statement("DROP SEQUENCE IF EXISTS {$name}");
     }
 
+    public function createView(string $name, string $query): void
+    {
+        $this->connection->statement("create view {$this->connection->getQueryGrammar()->wrapTable($name)} as {$query}");
+    }
+
+    public function dropView(string $name): void
+    {
+        $this->connection->statement("drop view if exists {$this->connection->getQueryGrammar()->wrapTable($name)}");
+    }
+
     /** {@inheritdoc} */
     protected function createBlueprint($table, ?Closure $callback = null)
     {

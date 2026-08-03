@@ -21,7 +21,7 @@ class DuckDBGrammar extends Grammar
     /** @inheritDoc */
     public function compileSchemas()
     {
-        return "select schema_name as name, schema_name = 'main' as \"default\" from duckdb_schemas() order by schema_name";
+        return "select distinct schema_name as name, schema_name = 'main' as default from duckdb_schemas() order by schema_name != 'main', schema_name";
     }
 
     /** @inheritDoc */
@@ -53,10 +53,9 @@ class DuckDBGrammar extends Grammar
     /** @inheritDoc */
     public function compileViews($schema)
     {
-        return sprintf(
-            "select view_name as name, schema_name as schema, sql as definition from duckdb_views() where schema_name = %s and not internal order by view_name",
-            $this->quoteString($schema ?: '')
-        );
+        return 'select view_name as name, schema_name as schema, sql as definition from duckdb_views() as v where not v.internal '
+            . (! empty($schema) ? ' and v.schema_name in (' . $this->quoteString($schema) . ')' : '')
+            . 'order by v.schema_name, v.view_name';
     }
 
     /** @inheritDoc */

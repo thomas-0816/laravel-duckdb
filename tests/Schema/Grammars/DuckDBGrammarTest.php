@@ -164,6 +164,12 @@ it('getViews returns views from schema', function () {
     expect($views)->not->toBeEmpty();
     $names = array_column($views, 'name');
     expect($names)->toContain('v_test_view1');
+
+    $views = $connection->getSchemaBuilder()->getViews();
+
+    expect($views)->not->toBeEmpty();
+    $names = array_column($views, 'name');
+    expect($names)->toContain('v_test_view1');
 });
 
 it('getViews returns actual views from DuckDB', function () {

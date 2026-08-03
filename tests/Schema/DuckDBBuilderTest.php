@@ -129,6 +129,39 @@ it('drops all views removes user created views', function () {
     expect($viewExists)->toHaveCount(0);
 });
 
+it('creates a view from a raw query string', function () {
+    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+
+    $connection->getSchemaBuilder()->create('table1', function ($table) {
+        $table->integer('id');
+        $table->string('name');
+    });
+    $connection->table('table1')->insert([
+        ['id' => 1, 'name' => 'foo'],
+        ['id' => 2, 'name' => 'foo'],
+    ]);
+
+    $connection->getSchemaBuilder()->createView('table1_view', 'SELECT * FROM table1 WHERE id > 1');
+
+    expect($connection->getSchemaBuilder()->hasView('table1_view'))->toBeTrue();
+    expect($connection->table('table1_view')->count())->toBe(1);
+});
+
+it('drops a view', function () {
+    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $schema = $connection->getSchemaBuilder();
+
+    $schema->create('table1', function ($table) {
+        $table->integer('id');
+    });
+
+    $schema->createView('table1_view', 'SELECT id FROM table1');
+    expect($schema->hasView('table1_view'))->toBeTrue();
+
+    $schema->dropView('table1_view');
+    expect($schema->hasView('table1_view'))->toBeFalse();
+});
+
 it('pragma returns a string value', function () {
     $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
     $builder = $connection->getSchemaBuilder();

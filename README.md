@@ -542,6 +542,16 @@ print_r(Event::first()->toArray());
 #             [d] => 42.21
 ```
 
+## Views
+
+```php
+use Illuminate\Support\Facades\Schema;
+
+// create or drop views
+Schema::connection('duckdb')->createView('view1', 'SELECT * FROM events');
+Schema::connection('duckdb')->dropView('view1');
+```
+
 ## Schema Dump
 
 The package supports `schema:dump` Artisan command using DuckDB's `EXPORT DATABASE` SQL statement via PDO:
