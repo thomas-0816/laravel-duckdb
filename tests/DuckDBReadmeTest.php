@@ -273,3 +273,26 @@ it('verifies parquet read and write', function () {
         ->toArray();
     expect((array) $result[0])->toBe(['id' => 1, 'text' => 'Hello DuckDB 🦆', 'data' => ['foo' => 'bar', 'baz' => 42]]);
 });
+
+it('verifies community extension textplot', function () {
+    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection->unprepared('INSTALL textplot FROM community; LOAD textplot;');
+
+    $result = $connection->query()
+        ->selectExpression("tp_bar(0.8, thresholds := [ (0.7, 'green'), (0.5, 'yellow'), (0, 'red') ])", 'bar')
+        ->get()->first();
+    expect($result->bar)->toBe('🟩🟩🟩🟩🟩🟩🟩🟩⬜⬜');
+
+    $result = $connection->query()
+        ->selectExpression("tp_bar(n, shape := 'circle', off_color := 'black',
+            thresholds := [(0.8, 'green'), (0.65, 'orange'), (0.5, 'yellow'), (0.0, 'red')])", 'bar')
+        ->fromRaw('(VALUES (0.2), (0.4), (0.6), (0.8), (1.0)) t(n)')
+        ->get();
+    expect($result->pluck('bar')->toArray())->toBe([
+        '🔴🔴⚫⚫⚫⚫⚫⚫⚫⚫',
+        '🔴🔴🔴🔴⚫⚫⚫⚫⚫⚫',
+        '🟡🟡🟡🟡🟡🟡⚫⚫⚫⚫',
+        '🟢🟢🟢🟢🟢🟢🟢🟢⚫⚫',
+        '🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢',
+    ]);
+});
