@@ -47,7 +47,6 @@ class DuckDbProcessor extends Processor
     public function processIndexes($results)
     {
         $primaryCount = 0;
-
         $indexes = array_map(function ($result) use (&$primaryCount) {
             $result = (object) $result;
             if ($isPrimary = (bool) ($result->primary ?? false)) {
@@ -56,7 +55,7 @@ class DuckDbProcessor extends Processor
 
             return [
                 'name' => strtolower($result->name),
-                'columns' => $result->columns ? explode(',', $result->columns) : [],
+                'columns' => array_map(fn($column) => trim($column, '"'), $result->columns ? explode(',', $result->columns) : []),
                 'type' => null,
                 'unique' => (bool) $result->unique,
                 'primary' => $isPrimary,

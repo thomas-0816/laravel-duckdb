@@ -73,15 +73,20 @@ class DuckDBGrammar extends Grammar
     public function compileIndexes($schema, $table)
     {
         return sprintf(
-            "select name, group_concat(\"column\") as columns, \"unique\", \"primary\" from ("
-            . "select i.index_name as name, list_aggregate(list_transform(string_split(i.expressions, ','), x -> replace(replace(replace(replace(trim(x), '[', ''), ']', ''), chr(39), ''), chr(34), '')), 'string_agg', ',') as \"column\", i.is_unique as \"unique\", i.is_primary as \"primary\""
-            . " from duckdb_indexes() i"
-            . " where i.table_name = %s and i.schema_name = %s and i.is_primary = false"
-            . " union all"
-            . " select constraint_name as name, list_aggregate(constraint_column_names, 'string_agg', ',') as \"column\", 1 as \"unique\", 1 as \"primary\""
-            . " from duckdb_constraints()"
-            . " where table_name = %s and schema_name = %s and constraint_type = 'PRIMARY KEY'"
-            . ") group by name, \"unique\", \"primary\"",
+            <<<'SQL'
+                select name, group_concat("column") as columns, "unique", "primary" from (
+                    select index_name as name,
+                        array_to_string(expressions::varchar[], ',') as "column",
+                        is_unique as "unique",
+                        is_primary as "primary"
+                    from duckdb_indexes()
+                    where table_name = %s and schema_name = %s and is_primary = false
+                    union all
+                    select constraint_name as name, array_to_string(constraint_column_names, ',') as "column", 1 as "unique", 1 as "primary"
+                    from duckdb_constraints()
+                    where table_name = %s and schema_name = %s and constraint_type = 'PRIMARY KEY'
+                ) group by name, "unique", "primary"
+                SQL,
             $this->quoteString($table),
             $this->quoteString($schema ?? 'main'),
             $this->quoteString($table),
@@ -93,8 +98,8 @@ class DuckDBGrammar extends Grammar
     public function compileForeignKeys($schema, $table)
     {
         return sprintf(
-            "select list_aggregate(constraint_column_names, 'string_agg', ',') as columns, %s as foreign_schema, referenced_table as foreign_table, "
-            . "list_aggregate(referenced_column_names, 'string_agg', ',') as foreign_columns, null as on_update, null as on_delete from duckdb_constraints() "
+            "select array_to_string(constraint_column_names, ',') as columns, %s as foreign_schema, referenced_table as foreign_table, "
+            . "array_to_string(referenced_column_names, ',') as foreign_columns, null as on_update, null as on_delete from duckdb_constraints() "
             . "where table_name = %s and schema_name = %s and constraint_type = 'FOREIGN KEY'",
             $this->quoteString($schema ?? 'main'),
             $this->quoteString($table),
@@ -344,7 +349,6 @@ class DuckDBGrammar extends Grammar
         $indexes = $this->connection->getSchemaBuilder()->getIndexes($blueprint->getTable());
 
         $index = Arr::first($indexes, fn($index) => $index['name'] === $command->from);
-
         if (! $index) {
             throw new RuntimeException("Index [{$command->from}] does not exist.");
         }
