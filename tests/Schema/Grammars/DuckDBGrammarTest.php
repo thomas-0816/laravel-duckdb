@@ -1332,13 +1332,41 @@ it('compileAdd with nullable column', function () {
         });
     })();
 
-    $connection->getPdo()->exec('CREATE TABLE add_nullable (id INTEGER PRIMARY KEY, name TEXT)');
-    $connection->getPdo()->exec('ALTER TABLE add_nullable ADD COLUMN nickname TEXT');
+    $connection->getSchemaBuilder()->create('add_nullable', function (Blueprint $table) {
+        $table->integer('id');
+        $table->string('name');
+    });
+
+    $connection->getSchemaBuilder()->table('add_nullable', function (Blueprint $table) {
+        $table->string('nickname')->nullable();
+    });
 
     $connection->table('add_nullable')->insert(['id' => 1, 'name' => 'Alice']);
     $result = $connection->table('add_nullable')->first();
 
     expect($result->nickname)->toBeNull();
+});
+
+it('compileAdd with not nullable column', function () {
+    $connection = (function () {
+        return new DuckDbConnection(function () {
+            return new PDO('duckdb::memory:');
+        });
+    })();
+
+    $connection->getSchemaBuilder()->create('add_not_nullable', function (Blueprint $table) {
+        $table->integer('id');
+        $table->string('name');
+    });
+
+    $connection->getSchemaBuilder()->table('add_not_nullable', function (Blueprint $table) {
+        $table->integer('nickname');
+    });
+
+    $connection->table('add_not_nullable')->insert(['id' => 1, 'name' => 'Alice', 'nickname' => 42]);
+    $result = $connection->table('add_not_nullable')->first();
+
+    expect($result->nickname)->toBe(42);
 });
 
 it('compileAdd with default value', function () {
@@ -1348,8 +1376,14 @@ it('compileAdd with default value', function () {
         });
     })();
 
-    $connection->getPdo()->exec('CREATE TABLE add_default (id INTEGER PRIMARY KEY, name TEXT)');
-    $connection->getPdo()->exec("ALTER TABLE add_default ADD COLUMN color TEXT DEFAULT 'blue'");
+    $connection->getSchemaBuilder()->create('add_default', function (Blueprint $table) {
+        $table->integer('id');
+        $table->string('name');
+    });
+
+    $connection->getSchemaBuilder()->table('add_default', function (Blueprint $table) {
+        $table->string('color')->default('blue');
+    });
 
     $connection->table('add_default')->insert(['id' => 1, 'name' => 'test']);
     $row = $connection->table('add_default')->where('id', 1)->first();
