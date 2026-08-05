@@ -104,13 +104,15 @@ Schema::connection('duckdb')->dropIfExists('events');
 ```php
 use Illuminate\Support\Facades\DB;
 
-DB::connection('duckdb')->table('events')->insert([[
+dump(DB::connection('duckdb')->table('events')->insertGetId([[
     'category' => 'conference',
     'amount' => 42.21,
     'tags' => ['Hello', 'DuckDB'],
     'created_at' => now(),
     'updated_at' => now(),
-]]);
+]]));
+
+# 1
 ```
 
 ## Query Builder Select

@@ -274,6 +274,18 @@ it('verifies parquet read and write', function () {
     expect((array) $result[0])->toBe(['id' => 1, 'text' => 'Hello DuckDB 🦆', 'data' => ['foo' => 'bar', 'baz' => 42]]);
 });
 
+it('verifies last insert id', function () {
+    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+
+    $connection->getSchemaBuilder()->create('table1', function (Blueprint $table) {
+        $table->id();
+        $table->string('name');
+    });
+
+    expect($connection->table('table1')->insertGetId(['name' => 'Foo']))->toBe(1);
+    expect($connection->table('table1')->insertGetId(['name' => 'Bar']))->toBe(2);
+});
+
 it('verifies community extension textplot', function () {
     $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
     $connection->unprepared('INSTALL textplot FROM community; LOAD textplot;');
