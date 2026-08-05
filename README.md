@@ -593,36 +593,6 @@ Schema::connection('duckdb')->dropView('view1');
 
 ## Community extensions
 
-Textplot brings text-based data visualization directly to your SQL queries:
-
-```php
-DB::connection('duckdb')->unprepared('
-    INSTALL textplot FROM community;
-    LOAD textplot;
-');
-$result = DB::connection('duckdb')->query()
-    ->selectExpression("tp_bar(0.8, thresholds := [ (0.7, 'green'), (0.5, 'yellow'), (0, 'red') ])", 'bar')
-    ->pluck('bar');
-print_r($result->toArray());
-
-# Array
-#     [0] => 🟩🟩🟩🟩🟩🟩🟩🟩⬜⬜
-
-$result = DB::connection('duckdb')->query()
-    ->selectExpression("tp_bar(n, shape := 'circle', off_color := 'black',
-        thresholds := [(0.8, 'green'), (0.65, 'orange'), (0.5, 'yellow'), (0.0, 'red')])", 'bar')
-    ->fromRaw('(VALUES (0.2), (0.4), (0.6), (0.8), (1.0)) t(n)')
-    ->pluck('bar');
-print_r($result->toArray());
-
-# Array
-#     [0] => 🔴🔴⚫⚫⚫⚫⚫⚫⚫⚫
-#     [1] => 🔴🔴🔴🔴⚫⚫⚫⚫⚫⚫
-#     [2] => 🟡🟡🟡🟡🟡🟡⚫⚫⚫⚫
-#     [3] => 🟢🟢🟢🟢🟢🟢🟢🟢⚫⚫
-#     [4] => 🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢
-```
-
 open_prompt integrates LLMs into your SQL queries:
 
 ```php
@@ -649,6 +619,8 @@ $result = DB::connection('duckdb')->query()
 ```
 
 More extensions: [List of Core Extensions](https://duckdb.org/docs/lts/core_extensions/overview), [List of Community Extensions](https://duckdb.org/community_extensions/list_of_extensions)
+
+__Note__: Community extensions are third party projects, NOT maintained or reviewed by the DuckDB team.
 
 ## Schema Dump
 
