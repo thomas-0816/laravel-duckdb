@@ -12,7 +12,7 @@ Integrates DuckDB's analytical database engine into Laravel's Eloquent ORM and S
 - Laravel 12+
 - pdo_duckdb PHP extension
 
-## Install and setup DuckDB driver for Laravel
+## Install and setup
 
 Install and setup [pdo_duckdb](https://github.com/thomas-0816/pdo-duckdb-php) database driver with [PIE](https://github.com/php/pie):
 
