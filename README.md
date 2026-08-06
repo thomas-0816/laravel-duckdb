@@ -125,6 +125,7 @@ $result = DB::connection('duckdb')->query()
     ->selectExpression('sum(amount)', 'revenue')
     ->selectExpression('histogram(tags)', 'tags')
     ->from('events')
+    ->where('amount', '>', 100)
     ->groupBy('week')
     ->orderBy('week')
     ->get();
