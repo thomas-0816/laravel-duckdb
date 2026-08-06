@@ -1,7 +1,7 @@
 {
     "name": "thomas-0816/laravel-duckdb",
-    "description": "DuckDB driver for Laravel Eloquent powered by the DuckDB PDO Driver",
-    "keywords": ["laravel", "duckdb", "database", "analytics"],
+    "description": "Laravel Eloquent driver for DuckDB, powered by the PHP PDO Driver for DuckDB, modern analytics",
+    "keywords": ["laravel", "duckdb", "eloquent", "database", "analytics", "pdo"],
     "license": "MIT",
     "authors": [
         {
