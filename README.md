@@ -183,7 +183,7 @@ $result = DB::connection('duckdb')->query()
     ->select('aaa')
     ->from('/tmp/test.csv') // or multiple files using '/tmp/*.csv'
     ->get();
-print_r($result->toArray());
+dump($result->toArray());
 
 # Array
 #     [0] => stdClass Object
@@ -246,7 +246,7 @@ fclose($fp);
 DB::connection('duckdb')->statement("CREATE TABLE test_csv AS SELECT * FROM '/tmp/test.csv'"); // schema + data import
 DB::connection('duckdb')->statement("INSERT INTO test_csv SELECT * FROM '/tmp/test.csv'"); // only import data
 
-print_r(DB::connection('duckdb')->select('SHOW test_csv'));
+dump(DB::connection('duckdb')->select('SHOW test_csv'));
 
 # Array
 #     [0] => stdClass Object
@@ -271,7 +271,7 @@ $result = DB::connection('duckdb')->query()
     ->select('log')
     ->from('/tmp/logs.json') // or multiple files using '/tmp/*.json'
     ->get();
-print_r($result->toArray());
+dump($result->toArray());
 
 # Array
 #     [0] => stdClass Object
@@ -286,7 +286,7 @@ $result = DB::connection('duckdb')->query()
     ->select('log')
     ->from('/tmp/logs.parquet')
     ->get();
-print_r($result->toArray());
+dump($result->toArray());
 
 # Array
 #     [0] => stdClass Object
@@ -373,7 +373,7 @@ DB::connection('duckdb')->statement("COPY (SELECT * FROM table1) TO '/tmp/table1
 $result = DB::connection('duckdb')->query()
     ->from('/tmp/table1.parquet')
     ->get();
-print_r($result->toArray());
+dump($result->toArray());
 
 # Array
 #     [0] => stdClass Object
@@ -430,7 +430,7 @@ DB::connection('duckdb')->unprepared("
 $rows = DB::connection('duckdb')->query()
     ->from('/tmp/orders.parquet')
     ->get();
-print_r($rows->toArray());
+dump($rows->toArray());
 
 # Array
 #     [0] => stdClass Object
@@ -469,7 +469,7 @@ DB::connection('duckdb')->unprepared("
 $rows = DB::connection('duckdb')->query()
     ->from('/tmp/orders.parquet')
     ->get();
-print_r($rows->toArray());
+dump($rows->toArray());
 
 # Array
 #     [0] => Array
@@ -519,7 +519,7 @@ DB::connection('duckdb')->table('events')->insert([[
 $events = DB::connection('duckdb')->query()
     ->from('events')
     ->get();
-print_r($events->toArray());
+dump($events->toArray());
 
 # Array
 #     [0] => stdClass Object
@@ -587,7 +587,7 @@ $event->person = $person;
 $event->persons = [$person];
 $event->save();
 
-print_r(Event::first()->toArray());
+dump(Event::first()->toArray());
 
 # Array
 #     [id] => 1
