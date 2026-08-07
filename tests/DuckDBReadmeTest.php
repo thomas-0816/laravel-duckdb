@@ -290,7 +290,7 @@ it('verifies csv data import', function () {
     $list = [
         ['aaa', 'bbb'],
         ['123', '456'],
-        ['aaa', 'bbb']
+        ['aaa', 'bbb'],
     ];
     $tmpFileCsv = sys_get_temp_dir() . '/test.csv';
     $fp = fopen($tmpFileCsv, 'w');
