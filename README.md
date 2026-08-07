@@ -20,7 +20,7 @@ Install and setup [pdo_duckdb](https://github.com/thomas-0816/pdo-duckdb-php) da
 pie install thomas-0816/pdo-duckdb-php
 ```
 
-Install and setup DuckDB driver for Laravel:
+Install and setup Laravel Eloquent driver for DuckDB:
 
 ```bash
 composer require thomas-0816/laravel-duckdb
