@@ -229,6 +229,36 @@ dump($rows->toArray());
 #         [aaa] => ddd
 ```
 
+## CSV data import with SQL Query Builder
+
+```php
+$list = [
+    ['aaa', 'bbb'],
+    ['123', '456'],
+    ['aaa', 'bbb']
+];
+$fp = fopen('/tmp/test.csv', 'w');
+foreach ($list as $fields) {
+    fputcsv($fp, $fields, ',', '"', "");
+}
+fclose($fp);
+
+DB::connection('duckdb')->statement("CREATE TABLE test_csv AS SELECT * FROM '/tmp/test.csv'"); // schema + data import
+DB::connection('duckdb')->statement("INSERT INTO test_csv SELECT * FROM '/tmp/test.csv'"); // only import data
+
+print_r(DB::connection('duckdb')->select('SHOW test_csv'));
+
+# Array
+#     [0] => stdClass Object
+#         [column_name] => aaa
+#         [column_type] => VARCHAR
+#         [null] => YES
+#     [1] => stdClass Object
+#         [column_name] => bbb
+#         [column_type] => VARCHAR
+#         [null] => YES
+```
+
 ## Read JSON files with SQL Query Builder
 
 ```php

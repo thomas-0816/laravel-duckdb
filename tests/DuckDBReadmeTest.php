@@ -285,3 +285,26 @@ it('verifies last insert id', function () {
     expect($connection->table('table1')->insertGetId(['name' => 'Foo']))->toBe(1);
     expect($connection->table('table1')->insertGetId(['name' => 'Bar']))->toBe(2);
 });
+
+it('verifies csv data import', function () {
+    $list = [
+        ['aaa', 'bbb'],
+        ['123', '456'],
+        ['aaa', 'bbb']
+    ];
+    $tmpFileCsv = sys_get_temp_dir() . '/test.csv';
+    $fp = fopen($tmpFileCsv, 'w');
+    foreach ($list as $fields) {
+        fputcsv($fp, $fields, ',', '"', "");
+    }
+    fclose($fp);
+
+    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection->statement("CREATE TABLE test_csv AS SELECT * FROM '{$tmpFileCsv}'"); // create schema + import data
+    $connection->statement("INSERT INTO test_csv SELECT * FROM '{$tmpFileCsv}'"); // only import data
+
+    $result = $connection->select('SHOW test_csv');
+
+    expect((array) $result[0])->toBe(['column_name' => 'aaa', 'column_type' => 'VARCHAR', 'null' => 'YES', 'key' => null, 'default' => null, 'extra' => null]);
+    expect((array) $result[1])->toBe(['column_name' => 'bbb', 'column_type' => 'VARCHAR', 'null' => 'YES', 'key' => null, 'default' => null, 'extra' => null]);
+});
