@@ -243,10 +243,10 @@ foreach ($list as $fields) {
 }
 fclose($fp);
 
-DB::connection('duckdb')->statement("CREATE TABLE test_csv AS SELECT * FROM '/tmp/test.csv'"); // schema + data import
-DB::connection('duckdb')->statement("INSERT INTO test_csv SELECT * FROM '/tmp/test.csv'"); // only import data
-
-dump(DB::connection('duckdb')->select('SHOW test_csv'));
+$db = DB::connection('duckdb');
+$db->statement("CREATE TABLE test_csv AS SELECT * FROM '/tmp/test.csv'"); // schema + data import
+$db->statement("INSERT INTO test_csv SELECT * FROM '/tmp/test.csv'"); // only import data
+dump($db->select('SHOW test_csv'));
 
 # Array
 #     [0] => stdClass Object
