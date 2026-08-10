@@ -68,16 +68,13 @@ jobs:
       - name: Test
         env:
           laravel_version: ${{ matrix.laravel-version }}
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         shell: bash
         run: |
           uname -a
           php -v
           if [ "$RUNNER_OS" = "Windows" ]; then
-            composer config --global --auth github-oauth.github.com ${GITHUB_TOKEN}
             BOX_REQUIREMENT_CHECKER=false pie install -v thomas-0816/pdo-duckdb-php
           else
-            sudo composer config --global --auth github-oauth.github.com ${GITHUB_TOKEN}
             sudo BOX_REQUIREMENT_CHECKER=false pie install -v thomas-0816/pdo-duckdb-php
           fi
           php -m | grep duckdb
