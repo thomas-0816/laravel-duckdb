@@ -590,8 +590,16 @@ it('creates table with enum type', function () {
     $col = $connection->getPdo()->query(
         "select data_type from information_schema.columns where table_name = 'type_enum'"
     )->fetch(PDO::FETCH_ASSOC);
-
     expect($col['data_type'])->toBe("ENUM('active', 'inactive')");
+
+    $connection->getSchemaBuilder()->table('type_enum', function (Blueprint $table) {
+        $table->enum('status', ['active', 'inactive', 'none'])->change();
+    });
+
+    $col = $connection->getPdo()->query(
+        "select data_type from information_schema.columns where table_name = 'type_enum'"
+    )->fetch(PDO::FETCH_ASSOC);
+    expect($col['data_type'])->toBe("ENUM('active', 'inactive', 'none')");
 });
 
 it('create table with multiple column types end-to-end', function () {
