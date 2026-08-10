@@ -453,11 +453,7 @@ class DuckDBGrammar extends Grammar
 
     protected function typeEnum(Fluent $column): string
     {
-        return sprintf(
-            'varchar check ("%s" in (%s))',
-            $column->name,
-            $this->quoteString($column->allowed)
-        );
+        return sprintf('enum(%s)', $this->quoteString($column->allowed));
     }
 
     protected function typeJson(Fluent $column): string

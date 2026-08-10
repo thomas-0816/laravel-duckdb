@@ -576,7 +576,7 @@ it('creates table with boolean type via grammar', function () {
     expect($col['data_type'])->toBe('BOOLEAN');
 });
 
-it('creates table with enum type and check constraint', function () {
+it('creates table with enum type', function () {
     $connection = (function () {
         return new DuckDbConnection(function () {
             return new PDO('duckdb::memory:');
@@ -591,7 +591,7 @@ it('creates table with enum type and check constraint', function () {
         "select data_type from information_schema.columns where table_name = 'type_enum'"
     )->fetch(PDO::FETCH_ASSOC);
 
-    expect($col['data_type'])->toBe('VARCHAR');
+    expect($col['data_type'])->toBe("ENUM('active', 'inactive')");
 });
 
 it('create table with multiple column types end-to-end', function () {
