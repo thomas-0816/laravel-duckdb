@@ -79,7 +79,7 @@ it('whereExists works in real query', function () {
     $connection->getPdo()->exec("INSERT INTO we_child VALUES (1)");
 
     $results = $connection->table('we_parent')
-        ->whereExists(fn($q) => $q->from('we_child')->whereColumn('we_child.parent_id', 'we_parent.id'))
+        ->whereExists(static fn($q) => $q->from('we_child')->whereColumn('we_child.parent_id', 'we_parent.id'))
         ->get();
 
     expect($results)->toHaveCount(1);
@@ -96,7 +96,7 @@ it('whereNotExists works in real query', function () {
     $connection->getPdo()->exec("INSERT INTO wne_child VALUES (1)");
 
     $results = $connection->table('wne_parent')
-        ->whereNotExists(fn($q) => $q->from('wne_child')->whereColumn('wne_child.parent_id', 'wne_parent.id'))
+        ->whereNotExists(static fn($q) => $q->from('wne_child')->whereColumn('wne_child.parent_id', 'wne_parent.id'))
         ->get();
 
     expect($results)->toHaveCount(1);
@@ -124,7 +124,7 @@ it('whereNested works in real query', function () {
     $connection->getPdo()->exec("INSERT INTO wn VALUES (1, 'a'), (2, 'b'), (3, 'c')");
 
     $results = $connection->table('wn')
-        ->where(fn($q) => $q->where('id', '>', 1)->where('val', '!=', 'c'))
+        ->where(static fn($q) => $q->where('id', '>', 1)->where('val', '!=', 'c'))
         ->get();
 
     expect($results)->toHaveCount(1);
@@ -790,7 +790,7 @@ it('nested having works', function () {
     $results = $connection->table('nh_t')
         ->selectRaw('cat, sum(val) as total')
         ->groupBy('cat')
-        ->having(fn($q) => $q->having('total', '>', 2)->orWhere('total', '=', 3))
+        ->having(static fn($q) => $q->having('total', '>', 2)->orWhere('total', '=', 3))
         ->orderBy('cat')
         ->get();
 

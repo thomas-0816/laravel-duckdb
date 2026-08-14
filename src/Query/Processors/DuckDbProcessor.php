@@ -55,7 +55,7 @@ class DuckDbProcessor extends Processor
 
             return [
                 'name' => strtolower($result->name),
-                'columns' => array_map(fn($column) => trim($column, '"'), $result->columns ? explode(',', $result->columns) : []),
+                'columns' => array_map(static fn($column) => trim($column, '"'), $result->columns ? explode(',', $result->columns) : []),
                 'type' => null,
                 'unique' => (bool) $result->unique,
                 'primary' => $isPrimary,
@@ -63,7 +63,7 @@ class DuckDbProcessor extends Processor
         }, $results);
 
         if ($primaryCount > 1) {
-            $indexes = array_filter($indexes, fn($index) => $index['name'] !== 'primary');
+            $indexes = array_filter($indexes, static fn($index) => $index['name'] !== 'primary');
         }
 
         /** @var list<array{name: string, columns: list<string>, type: string, unique: bool, primary: bool}> */

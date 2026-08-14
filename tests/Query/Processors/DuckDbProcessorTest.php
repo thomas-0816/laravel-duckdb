@@ -111,7 +111,7 @@ it('processes indexes with unique constraint', function () {
     $processor = new DuckDbProcessor();
     $indexes = $processor->processIndexes($results);
 
-    $nonPrimary = array_values(array_filter($indexes, fn($i) => !$i['primary']));
+    $nonPrimary = array_values(array_filter($indexes, static fn($i) => !$i['primary']));
 
     expect($nonPrimary)->toHaveCount(1);
     expect($nonPrimary[0]['unique'])->toBeTrue();
@@ -158,7 +158,7 @@ it('leaves non-primary indexes untouched when multiple primaries filtered', func
     $processor = new DuckDbProcessor();
     $indexes = $processor->processIndexes($results);
 
-    $nonPrimary = array_values(array_filter($indexes, fn($i) => !$i['primary']));
+    $nonPrimary = array_values(array_filter($indexes, static fn($i) => !$i['primary']));
     expect($nonPrimary)->toHaveCount(1);
     expect($nonPrimary[0]['unique'])->toBeTrue();
     expect($nonPrimary[0]['primary'])->toBeFalse();
@@ -197,7 +197,7 @@ it('processes foreign keys', function () {
         $uniqueName = $ref->unique_constraint_name ?? '';
         $uniqueInfo = $uniqueLookup[$uniqueName] ?? [];
         $foreignTable = $uniqueInfo[0]->table_name ?? 'users';
-        $foreignCols = array_map(fn($u) => $u->column_name, $uniqueInfo);
+        $foreignCols = array_map(static fn($u) => $u->column_name, $uniqueInfo);
 
         $results[] = (object) [
             'name' => $fk->name,

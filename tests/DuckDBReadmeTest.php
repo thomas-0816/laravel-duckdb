@@ -29,11 +29,11 @@ class Event extends Model
 
     protected function person(): Attribute
     {
-        return Attribute::get(fn($person) => new Person($person));
+        return Attribute::get(static fn($person) => new Person($person));
     }
     protected function persons(): Attribute
     {
-        return Attribute::get(fn($persons) => collect($persons)->map(fn($values) => new Person($values)));
+        return Attribute::get(static fn($persons) => collect($persons)->map(static fn($values) => new Person($values)));
     }
 }
 
@@ -50,7 +50,7 @@ class LogsJson extends Model
 }
 
 it('verifies examples from readme', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
     $connection->getSchemaBuilder()->create('events', function (Blueprint $table) {
         $table->id();
         $table->string('category');
@@ -106,7 +106,7 @@ it('verifies examples from readme', function () {
 });
 
 it('verifies examples from readme, csv files', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $list = [
         ['aaa', 'bbb', 'ccc'],
@@ -138,7 +138,7 @@ it('verifies examples from readme, csv files', function () {
 });
 
 it('verifies examples from readme, json files', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $tmpFile = sys_get_temp_dir() . '/logs.json';
     $tmpFileParquet = sys_get_temp_dir() . '/logs_json.parquet';
@@ -174,7 +174,7 @@ it('verifies examples from readme, json files', function () {
 });
 
 it('verifies special schema types with query builder', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('events', function (Blueprint $table) {
         $table->id();
@@ -211,7 +211,7 @@ it('verifies special schema types with query builder', function () {
 });
 
 it('verifies special schema types with eloquent', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
     Event::setConnectionResolver(new Resolver($connection));
 
     $connection->getSchemaBuilder()->create('events', function (Blueprint $table) {
@@ -252,7 +252,7 @@ it('verifies special schema types with eloquent', function () {
 });
 
 it('verifies parquet read and write', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $tmpFileParquet = sys_get_temp_dir() . '/table1.parquet';
 
@@ -275,7 +275,7 @@ it('verifies parquet read and write', function () {
 });
 
 it('verifies last insert id', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('table1', function (Blueprint $table) {
         $table->id();
@@ -299,7 +299,7 @@ it('verifies csv data import', function () {
     }
     fclose($fp);
 
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
     $connection->statement("CREATE TABLE test_csv AS SELECT * FROM '{$tmpFileCsv}'"); // create schema + import data
     $connection->statement("INSERT INTO test_csv SELECT * FROM '{$tmpFileCsv}'"); // only import data
 

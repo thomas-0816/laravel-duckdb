@@ -272,7 +272,7 @@ it('getSchemaState accepts optional filesystem and process factory', function ()
     });
 
     $files = new Filesystem();
-    $processFactory = fn($process) => $process;
+    $processFactory = static fn($process) => $process;
 
     $schemaState = $connection->getSchemaState($files, $processFactory);
 

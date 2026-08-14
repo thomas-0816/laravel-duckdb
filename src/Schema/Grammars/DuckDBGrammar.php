@@ -348,7 +348,7 @@ class DuckDBGrammar extends Grammar
     {
         $indexes = $this->connection->getSchemaBuilder()->getIndexes($blueprint->getTable());
 
-        $index = Arr::first($indexes, fn($index) => $index['name'] === $command->from);
+        $index = Arr::first($indexes, static fn($index) => $index['name'] === $command->from);
         if (! $index) {
             throw new RuntimeException("Index [{$command->from}] does not exist.");
         }

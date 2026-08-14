@@ -154,7 +154,7 @@ it('getTables excludes internal duckdb tables', function () {
 });
 
 it('getViews returns views from schema', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getPdo()->exec('CREATE TABLE vt_src1 (id INTEGER)');
     $connection->getPdo()->exec('CREATE VIEW v_test_view1 AS SELECT * FROM vt_src1');
@@ -173,7 +173,7 @@ it('getViews returns views from schema', function () {
 });
 
 it('getViews returns actual views from DuckDB', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getPdo()->exec('CREATE TABLE vt_src (id INTEGER)');
     $connection->getPdo()->exec('CREATE VIEW v_test_view AS SELECT * FROM vt_src');
@@ -185,7 +185,7 @@ it('getViews returns actual views from DuckDB', function () {
 });
 
 it('getViews returns empty for non-existent schema', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getPdo()->exec('CREATE TABLE vt_src2 (id INTEGER)');
     $connection->getPdo()->exec('CREATE VIEW v_test_view2 AS SELECT * FROM vt_src2');
@@ -196,7 +196,7 @@ it('getViews returns empty for non-existent schema', function () {
 });
 
 it('getColumns returns columns for a table', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getPdo()->exec('CREATE TABLE col_test_tbl (id INTEGER, name TEXT)');
 
@@ -209,7 +209,7 @@ it('getColumns returns columns for a table', function () {
 });
 
 it('getColumns defaults to main schema when none specified', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getPdo()->exec('CREATE TABLE col_default_tbl (id INTEGER, name TEXT)');
 
@@ -222,7 +222,7 @@ it('getColumns defaults to main schema when none specified', function () {
 });
 
 it('getColumns returns actual columns from DuckDB', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getPdo()->exec('CREATE TABLE cc_t (id INTEGER, name TEXT, val DOUBLE)');
 
@@ -233,7 +233,7 @@ it('getColumns returns actual columns from DuckDB', function () {
 });
 
 it('getIndexes returns indexes for a table', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('idx_query_tbl', function (Blueprint $table) {
         $table->integer('id');
@@ -249,7 +249,7 @@ it('getIndexes returns indexes for a table', function () {
 });
 
 it('getForeignKeys returns foreign keys for a table', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('fk_query_parent', function (Blueprint $table) {
         $table->unsignedBigInteger('id')->unique();
@@ -1270,7 +1270,7 @@ it('compileIndex creates an index via schema builder', function () {
 });
 
 it('create unique index prevents duplicate values', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('uniq_compile', function (Blueprint $table) {
         $table->string('email');
@@ -1288,7 +1288,7 @@ it('create unique index prevents duplicate values', function () {
 });
 
 it('drop index removes an existing index', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('di_compile', function (Blueprint $table) {
         $table->string('name');
@@ -1311,7 +1311,7 @@ it('drop index removes an existing index', function () {
 });
 
 it('drop unique index removes an existing unique index', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('du_compile', function (Blueprint $table) {
         $table->string('email');
@@ -1418,11 +1418,7 @@ it('typeDate with useCurrent sets default to current_date', function () {
 });
 
 it('typeTimestamp with useCurrent sets default to current_timestamp', function () {
-    $connection = (function () {
-        return new DuckDbConnection(function () {
-            return new PDO('duckdb::memory:');
-        });
-    })();
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('ts_current', function (Blueprint $table) {
         $table->timestamp('created_at')->useCurrent();
@@ -1435,11 +1431,7 @@ it('typeTimestamp with useCurrent sets default to current_timestamp', function (
 });
 
 it('typeYear with useCurrent sets default to year', function () {
-    $connection = (function () {
-        return new DuckDbConnection(function () {
-            return new PDO('duckdb::memory:');
-        });
-    })();
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('year_current', function (Blueprint $table) {
         $table->year('yr')->useCurrent();
@@ -1452,11 +1444,7 @@ it('typeYear with useCurrent sets default to year', function () {
 });
 
 it('compileCreate with geometry type', function () {
-    $connection = (function () {
-        return new DuckDbConnection(function () {
-            return new PDO('duckdb::memory:');
-        });
-    })();
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('type_geom', function (Blueprint $table) {
         $table->geometry('shape');
@@ -1466,11 +1454,7 @@ it('compileCreate with geometry type', function () {
 });
 
 it('compileCreate with geography type', function () {
-    $connection = (function () {
-        return new DuckDbConnection(function () {
-            return new PDO('duckdb::memory:');
-        });
-    })();
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('type_geo', function (Blueprint $table) {
         $table->geography('location');
@@ -1480,11 +1464,7 @@ it('compileCreate with geography type', function () {
 });
 
 it('integer types work with primary key via raw SQL', function () {
-    $connection = (function () {
-        return new DuckDbConnection(function () {
-            return new PDO('duckdb::memory:');
-        });
-    })();
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getPdo()->exec('CREATE TABLE serial_bigint (id INTEGER PRIMARY KEY, name TEXT)');
     $connection->getPdo()->exec("INSERT INTO serial_bigint VALUES (1, 'a')");
@@ -1496,11 +1476,7 @@ it('integer types work with primary key via raw SQL', function () {
 });
 
 it('tinyInteger type works with primary key via raw SQL', function () {
-    $connection = (function () {
-        return new DuckDbConnection(function () {
-            return new PDO('duckdb::memory:');
-        });
-    })();
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getPdo()->exec('CREATE TABLE serial_tiny (id INTEGER PRIMARY KEY, name TEXT)');
     $connection->getPdo()->exec("INSERT INTO serial_tiny VALUES (1, 'a')");
@@ -1512,11 +1488,7 @@ it('tinyInteger type works with primary key via raw SQL', function () {
 });
 
 it('compileRename with data preserved across rename', function () {
-    $connection = (function () {
-        return new DuckDbConnection(function () {
-            return new PDO('duckdb::memory:');
-        });
-    })();
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getPdo()->exec('CREATE TABLE rename_multi (id INTEGER PRIMARY KEY, name TEXT, val INTEGER)');
     $connection->getPdo()->exec("INSERT INTO rename_multi VALUES (1, 'first', 100)");
@@ -1529,7 +1501,7 @@ it('compileRename with data preserved across rename', function () {
 });
 
 it('adding column without comment does not set a comment', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('no_comment_tbl', function (Blueprint $table) {
         $table->integer('id');
@@ -1548,11 +1520,7 @@ it('adding column without comment does not set a comment', function () {
 });
 
 it('compileCreate creates a complete table with multiple features', function () {
-    $connection = (function () {
-        return new DuckDbConnection(function () {
-            return new PDO('duckdb::memory:');
-        });
-    })();
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('complete_tbl', function (Blueprint $table) {
         $table->string('name');
@@ -1570,11 +1538,7 @@ it('compileCreate creates a complete table with multiple features', function () 
 });
 
 it('compileForeign creates compound foreign key', function () {
-    $connection = (function () {
-        return new DuckDbConnection(function () {
-            return new PDO('duckdb::memory:');
-        });
-    })();
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('compound_parent', function (Blueprint $table) {
         $table->integer('id');
@@ -1597,11 +1561,7 @@ it('compileForeign creates compound foreign key', function () {
 });
 
 it('compileDropColumn drops column from table', function () {
-    $connection = (function () {
-        return new DuckDbConnection(function () {
-            return new PDO('duckdb::memory:');
-        });
-    })();
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getPdo()->exec('CREATE TABLE prefix_table (id INTEGER PRIMARY KEY, col_to_drop TEXT, keep_col TEXT)');
 
@@ -1614,11 +1574,7 @@ it('compileDropColumn drops column from table', function () {
 });
 
 it('compileCreate creates column with default value', function () {
-    $connection = (function () {
-        return new DuckDbConnection(function () {
-            return new PDO('duckdb::memory:');
-        });
-    })();
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('default_tbl', function (Blueprint $table) {
         $table->string('status')->default('active');
@@ -1631,11 +1587,7 @@ it('compileCreate creates column with default value', function () {
 });
 
 it('compileCreate creates nullable column', function () {
-    $connection = (function () {
-        return new DuckDbConnection(function () {
-            return new PDO('duckdb::memory:');
-        });
-    })();
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('nullable_tbl', function (Blueprint $table) {
         $table->string('name')->nullable();
@@ -1648,11 +1600,7 @@ it('compileCreate creates nullable column', function () {
 });
 
 it('compileCreate creates non-nullable column', function () {
-    $connection = (function () {
-        return new DuckDbConnection(function () {
-            return new PDO('duckdb::memory:');
-        });
-    })();
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('notnull_tbl', function (Blueprint $table) {
         $table->string('name');
@@ -1667,11 +1615,7 @@ it('compileCreate creates non-nullable column', function () {
 });
 
 it('compileIndex creates index with schema', function () {
-    $connection = (function () {
-        return new DuckDbConnection(function () {
-            return new PDO('duckdb::memory:');
-        });
-    })();
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('idx_schema_test', function (Blueprint $table) {
         $table->integer('col1');
@@ -1686,11 +1630,7 @@ it('compileIndex creates index with schema', function () {
 });
 
 it('compileDropIndex drops index with schema', function () {
-    $connection = (function () {
-        return new DuckDbConnection(function () {
-            return new PDO('duckdb::memory:');
-        });
-    })();
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('drop_idx_test', function (Blueprint $table) {
         $table->integer('col1');
@@ -1709,11 +1649,7 @@ it('compileDropIndex drops index with schema', function () {
 });
 
 it('dropAllTables drops tables from custom schema', function () {
-    $connection = (function () {
-        return new DuckDbConnection(function () {
-            return new PDO('duckdb::memory:');
-        });
-    })();
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getPdo()->exec('CREATE SCHEMA custom');
     $connection->getPdo()->exec('CREATE TABLE custom.ct1 (id INTEGER)');
@@ -1730,7 +1666,7 @@ it('dropAllTables drops tables from custom schema', function () {
 });
 
 it('dropAllViews iterates all schemas', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('views_multi', function (Blueprint $table) {
         $table->integer('id');
@@ -1747,12 +1683,7 @@ it('dropAllViews iterates all schemas', function () {
 });
 
 it('getSchemas returns all schemas with name and default', function () {
-    $connection = (function () {
-        return new DuckDbConnection(function () {
-            return new PDO('duckdb::memory:');
-        });
-    })();
-
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
     $schemas = $connection->getSchemaBuilder()->getSchemas();
 
     expect(count($schemas))->toBeGreaterThanOrEqual(1);
@@ -1763,23 +1694,14 @@ it('getSchemas returns all schemas with name and default', function () {
 });
 
 it('compileTableExists with special characters in table name', function () {
-    $connection = (function () {
-        return new DuckDbConnection(function () {
-            return new PDO('duckdb::memory:');
-        });
-    })();
-
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE specialchars (id INTEGER)');
 
     expect($connection->getSchemaBuilder()->hasTable('specialchars'))->toBeTrue();
 });
 
 it('compileCreate with virtualAs expression', function () {
-    $connection = (function () {
-        return new DuckDbConnection(function () {
-            return new PDO('duckdb::memory:');
-        });
-    })();
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('virtual_json', function (Blueprint $table) {
         $table->integer('id');
@@ -1795,11 +1717,7 @@ it('compileCreate with virtualAs expression', function () {
 });
 
 it('compileTableComment sets table comment via schema builder', function () {
-    $connection = (function () {
-        return new DuckDbConnection(function () {
-            return new PDO('duckdb::memory:');
-        });
-    })();
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('tcomment_raw', function (Blueprint $table) {
         $table->string('name');
@@ -1812,7 +1730,7 @@ it('compileTableComment sets table comment via schema builder', function () {
 });
 
 it('compileCreate with char type via grammar', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('type_char_g', function (Blueprint $table) {
         $table->char('c');
@@ -1823,7 +1741,7 @@ it('compileCreate with char type via grammar', function () {
 });
 
 it('compileCreate with tinyText type via grammar', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('type_tinytext_g', function (Blueprint $table) {
         $table->tinyText('c');
@@ -1834,7 +1752,7 @@ it('compileCreate with tinyText type via grammar', function () {
 });
 
 it('compileCreate with text type via grammar', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('type_text_g', function (Blueprint $table) {
         $table->text('c');
@@ -1845,7 +1763,7 @@ it('compileCreate with text type via grammar', function () {
 });
 
 it('compileCreate with mediumText type via grammar', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('type_mediumtext_g', function (Blueprint $table) {
         $table->mediumText('c');
@@ -1856,7 +1774,7 @@ it('compileCreate with mediumText type via grammar', function () {
 });
 
 it('compileCreate with longText type via grammar', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('type_longtext_g', function (Blueprint $table) {
         $table->longText('c');
@@ -1867,7 +1785,7 @@ it('compileCreate with longText type via grammar', function () {
 });
 
 it('compileCreate with bigInteger type via grammar', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('type_bigint_g', function (Blueprint $table) {
         $table->bigInteger('c');
@@ -1878,7 +1796,7 @@ it('compileCreate with bigInteger type via grammar', function () {
 });
 
 it('compileCreate with mediumInteger type via grammar', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('type_mediumint_g', function (Blueprint $table) {
         $table->mediumInteger('c');
@@ -1889,7 +1807,7 @@ it('compileCreate with mediumInteger type via grammar', function () {
 });
 
 it('compileCreate with tinyInteger type via grammar', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('type_tinyint_g', function (Blueprint $table) {
         $table->tinyInteger('c');
@@ -1900,7 +1818,7 @@ it('compileCreate with tinyInteger type via grammar', function () {
 });
 
 it('compileCreate with smallInteger type via grammar', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('type_smallint_g', function (Blueprint $table) {
         $table->smallInteger('c');
@@ -1911,7 +1829,7 @@ it('compileCreate with smallInteger type via grammar', function () {
 });
 
 it('compileCreate with float type via grammar', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('type_float_g', function (Blueprint $table) {
         $table->float('c');
@@ -1922,7 +1840,7 @@ it('compileCreate with float type via grammar', function () {
 });
 
 it('compileCreate with double type via grammar', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('type_double_g', function (Blueprint $table) {
         $table->double('c');
@@ -1933,7 +1851,7 @@ it('compileCreate with double type via grammar', function () {
 });
 
 it('compileCreate with decimal type via grammar', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('type_decimal_g', function (Blueprint $table) {
         $table->decimal('c');
@@ -1944,7 +1862,7 @@ it('compileCreate with decimal type via grammar', function () {
 });
 
 it('compileCreate with json type via grammar', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('type_json_g', function (Blueprint $table) {
         $table->json('c');
@@ -1955,7 +1873,7 @@ it('compileCreate with json type via grammar', function () {
 });
 
 it('compileCreate with jsonb type via grammar', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('type_jsonb_g', function (Blueprint $table) {
         $table->jsonb('c');
@@ -1966,7 +1884,7 @@ it('compileCreate with jsonb type via grammar', function () {
 });
 
 it('compileCreate with dateTime type via grammar', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('type_datetime_g', function (Blueprint $table) {
         $table->dateTime('c');
@@ -1977,7 +1895,7 @@ it('compileCreate with dateTime type via grammar', function () {
 });
 
 it('compileCreate with dateTimeTz type via grammar', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('type_datetimetz_g', function (Blueprint $table) {
         $table->dateTimeTz('c');
@@ -1988,7 +1906,7 @@ it('compileCreate with dateTimeTz type via grammar', function () {
 });
 
 it('compileCreate with time type via grammar', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('type_time_g', function (Blueprint $table) {
         $table->time('c');
@@ -1999,7 +1917,7 @@ it('compileCreate with time type via grammar', function () {
 });
 
 it('compileCreate with timeTz type via grammar', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('type_timetz_g', function (Blueprint $table) {
         $table->timeTz('c');
@@ -2010,7 +1928,7 @@ it('compileCreate with timeTz type via grammar', function () {
 });
 
 it('compileCreate with timestampTz type via grammar', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('type_timestamptz_g', function (Blueprint $table) {
         $table->timestampTz('c');
@@ -2021,7 +1939,7 @@ it('compileCreate with timestampTz type via grammar', function () {
 });
 
 it('compileCreate with binary type via grammar', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('type_binary_g', function (Blueprint $table) {
         $table->binary('c');
@@ -2032,7 +1950,7 @@ it('compileCreate with binary type via grammar', function () {
 });
 
 it('compileCreate with uuid type via grammar', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('type_uuid_g', function (Blueprint $table) {
         $table->uuid('c');
@@ -2043,7 +1961,7 @@ it('compileCreate with uuid type via grammar', function () {
 });
 
 it('compileCreate with ipAddress type via grammar', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('type_ip_g', function (Blueprint $table) {
         $table->ipAddress('c');
@@ -2054,7 +1972,7 @@ it('compileCreate with ipAddress type via grammar', function () {
 });
 
 it('compileCreate with macAddress type via grammar', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('type_mac_g', function (Blueprint $table) {
         $table->macAddress('c');
@@ -2065,7 +1983,7 @@ it('compileCreate with macAddress type via grammar', function () {
 });
 
 it('compileCreate creates a table with collation', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('collate_tbl', function (Blueprint $table) {
         $table->string('name')->collation('nocase');
@@ -2076,7 +1994,7 @@ it('compileCreate creates a table with collation', function () {
 });
 
 it('compileCreate throws RuntimeException for storedAs expression', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('stored_as_g', function (Blueprint $table) {
         $table->integer('a');
@@ -2086,7 +2004,7 @@ it('compileCreate throws RuntimeException for storedAs expression', function () 
 })->throws(RuntimeException::class, 'DuckDB does not support stored generated columns');
 
 it('compileCreate throws RuntimeException for storedAsJson expression', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('stored_json_tbl', function (Blueprint $table) {
         $table->string('data');
@@ -2095,7 +2013,7 @@ it('compileCreate throws RuntimeException for storedAsJson expression', function
 })->throws(RuntimeException::class, 'DuckDB does not support stored generated columns');
 
 it('compileCreate creates a table with virtualAsJson expression', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('virtual_json_tbl', function (Blueprint $table) {
         $table->string('data');
@@ -2108,7 +2026,7 @@ it('compileCreate creates a table with virtualAsJson expression', function () {
 });
 
 it('compileCreate with virtualAsJson using JSON column path selector', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('vjson_path_tbl', function (Blueprint $table) {
         $table->json('data');
@@ -2121,7 +2039,7 @@ it('compileCreate with virtualAsJson using JSON column path selector', function 
 });
 
 it('compileCreate throws RuntimeException for storedAsJson using JSON column path selector', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('sjson_path_tbl', function (Blueprint $table) {
         $table->json('data');
@@ -2131,7 +2049,7 @@ it('compileCreate throws RuntimeException for storedAsJson using JSON column pat
 })->throws(RuntimeException::class, 'DuckDB does not support stored generated columns');
 
 it('renameIndex throws when index lookup fails in DuckDB', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('ri_test', function (Blueprint $table) {
         $table->string('name');
@@ -2144,7 +2062,7 @@ it('renameIndex throws when index lookup fails in DuckDB', function () {
 })->throws(\Exception::class);
 
 it('renameIndex succeeds', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('ri_test', function (Blueprint $table) {
         $table->string('name');
@@ -2160,7 +2078,7 @@ it('renameIndex succeeds', function () {
 });
 
 it('renameUniqueIndex succeeds', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('ri_test', function (Blueprint $table) {
         $table->string('name');
@@ -2176,7 +2094,7 @@ it('renameUniqueIndex succeeds', function () {
 });
 
 it('compileModifyNullable with storedAs and nullable false throws RuntimeException', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('stored_nn_tbl', function (Blueprint $table) {
         $table->integer('a');
@@ -2186,7 +2104,7 @@ it('compileModifyNullable with storedAs and nullable false throws RuntimeExcepti
 })->throws(RuntimeException::class, 'DuckDB does not support stored generated columns');
 
 it('compileModifyDefault returns null when virtualAs is set', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('vdefault_tbl', function (Blueprint $table) {
         $table->integer('a');
@@ -2201,7 +2119,7 @@ it('compileModifyDefault returns null when virtualAs is set', function () {
 });
 
 it('change column type from string to integer preserves data', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('chg_type', function (Blueprint $table) {
         $table->integer('id')->unsigned();
@@ -2224,7 +2142,7 @@ it('change column type from string to integer preserves data', function () {
 });
 
 it('change column from nullable to not null preserves data', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('chg_nullable', function (Blueprint $table) {
         $table->integer('id')->unsigned();
@@ -2246,7 +2164,7 @@ it('change column from nullable to not null preserves data', function () {
 });
 
 it('change column from integer to string preserves data', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('chg_int_str', function (Blueprint $table) {
         $table->integer('id')->unsigned();
@@ -2269,7 +2187,7 @@ it('change column from integer to string preserves data', function () {
 });
 
 it('change column type from boolean to string', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('chg_bool', function (Blueprint $table) {
         $table->integer('id')->unsigned();
@@ -2291,7 +2209,7 @@ it('change column type from boolean to string', function () {
 });
 
 it('change column nullable', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('chg_nullable_col', function (Blueprint $table) {
         $table->string('val');
@@ -2312,7 +2230,7 @@ it('change column nullable', function () {
 });
 
 it('change column preserves multiple rows', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('chg_rows', function (Blueprint $table) {
         $table->integer('id')->unsigned();
@@ -2334,7 +2252,7 @@ it('change column preserves multiple rows', function () {
 });
 
 it('change column rename preserves all data', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('chg_rename', function (Blueprint $table) {
         $table->integer('id')->unsigned();
@@ -2358,7 +2276,7 @@ it('change column rename preserves all data', function () {
 });
 
 it('change column on empty table', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('chg_empty', function (Blueprint $table) {
         $table->integer('id')->unsigned();
@@ -2374,7 +2292,7 @@ it('change column on empty table', function () {
 });
 
 it('change column on table with primary key', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('chg_pk', function (Blueprint $table) {
         $table->integer('id');
@@ -2398,7 +2316,7 @@ it('change column on table with primary key', function () {
 });
 
 it('change column with special characters in data', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('chg_special', function (Blueprint $table) {
         $table->integer('id')->unsigned();
@@ -2416,7 +2334,7 @@ it('change column with special characters in data', function () {
 });
 
 it('change column default via change', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('chg_default', function (Blueprint $table) {
         $table->integer('id')->unsigned();
@@ -2438,7 +2356,7 @@ it('change column default via change', function () {
 });
 
 it('drop column default via change', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('chg_drop_default', function (Blueprint $table) {
         $table->integer('id')->unsigned();
@@ -2462,7 +2380,7 @@ it('drop column default via change', function () {
 });
 
 it('change column default from null to value via change', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('chg_add_default', function (Blueprint $table) {
         $table->integer('id')->unsigned();
@@ -2482,7 +2400,7 @@ it('change column default from null to value via change', function () {
 });
 
 it('change column default with integer value', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('chg_default_int', function (Blueprint $table) {
         $table->integer('id')->unsigned();
@@ -2502,7 +2420,7 @@ it('change column default with integer value', function () {
 });
 
 it('change column default with boolean value', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('chg_default_bool', function (Blueprint $table) {
         $table->integer('id')->unsigned();
@@ -2522,7 +2440,7 @@ it('change column default with boolean value', function () {
 });
 
 it('change multiple column attributes at once', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('chg_multi', function (Blueprint $table) {
         $table->integer('id')->unsigned();
@@ -2548,7 +2466,7 @@ it('change multiple column attributes at once', function () {
 });
 
 it('compileAdd adds a column with collation', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('add_collate_test', function (Blueprint $table) {
         $table->integer('id');
@@ -2562,7 +2480,7 @@ it('compileAdd adds a column with collation', function () {
 });
 
 it('compileDropPrimary returns null', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('drop_pk_test', function (Blueprint $table) {
         $table->integer('id');
@@ -2577,7 +2495,7 @@ it('compileDropPrimary returns null', function () {
 });
 
 it('compileDropForeign returns null', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('fk_drop_parent', function (Blueprint $table) {
         $table->integer('id');
@@ -2598,7 +2516,7 @@ it('compileDropForeign returns null', function () {
 });
 
 it('renameIndex throws for primary key', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('pk_rename_test', function (Blueprint $table) {
         $table->integer('id');
@@ -2617,7 +2535,7 @@ it('renameIndex throws for primary key', function () {
 })->throws(RuntimeException::class, 'DuckDB does not support altering primary keys');
 
 it('compileComment sets column comment on create', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('comment_col_create', function (Blueprint $table) {
         $table->integer('id');
@@ -2629,7 +2547,7 @@ it('compileComment sets column comment on create', function () {
 });
 
 it('compileComment with null comment on column', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('comment_col_null', function (Blueprint $table) {
         $table->integer('id');
@@ -2641,7 +2559,7 @@ it('compileComment with null comment on column', function () {
 });
 
 it('compileAdd adds a column with comment', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('add_comment_test', function (Blueprint $table) {
         $table->integer('id');
@@ -2655,7 +2573,7 @@ it('compileAdd adds a column with comment', function () {
 });
 
 it('compileAdd adds a column with default value via schema builder', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('add_def_test', function (Blueprint $table) {
         $table->integer('id');
@@ -2673,7 +2591,7 @@ it('compileAdd adds a column with default value via schema builder', function ()
 });
 
 it('compileChange returns empty for non-existent column', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('chg_nonexist', function (Blueprint $table) {
         $table->integer('id');
@@ -2687,7 +2605,7 @@ it('compileChange returns empty for non-existent column', function () {
 });
 
 it('compileChange with collation on type change', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('chg_collate', function (Blueprint $table) {
         $table->integer('id')->unsigned();
@@ -2707,7 +2625,7 @@ it('compileChange with collation on type change', function () {
 });
 
 it('compile special types', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('table1', function (Blueprint $table) {
         $table->integer('id', true, true);
@@ -2750,7 +2668,7 @@ it('compile special types', function () {
 });
 
 it('compile unsigned types', function () {
-    $connection = new DuckDbConnection(fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('table1', function (Blueprint $table) {
         $table->integer('id')->unsigned();
