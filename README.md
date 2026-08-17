@@ -232,6 +232,8 @@ dump($rows->toArray());
 ## CSV data import with SQL Query Builder
 
 ```php
+use Illuminate\Support\Facades\DB;
+
 $list = [
     ['aaa', 'bbb'],
     ['123', '456'],
@@ -327,6 +329,7 @@ dump($rows->toArray());
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class LogsParquet extends Model
 {
@@ -359,6 +362,9 @@ Note: You can read and save Parquet files on local file systems or directly on [
 ## Read and write PARQUET files with SQL Query Builder
 
 ```php
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+
 Schema::connection('duckdb')->create('table1', function (Blueprint $table) {
     $table->id();
     $table->string('text');
@@ -387,6 +393,8 @@ dump($result->toArray());
 ## Read public data using HTTPs, JSON and CSV
 
 ```php
+use Illuminate\Support\Facades\DB;
+
 $result = DB::connection('duckdb')->query()
     ->select(['id', 'name.en'])
     ->fromRaw("read_json('https://bulk.meteostat.net/v2/stations/lite.json.gz')")
@@ -422,6 +430,8 @@ mysql -h 127.0.0.1 -u root -psecret testdb -e "
 Use DuckDB [MySQL extension](https://duckdb.org/docs/lts/core_extensions/mysql) to copy "orders" table from MariaDB to a parquet file:
 
 ```php
+use Illuminate\Support\Facades\DB;
+
 DB::connection('duckdb')->unprepared("
     INSTALL mysql;
     ATTACH 'host=127.0.0.1 port=3306 user=root password=secret database=testdb' AS testdb (TYPE mysql);
@@ -461,6 +471,8 @@ PGPASSWORD=secret psql -h 127.0.0.1 -U postgres -c "
 Use DuckDB [PostgreSQL extension](https://duckdb.org/docs/lts/core_extensions/postgres) to copy "orders" table from PostgreSQL to a parquet file:
 
 ```php
+use Illuminate\Support\Facades\DB;
+
 DB::connection('duckdb')->unprepared("
     INSTALL postgres;
     ATTACH 'host=127.0.0.1 port=5432 user=postgres password=secret' AS testdb (TYPE postgres);
@@ -622,6 +634,28 @@ Schema::connection('duckdb')->createView('view1', 'SELECT * FROM events');
 Schema::connection('duckdb')->dropView('view1');
 ```
 
+## Transactions
+
+```php
+use Illuminate\Support\Facades\DB;
+
+$list = [
+    ['aaa', 'bbb', 'ccc'],
+    ['123', '456', '789'],
+    ['ddd', 'eee', 'fff'],
+];
+$fp = fopen('/tmp/test.csv', 'w');
+foreach ($list as $fields) {
+    fputcsv($fp, $fields, ',', '"', "");
+}
+fclose($fp);
+
+DB::connection('duckdb')->transaction(function ($db) {
+    $db->statement("CREATE TABLE test_csv AS SELECT * FROM '/tmp/test.csv'");
+    $db->statement("INSERT INTO test_csv SELECT * FROM '/tmp/test.csv'");
+});
+```
+
 ## Community extensions
 
 open_prompt integrates LLMs into your SQL queries:
@@ -629,6 +663,9 @@ open_prompt integrates LLMs into your SQL queries:
 ```php
 # start llama.cpp at 127.0.0.1:8080
 # ./llama-server -hf JetBrains/Mellum2-12B-A2.5B-Thinking-GGUF-Q4_K_M --parallel 1 --ctx-size 16384 --temp 0.6 --top-k 20 --reasoning off
+
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 DB::connection('duckdb')->unprepared("
     INSTALL open_prompt FROM community;
