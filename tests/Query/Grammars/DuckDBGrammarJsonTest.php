@@ -133,12 +133,12 @@ it('update compiles JSON columns correctly', function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE ujct (id INTEGER, data JSON)');
-    $connection->table('ujct')->insert(['id' => 1, 'data' => json_encode(['a' => 1])]);
+    $connection->table('ujct')->insert(['id' => 1, 'data' => json_encode(['a_a' => 1, 'b' => 3])]);
 
-    $connection->table('ujct')->where('id', 1)->update(['data->a' => 2]);
+    $connection->table('ujct')->where('id', 1)->update(['data->a_a' => 2]);
 
-    $result = $connection->table('ujct')->where('id', 1)->value('data->a');
-    expect((int) $result)->toBe(2);
+    $result = $connection->table('ujct')->where('id', 1)->value('data');
+    expect($result)->toBe(['b' => 3, 'a_a' => 2]);
 });
 
 it('whereJsonContains with not works', function () {
