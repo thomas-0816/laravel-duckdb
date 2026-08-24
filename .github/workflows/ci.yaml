@@ -82,7 +82,7 @@ jobs:
           fi
           php -m | grep duckdb
           rm composer.lock
-          composer require illuminate/database:^${laravel_version}
+          COMPOSER_IGNORE_PLATFORM_REQ=php composer require illuminate/database:^${laravel_version}
           if [ "$RUNNER_OS" != "Windows" ]; then
             vendor/bin/php-cs-fixer fix --dry-run --allow-risky=yes --diff
             vendor/bin/phpstan analyse

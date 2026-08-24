@@ -19,7 +19,7 @@
     "require-dev": {
         "phpstan/phpstan": "^2.0",
         "friendsofphp/php-cs-fixer": "^3",
-        "pestphp/pest": "^3.7 || ^4",
+        "pestphp/pest": "^3.7 || ^4 || ^5",
         "symfony/var-dumper": "^8 || ^7"
     },
     "autoload": {
