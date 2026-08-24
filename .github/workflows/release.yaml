@@ -28,6 +28,7 @@ jobs:
           - 8.3
           - 8.4
           - 8.5
+          - 8.6
         thread-safety:
           - nts
         laravel-version:
@@ -36,6 +37,8 @@ jobs:
         exclude:
           - php-version: 8.2
             laravel-version: 13
+          - php-version: 8.6
+            laravel-version: 12
     steps:
       - name: Setup PHP ${{ matrix.php-version }} ${{ matrix.thread-safety }}
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
@@ -51,6 +54,9 @@ jobs:
           laravel_version: ${{ matrix.laravel-version }}
         shell: bash
         run: |
+          if [ "$php_version" = "8.6" ]; then
+            export COMPOSER_IGNORE_PLATFORM_REQ=php
+          fi
           uname -a
           php -v
           if [ "$RUNNER_OS" = "Windows" ]; then

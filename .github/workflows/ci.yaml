@@ -71,8 +71,12 @@ jobs:
       - name: Test
         env:
           laravel_version: ${{ matrix.laravel-version }}
+          php_version: ${{ matrix.php-version }}
         shell: bash
         run: |
+          if [ "$php_version" = "8.6" ]; then
+            export COMPOSER_IGNORE_PLATFORM_REQ=php
+          fi
           uname -a
           php -v
           if [ "$RUNNER_OS" = "Windows" ]; then
@@ -82,7 +86,7 @@ jobs:
           fi
           php -m | grep duckdb
           rm composer.lock
-          COMPOSER_IGNORE_PLATFORM_REQ=php composer require illuminate/database:^${laravel_version}
+          composer require illuminate/database:^${laravel_version}
           if [ "$RUNNER_OS" != "Windows" ]; then
             vendor/bin/php-cs-fixer fix --dry-run --allow-risky=yes --diff
             vendor/bin/phpstan analyse
