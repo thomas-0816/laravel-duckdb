@@ -54,6 +54,7 @@ jobs:
       - name: Test
         env:
           laravel_version: ${{ matrix.laravel-version }}
+          php_version: ${{ matrix.php-version }}
           BOX_REQUIREMENT_CHECKER: false
         shell: bash
         run: |
