@@ -34,7 +34,11 @@ class DuckDBGrammar extends Grammar
         return $this->whereBasic($query, $where);
     }
 
-    /** {@inheritdoc} */
+    /**
+     * @param Builder $query
+     * @param array $where
+     * @return string
+     */
     protected function whereBinary(Builder $query, $where)
     {
         $where['operator'] = $where['not'] ? '!=' : '=';
