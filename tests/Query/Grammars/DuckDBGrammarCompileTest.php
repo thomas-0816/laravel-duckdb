@@ -109,14 +109,39 @@ it('supportsSavepoints returns false', function () {
     expect($grammar->supportsSavepoints())->toBeFalse();
 });
 
-it('joinLateral throws RuntimeException', function () {
+it('joinLateral compiles to LATERAL syntax', function () {
     $connection = new DuckDbConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE jlt (id INTEGER, val TEXT)');
+    $connection->table('jlt')->insert([['id' => 1, 'val' => 'a'], ['id' => 2, 'val' => 'b']]);
 
-    $connection->table('jlt')->joinLateral('select 1 as x', 'sub', 'cross')->get();
-})->throws(\RuntimeException::class, 'lateral joins');
+    $results = $connection->table('jlt')
+        ->joinLateral('select id + 1 as x', 'sub')
+        ->orderBy('x')
+        ->get();
+
+    expect($results)->toHaveCount(2);
+    expect($results[0]->x)->toBe(2);
+    expect($results[1]->x)->toBe(3);
+});
+
+it('leftJoinLateral compiles to LEFT JOIN LATERAL syntax', function () {
+    $connection = new DuckDbConnection(function () {
+        return new PDO('duckdb::memory:');
+    });
+    $connection->getPdo()->exec('CREATE TABLE jll (id INTEGER, val TEXT)');
+    $connection->table('jll')->insert([['id' => 1, 'val' => 'a'], ['id' => 2, 'val' => 'b']]);
+
+    $results = $connection->table('jll')
+        ->leftJoinLateral('select id + 1 as x', 'sub')
+        ->orderBy('x')
+        ->get();
+
+    expect($results)->toHaveCount(2);
+    expect($results[0]->x)->toBe(2);
+    expect($results[1]->x)->toBe(3);
+});
 
 it('basic select compiles correctly', function () {
     $connection = new DuckDbConnection(function () {
@@ -725,4 +750,63 @@ it('compileNestedJoins in join clause', function () {
     expect($results[0]->c1_id)->toBe(1);
     expect($results[0]->c2_id)->toBe(1);
     expect($results[0]->c3_id)->toBe(1);
+});
+
+it('selectVectorDistance computes cosine distance', function () {
+    $connection = new DuckDbConnection(function () {
+        return new PDO('duckdb::memory:');
+    });
+    $connection->getPdo()->exec('INSTALL vss');
+    $connection->getPdo()->exec('LOAD vss');
+    $connection->getPdo()->exec('CREATE TABLE vd_movies (id INTEGER, title TEXT, vec FLOAT[3])');
+    $connection->table('vd_movies')->insert([
+        ['id' => 1, 'title' => 'a', 'vec' => json_encode([1, 2, 3])],
+        ['id' => 2, 'title' => 'b', 'vec' => json_encode([4, 5, 6])],
+    ]);
+    $results = $connection->table('vd_movies')
+        ->select('id')
+        ->selectVectorDistance('vec', [1.1, 2.1, 3.1], 'distance')
+        ->orderBy('distance')
+        ->get();
+    expect($results)->toHaveCount(2);
+    expect($results[0]->id)->toBe(1);
+    expect($results[0]->distance)->toBe(0.0001407862);
+});
+
+it('whereVectorDistanceLessThan filters by distance', function () {
+    $connection = new DuckDbConnection(function () {
+        return new PDO('duckdb::memory:');
+    });
+    $connection->getPdo()->exec('INSTALL vss');
+    $connection->getPdo()->exec('LOAD vss');
+    $connection->getPdo()->exec('CREATE TABLE vdw (id INTEGER, vec FLOAT[3])');
+    $connection->table('vdw')->insert([
+        ['id' => 1, 'vec' => json_encode([1, 2, 3])],
+        ['id' => 2, 'vec' => json_encode([4, 5, 6])],
+    ]);
+
+    $results = $connection->table('vdw')
+        ->whereVectorDistanceLessThan('vec', [1.1, 2.1, 3.1], 0.01)
+        ->select('id')
+        ->get();
+    expect($results->pluck('id')->all())->toBe([1]);
+});
+
+it('orderByVectorDistance orders by distance', function () {
+    $connection = new DuckDbConnection(function () {
+        return new PDO('duckdb::memory:');
+    });
+    $connection->getPdo()->exec('INSTALL vss');
+    $connection->getPdo()->exec('LOAD vss');
+    $connection->getPdo()->exec('CREATE TABLE vdo (id INTEGER, vec FLOAT[3])');
+    $connection->table('vdo')->insert([
+        ['id' => 1, 'vec' => json_encode([1, 2, 3])],
+        ['id' => 2, 'vec' => json_encode([4, 5, 6])],
+        ['id' => 3, 'vec' => json_encode([6, 5, 4])],
+    ]);
+    $results = $connection->table('vdo')
+        ->orderByVectorDistance('vec', [6.1, 5.1, 4.1])
+        ->select('id')
+        ->get();
+    expect($results->pluck('id')->all())->toBe([3, 2, 1]);
 });

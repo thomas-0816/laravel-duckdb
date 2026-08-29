@@ -4,6 +4,7 @@ namespace DuckDb\Query\Grammars;
 
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Grammars\Grammar;
+use Illuminate\Database\Query\JoinLateralClause;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -29,6 +30,14 @@ class DuckDBGrammar extends Grammar
         $where['operator'] = $where['not']
             ? ($where['caseSensitive'] ? 'not like' : 'not ilike')
             : ($where['caseSensitive'] ? 'like' : 'ilike');
+
+        return $this->whereBasic($query, $where);
+    }
+
+    /** {@inheritdoc} */
+    protected function whereBinary(Builder $query, $where)
+    {
+        $where['operator'] = $where['not'] ? '!=' : '=';
 
         return $this->whereBasic($query, $where);
     }
@@ -248,6 +257,41 @@ class DuckDBGrammar extends Grammar
         $selectSql = $this->compileSelect((clone $query)->select($alias . '.rowid'));
 
         return "delete from {$table} where {$this->wrap('rowid')} in ({$selectSql})";
+    }
+
+    /**
+     * Compile a "lateral join" clause.
+     *
+     * @param  \Illuminate\Database\Query\JoinLateralClause  $join
+     * @param  string  $expression
+     * @return string
+     */
+    public function compileJoinLateral(JoinLateralClause $join, string $expression): string
+    {
+        $joining = trim($join->type . ' join lateral ' . $expression);
+
+        return $join->type === 'cross' ? $joining : $joining . ' on true';
+    }
+
+    /**
+     * Compile a vector distance expression for the given column.
+     *
+     * @param  string  $column
+     * @return string
+     */
+    public function compileVectorDistanceExpression($column)
+    {
+        return "({$this->wrap($column)} <=> ?)";
+    }
+
+    /**
+     * Determine if the grammar supports vector distance queries.
+     *
+     * @return bool
+     */
+    public function supportsVectorDistance()
+    {
+        return true;
     }
 
     /** {@inheritdoc} */

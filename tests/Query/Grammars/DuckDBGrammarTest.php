@@ -769,7 +769,7 @@ it('whereTime works in real query', function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE wtme (id INTEGER, t TIME)');
-    $connection->getPdo()->exec("INSERT INTO wtme VALUES (1, CAST('10:30:00' AS TIME)), (2, CAST('14:00:00' AS TIME))");
+    $connection->getPdo()->exec("INSERT INTO wtme VALUES (1, '10:30:00'::TIME), (2, '14:00:00'::TIME)");
 
     expect($connection->table('wtme')->whereTime('t', '=', '10:30:00')->count())->toBe(1);
     expect($connection->table('wtme')->whereTime('t', '>', '12:00:00')->count())->toBe(1);
@@ -1030,4 +1030,17 @@ it('delete with limit and skip and where clause compiles correctly', function ()
 
     expect($connection->table('dlw')->count())->toBe(2);
     expect($connection->table('dlw')->where('keep', 'no')->count())->toBe(2);
+});
+
+it('where binary', function () {
+    $connection = new DuckDbConnection(function () {
+        return new PDO('duckdb::memory:');
+    });
+    $connection->getPdo()->exec('CREATE TABLE table1 (id INTEGER, bin BLOB)');
+    $connection->table('table1')->insert(['id' => 1, 'bin' => '\xAA\xAB\xAC']);
+
+    $result = $connection->table('table1')->whereBinary('bin', '\xAA\xAB\xAC')->get();
+    expect($result->count())->toBe(1);
+    expect($result->first()->id)->toBe(1);
+    expect($connection->table('table1')->whereNotBinary('bin', '\xAA\xAB\xAC')->count())->toBe(0);
 });
