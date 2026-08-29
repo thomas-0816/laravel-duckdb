@@ -1,6 +1,6 @@
 <?php
 
-use DuckDb\DuckDbConnection;
+use DuckDb\DuckDBConnection;
 use Illuminate\Container\Container;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Facade;
@@ -9,7 +9,7 @@ it('creates a database file', function () {
     $app = new Container();
     $app->instance('files', new Filesystem());
     Facade::setFacadeApplication($app);
-    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:'));
     $builder = $connection->getSchemaBuilder();
     $path = sys_get_temp_dir() . '/duckdb_create_' . uniqid() . '.duckdb';
 
@@ -25,7 +25,7 @@ it('returns true when dropping a nonexistent database', function () {
     $app = new Container();
     $app->instance('files', new Filesystem());
     Facade::setFacadeApplication($app);
-    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:'));
     $builder = $connection->getSchemaBuilder();
 
     $result = $builder->dropDatabaseIfExists(sys_get_temp_dir() . '/duckdb_nonexist_' . uniqid() . '.duckdb');
@@ -37,7 +37,7 @@ it('drops an existing database file', function () {
     $app = new Container();
     $app->instance('files', new Filesystem());
     Facade::setFacadeApplication($app);
-    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:'));
     $builder = $connection->getSchemaBuilder();
     $path = sys_get_temp_dir() . '/duckdb_drop_' . uniqid() . '.duckdb';
 
@@ -54,7 +54,7 @@ it('creates and drops database file in sequence', function () {
     $app = new Container();
     $app->instance('files', new Filesystem());
     Facade::setFacadeApplication($app);
-    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:'));
     $builder = $connection->getSchemaBuilder();
     $path = sys_get_temp_dir() . '/duckdb_seq_' . uniqid() . '.duckdb';
 
@@ -69,7 +69,7 @@ it('creates and drops database file in sequence', function () {
 });
 
 it('drops all tables from the database', function () {
-    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:'));
     $schema = $connection->getSchemaBuilder();
 
     $schema->create('drop_test_1', function ($table) {
@@ -89,7 +89,7 @@ it('drops all tables from the database', function () {
 });
 
 it('drops tables with indexes', function () {
-    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:'));
     $schema = $connection->getSchemaBuilder();
 
     $schema->create('idx_table', function ($table) {
@@ -106,7 +106,7 @@ it('drops tables with indexes', function () {
 });
 
 it('drops all views removes user created views', function () {
-    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:'));
     $schema = $connection->getSchemaBuilder();
 
     $schema->create('view_src', function ($table) {
@@ -130,7 +130,7 @@ it('drops all views removes user created views', function () {
 });
 
 it('creates a view from a raw query string', function () {
-    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:'));
 
     $connection->getSchemaBuilder()->create('table1', function ($table) {
         $table->integer('id');
@@ -148,7 +148,7 @@ it('creates a view from a raw query string', function () {
 });
 
 it('drops a view', function () {
-    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:'));
     $schema = $connection->getSchemaBuilder();
 
     $schema->create('table1', function ($table) {
@@ -163,7 +163,7 @@ it('drops a view', function () {
 });
 
 it('pragma returns a string value', function () {
-    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:'));
     $builder = $connection->getSchemaBuilder();
 
     $result = $builder->pragma('platform');
@@ -173,7 +173,7 @@ it('pragma returns a string value', function () {
 });
 
 it('pragma set returns empty string', function () {
-    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:'));
     $builder = $connection->getSchemaBuilder();
 
     $result = $builder->pragma('threads', '4');
@@ -182,7 +182,7 @@ it('pragma set returns empty string', function () {
 });
 
 it('pragma set changes the configuration', function () {
-    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:'));
     $builder = $connection->getSchemaBuilder();
 
     $builder->pragma('threads', '2');
@@ -192,7 +192,7 @@ it('pragma set changes the configuration', function () {
 });
 
 it('returns current schema listing', function () {
-    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:'));
     $builder = $connection->getSchemaBuilder();
 
     $schemas = $builder->getCurrentSchemaListing();
@@ -202,7 +202,7 @@ it('returns current schema listing', function () {
 });
 
 it('returns multiple schemas', function () {
-    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:'));
     $builder = $connection->getSchemaBuilder();
 
     $connection->statement('CREATE SCHEMA test_multi_schema');
@@ -214,7 +214,7 @@ it('returns multiple schemas', function () {
 });
 
 it('drops all tables preserves schemas', function () {
-    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:'));
     $schema = $connection->getSchemaBuilder();
 
     $schema->create('preserve_test', function ($table) {
@@ -228,7 +228,7 @@ it('drops all tables preserves schemas', function () {
 });
 
 it('pragma returns string types for both get and set', function () {
-    $connection = new DuckDbConnection(static fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:'));
     $builder = $connection->getSchemaBuilder();
 
     $getResult = $builder->pragma('platform');

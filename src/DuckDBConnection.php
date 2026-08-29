@@ -4,15 +4,16 @@ namespace DuckDb;
 
 use Exception;
 use Illuminate\Database\Connection;
-use DuckDb\Query\Grammars\DuckDBGrammar as QueryGrammar;
-use PDO;
-use DuckDb\Query\Processors\DuckDbProcessor;
-use DuckDb\Schema\Grammars\DuckDBGrammar as SchemaGrammar;
-use DuckDb\Schema\DuckDBBuilder;
+use DuckDb\Query\Grammars\DuckDBQueryGrammar;
+use DuckDb\Query\DuckDBQueryBuilder;
+use DuckDb\Query\Processors\DuckDBProcessor;
+use DuckDb\Schema\Grammars\DuckDBSchemaGrammar;
+use DuckDb\Schema\DuckDBSchemaBuilder;
 use DuckDb\Schema\DuckDBSchemaState;
 use Illuminate\Filesystem\Filesystem;
+use PDO;
 
-class DuckDbConnection extends Connection
+class DuckDBConnection extends Connection
 {
     /** {@inheritdoc} */
     public function getDriverTitle()
@@ -54,7 +55,13 @@ class DuckDbConnection extends Connection
     /** {@inheritdoc} */
     protected function getDefaultQueryGrammar()
     {
-        return new QueryGrammar($this);
+        return new DuckDBQueryGrammar($this);
+    }
+
+    /** {@inheritdoc} */
+    public function query()
+    {
+        return new DuckDBQueryBuilder($this, $this->getQueryGrammar(), $this->getPostProcessor());
     }
 
     /** {@inheritdoc} */
@@ -64,13 +71,13 @@ class DuckDbConnection extends Connection
             $this->useDefaultSchemaGrammar();
         }
 
-        return new DuckDBBuilder($this);
+        return new DuckDBSchemaBuilder($this);
     }
 
     /** {@inheritdoc} */
     protected function getDefaultSchemaGrammar()
     {
-        return new SchemaGrammar($this);
+        return new DuckDBSchemaGrammar($this);
     }
 
     /**
@@ -88,7 +95,7 @@ class DuckDbConnection extends Connection
     /** {@inheritdoc} */
     protected function getDefaultPostProcessor()
     {
-        return new DuckDbProcessor();
+        return new DuckDBProcessor();
     }
 
     /** {@inheritdoc} */

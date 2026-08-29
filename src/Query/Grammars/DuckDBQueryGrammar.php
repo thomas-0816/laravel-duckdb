@@ -9,7 +9,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
-class DuckDBGrammar extends Grammar
+class DuckDBQueryGrammar extends Grammar
 {
     /** {@inheritdoc} */
     public function supportsSavepoints()

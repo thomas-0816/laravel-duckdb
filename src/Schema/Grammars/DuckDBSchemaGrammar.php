@@ -10,7 +10,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Fluent;
 use RuntimeException;
 
-class DuckDBGrammar extends Grammar
+class DuckDBSchemaGrammar extends Grammar
 {
     /** @inheritDoc */
     protected $modifiers = ['Increment', 'VirtualAs', 'StoredAs', 'Nullable', 'Default', 'Collate'];

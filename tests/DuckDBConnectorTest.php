@@ -1,9 +1,9 @@
 <?php
 
-use DuckDb\DuckDbConnector;
+use DuckDb\DuckDBConnector;
 
 it('connects to an in-memory database', function () {
-    $connector = new DuckDbConnector();
+    $connector = new DuckDBConnector();
     $connector->setDefaultOptions([PDO::ATTR_STRINGIFY_FETCHES => true]);
 
     $pdo = $connector->connect([
@@ -21,14 +21,14 @@ it('connects to an in-memory database', function () {
 it('connects to a file-based database', function () {
     $file = tempnam('/tmp', 'duckdb_connector_test.duckdb');
     unlink($file);
-    $connector = new DuckDbConnector();
+    $connector = new DuckDBConnector();
     $connector->connect(['database' => $file]);
     expect(file_exists($file))->toBeTrue();
     unlink($file);
 });
 
 it('connects separate connections that do not share state', function () {
-    $connector = new DuckDbConnector();
+    $connector = new DuckDBConnector();
 
     $pdo1 = $connector->connect(['database' => ':memory:']);
     $pdo1->exec("CREATE TABLE shared_test (id INTEGER)");

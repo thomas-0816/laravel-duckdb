@@ -6,7 +6,7 @@ use Closure;
 use Illuminate\Database\Schema\Builder;
 use Illuminate\Support\Facades\File;
 
-class DuckDBBuilder extends Builder
+class DuckDBSchemaBuilder extends Builder
 {
     /** {@inheritdoc} */
     public function createDatabase($name)

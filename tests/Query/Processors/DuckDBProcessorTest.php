@@ -1,11 +1,11 @@
 <?php
 
-use DuckDb\DuckDbConnection;
-use DuckDb\Query\Processors\DuckDbProcessor;
-use DuckDb\Schema\Grammars\DuckDBGrammar as SchemaGrammar;
+use DuckDb\DuckDBConnection;
+use DuckDb\Query\Processors\DuckDBProcessor;
+use DuckDb\Schema\Grammars\DuckDBSchemaGrammar as SchemaGrammar;
 
 it('processes columns with various types', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE col_types (id INTEGER, label VARCHAR(255), active BOOLEAN, salary DOUBLE, bio TEXT, created DATE)');
@@ -14,7 +14,7 @@ it('processes columns with various types', function () {
     $sql = $grammar->compileColumns('main', 'col_types');
     $results = $connection->select($sql);
 
-    $processor = new DuckDbProcessor();
+    $processor = new DuckDBProcessor();
     $columns = $processor->processColumns($results);
 
     expect($columns)->toHaveCount(6);
@@ -34,7 +34,7 @@ it('processes columns with various types', function () {
 });
 
 it('processes columns with nullable and defaults', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec("CREATE TABLE col_defaults (id INTEGER NOT NULL, name TEXT DEFAULT 'hello', count INTEGER DEFAULT 0, email TEXT)");
@@ -43,7 +43,7 @@ it('processes columns with nullable and defaults', function () {
     $sql = $grammar->compileColumns('main', 'col_defaults');
     $results = $connection->select($sql);
 
-    $processor = new DuckDbProcessor();
+    $processor = new DuckDBProcessor();
     $columns = $processor->processColumns($results);
 
     expect($columns[0]['name'])->toBe('id');
@@ -64,7 +64,7 @@ it('processes columns with nullable and defaults', function () {
 });
 
 it('processes columns with cid ordering', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE ordered (z INTEGER, a TEXT, m DOUBLE)');
@@ -73,7 +73,7 @@ it('processes columns with cid ordering', function () {
     $sql = $grammar->compileColumns('main', 'ordered');
     $results = $connection->select($sql);
 
-    $processor = new DuckDbProcessor();
+    $processor = new DuckDBProcessor();
     $columns = $processor->processColumns($results);
 
     expect($columns[0]['name'])->toBe('z');
@@ -82,14 +82,14 @@ it('processes columns with cid ordering', function () {
 });
 
 it('processes indexes with primary key', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE indexed (id INTEGER PRIMARY KEY, name TEXT)');
 
     $results = getTableConstraints($connection, 'indexed', 'main', ['PRIMARY KEY', 'UNIQUE']);
 
-    $processor = new DuckDbProcessor();
+    $processor = new DuckDBProcessor();
     $indexes = $processor->processIndexes($results);
 
     expect($indexes)->toHaveCount(1);
@@ -101,14 +101,14 @@ it('processes indexes with primary key', function () {
 });
 
 it('processes indexes with unique constraint', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE unique_idx (id INTEGER, slug TEXT UNIQUE)');
 
     $results = getTableConstraints($connection, 'unique_idx', 'main', ['PRIMARY KEY', 'UNIQUE']);
 
-    $processor = new DuckDbProcessor();
+    $processor = new DuckDBProcessor();
     $indexes = $processor->processIndexes($results);
 
     $nonPrimary = array_values(array_filter($indexes, static fn($i) => !$i['primary']));
@@ -120,14 +120,14 @@ it('processes indexes with unique constraint', function () {
 });
 
 it('processes composite primary key', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE composite (a INTEGER, b INTEGER, PRIMARY KEY (a, b))');
 
     $results = getTableConstraints($connection, 'composite', 'main', ['PRIMARY KEY', 'UNIQUE']);
 
-    $processor = new DuckDbProcessor();
+    $processor = new DuckDBProcessor();
     $indexes = $processor->processIndexes($results);
 
     expect($indexes)->toHaveCount(1);
@@ -141,21 +141,21 @@ it('filters out named primary when multiple primary keys exist in input', functi
         (object) ['name' => 'primary', 'columns' => 'b', 'unique' => 1, 'primary' => 1],
     ];
 
-    $processor = new DuckDbProcessor();
+    $processor = new DuckDBProcessor();
     $indexes = $processor->processIndexes($results);
 
     expect($indexes)->toBeEmpty();
 });
 
 it('leaves non-primary indexes untouched when multiple primaries filtered', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE multi_pk (id INTEGER PRIMARY KEY, uid INTEGER UNIQUE, slug TEXT)');
 
     $results = getTableConstraints($connection, 'multi_pk', 'main', ['PRIMARY KEY', 'UNIQUE']);
 
-    $processor = new DuckDbProcessor();
+    $processor = new DuckDBProcessor();
     $indexes = $processor->processIndexes($results);
 
     $nonPrimary = array_values(array_filter($indexes, static fn($i) => !$i['primary']));
@@ -166,7 +166,7 @@ it('leaves non-primary indexes untouched when multiple primaries filtered', func
 });
 
 it('processes foreign keys', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT)');
@@ -210,7 +210,7 @@ it('processes foreign keys', function () {
         ];
     }
 
-    $processor = new DuckDbProcessor();
+    $processor = new DuckDBProcessor();
     $processed = $processor->processForeignKeys($results);
 
     expect($processed)->toHaveCount(1);
@@ -224,7 +224,7 @@ it('processes foreign keys', function () {
 });
 
 it('normalizes type names by stripping parameterised suffix', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE typed (points DECIMAL(10,2), label VARCHAR)');
@@ -233,7 +233,7 @@ it('normalizes type names by stripping parameterised suffix', function () {
     $sql = $grammar->compileColumns('main', 'typed');
     $results = $connection->select($sql);
 
-    $processor = new DuckDbProcessor();
+    $processor = new DuckDBProcessor();
     $columns = $processor->processColumns($results);
 
     expect($columns[0]['name'])->toBe('points');
@@ -246,7 +246,7 @@ it('normalizes type names by stripping parameterised suffix', function () {
 });
 
 it('marks nullable as false only when explicitly set not null', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE nullable_test (req INTEGER NOT NULL, opt TEXT)');
@@ -255,7 +255,7 @@ it('marks nullable as false only when explicitly set not null', function () {
     $sql = $grammar->compileColumns('main', 'nullable_test');
     $results = $connection->select($sql);
 
-    $processor = new DuckDbProcessor();
+    $processor = new DuckDBProcessor();
     $columns = $processor->processColumns($results);
 
     expect($columns[0]['name'])->toBe('req');

@@ -1,9 +1,9 @@
 <?php
 
-use DuckDb\DuckDbConnection;
+use DuckDb\DuckDBConnection;
 
 it('update with join compiles to UPDATE...FROM syntax', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE t1 (id INTEGER, val TEXT)');
@@ -18,7 +18,7 @@ it('update with join compiles to UPDATE...FROM syntax', function () {
 });
 
 it('update with join and limit updates all matching rows', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE t1 (id INTEGER, val TEXT)');
@@ -34,7 +34,7 @@ it('update with join and limit updates all matching rows', function () {
 });
 
 it('delete with join compiles to DELETE...USING...WHERE', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE d1 (id INTEGER, val TEXT)');
@@ -50,7 +50,7 @@ it('delete with join compiles to DELETE...USING...WHERE', function () {
 });
 
 it('delete with join and limit compiles to DELETE...USING...LIMIT', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE d1 (id INTEGER, val TEXT)');
@@ -65,7 +65,7 @@ it('delete with join and limit compiles to DELETE...USING...LIMIT', function () 
 });
 
 it('inRandomOrder returns all rows in random order', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE rnd (id INTEGER, name TEXT)');
@@ -78,7 +78,7 @@ it('inRandomOrder returns all rows in random order', function () {
 });
 
 it('nested beginTransaction does not use savepoints', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
 
@@ -101,7 +101,7 @@ it('nested beginTransaction does not use savepoints', function () {
 });
 
 it('supportsSavepoints returns false', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $grammar = $connection->getQueryGrammar();
@@ -110,7 +110,7 @@ it('supportsSavepoints returns false', function () {
 });
 
 it('joinLateral compiles to LATERAL syntax', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE jlt (id INTEGER, val TEXT)');
@@ -127,7 +127,7 @@ it('joinLateral compiles to LATERAL syntax', function () {
 });
 
 it('leftJoinLateral compiles to LEFT JOIN LATERAL syntax', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE jll (id INTEGER, val TEXT)');
@@ -144,7 +144,7 @@ it('leftJoinLateral compiles to LEFT JOIN LATERAL syntax', function () {
 });
 
 it('basic select compiles correctly', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE bs_t (id INTEGER, name TEXT, val INTEGER)');
@@ -157,7 +157,7 @@ it('basic select compiles correctly', function () {
 });
 
 it('compileExists returns correct SQL structure', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE ex_t (id INTEGER)');
@@ -171,7 +171,7 @@ it('compileExists returns correct SQL structure', function () {
 });
 
 it('whereBitwise compiles correctly', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE wbt (id INTEGER, flags INTEGER)');
@@ -185,7 +185,7 @@ it('whereBitwise compiles correctly', function () {
 });
 
 it('whereNullSafeEquals matches null and non-null values', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE wnse_t (id INTEGER, val TEXT)');
@@ -201,7 +201,7 @@ it('whereNullSafeEquals matches null and non-null values', function () {
 });
 
 it('compileGroups compiles GROUP BY correctly', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE grp_t (category TEXT, val INTEGER)');
@@ -221,7 +221,7 @@ it('compileGroups compiles GROUP BY correctly', function () {
 });
 
 it('compileHavings compiles HAVING correctly', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE hav_t (category TEXT, val INTEGER)');
@@ -246,7 +246,7 @@ it('compileHavings compiles HAVING correctly', function () {
 });
 
 it('compileInOrderOf works with CASE WHEN ordering', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE iofo (id INTEGER, name TEXT)');
@@ -259,7 +259,7 @@ it('compileInOrderOf works with CASE WHEN ordering', function () {
 });
 
 it('compileInsert compiles basic insert correctly', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE ci_t (id INTEGER, name TEXT)');
@@ -270,7 +270,7 @@ it('compileInsert compiles basic insert correctly', function () {
 });
 
 it('compileInsertGetId works in real query', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE cig_t (id INTEGER, name TEXT)');
@@ -281,7 +281,7 @@ it('compileInsertGetId works in real query', function () {
 });
 
 it('compileInsertUsing works in real query', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE ciu_src (id INTEGER, name TEXT)');
@@ -295,7 +295,7 @@ it('compileInsertUsing works in real query', function () {
 });
 
 it('compileInsertOrIgnoreUsing works in real query', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE cious_src (id INTEGER PRIMARY KEY, name TEXT)');
@@ -311,7 +311,7 @@ it('compileInsertOrIgnoreUsing works in real query', function () {
 });
 
 it('groupLimit limits rows per group', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE glt (category TEXT, name TEXT)');
@@ -328,7 +328,7 @@ it('groupLimit limits rows per group', function () {
 });
 
 it('union aggregate compiles correctly', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE uat (id INTEGER, val INTEGER)');
@@ -339,7 +339,7 @@ it('union aggregate compiles correctly', function () {
 });
 
 it('compileUnions with multiple unions works', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE cmu (id INTEGER)');
@@ -355,7 +355,7 @@ it('compileUnions with multiple unions works', function () {
 });
 
 it('compileUpdateWithoutJoins compiles correctly', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE cuwj (id INTEGER, val TEXT)');
@@ -367,7 +367,7 @@ it('compileUpdateWithoutJoins compiles correctly', function () {
 });
 
 it('compileDeleteWithoutJoins compiles correctly', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE cdwj (id INTEGER)');
@@ -379,7 +379,7 @@ it('compileDeleteWithoutJoins compiles correctly', function () {
 });
 
 it('insert with empty values inserts default values', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE cidv (id INTEGER DEFAULT 0, name TEXT DEFAULT \'test\')');
@@ -391,7 +391,7 @@ it('insert with empty values inserts default values', function () {
 });
 
 it('whereValueBetween filters value between two columns', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE wvbt (id INTEGER, low INTEGER, high INTEGER)');
@@ -408,7 +408,7 @@ it('whereValueBetween filters value between two columns', function () {
 });
 
 it('compileColumns with distinct', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE ccd (val INTEGER)');
@@ -419,7 +419,7 @@ it('compileColumns with distinct', function () {
 });
 
 it('select from table returns correct results', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE cft (id INTEGER)');
@@ -430,7 +430,7 @@ it('select from table returns correct results', function () {
 });
 
 it('compileAggregate with count works', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE ca (id INTEGER)');
@@ -440,7 +440,7 @@ it('compileAggregate with count works', function () {
 });
 
 it('compileAggregate with distinct count works', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE cad (val INTEGER)');
@@ -451,7 +451,7 @@ it('compileAggregate with distinct count works', function () {
 });
 
 it('whereNull filters null values', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE wnc (id INTEGER, val TEXT)');
@@ -463,7 +463,7 @@ it('whereNull filters null values', function () {
 });
 
 it('whereNotNull filters non-null values', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE wnn (id INTEGER, val TEXT)');
@@ -475,7 +475,7 @@ it('whereNotNull filters non-null values', function () {
 });
 
 it('compileTruncate returns delete from SQL', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE ct (id INTEGER)');
@@ -487,7 +487,7 @@ it('compileTruncate returns delete from SQL', function () {
 });
 
 it('insertOrIgnore ignores duplicates', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE cio (id INTEGER PRIMARY KEY, name TEXT)');
@@ -500,7 +500,7 @@ it('insertOrIgnore ignores duplicates', function () {
 });
 
 it('insertOrIgnoreReturning ignores duplicates and returns columns', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE cior (id INTEGER PRIMARY KEY, name TEXT)');
@@ -517,7 +517,7 @@ it('insertOrIgnoreReturning ignores duplicates and returns columns', function ()
 });
 
 it('insertOrIgnoreReturning with uniqueBy ignores duplicates on specified columns', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE cior2 (id INTEGER PRIMARY KEY, name TEXT)');
@@ -533,7 +533,7 @@ it('insertOrIgnoreReturning with uniqueBy ignores duplicates on specified column
 });
 
 it('compileUpsert contains on conflict do update set', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE cu (id INTEGER PRIMARY KEY, name TEXT)');
@@ -549,7 +549,7 @@ it('compileUpsert contains on conflict do update set', function () {
 });
 
 it('compileInsertUsing builds correct SQL', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE cius (id INTEGER, name TEXT)');
@@ -571,7 +571,7 @@ it('compileInsertUsing builds correct SQL', function () {
 });
 
 it('insertOrIgnoreUsing ignores duplicates from subquery', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE cioiu (id INTEGER PRIMARY KEY, name TEXT)');
@@ -587,7 +587,7 @@ it('insertOrIgnoreUsing ignores duplicates from subquery', function () {
 });
 
 it('compileSelect with aggregate returns aggregate SQL', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE csagg (val INTEGER)');
@@ -603,7 +603,7 @@ it('compileSelect with aggregate returns aggregate SQL', function () {
 });
 
 it('compileJoin compiles basic join', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE cj1 (id INTEGER)');
@@ -622,7 +622,7 @@ it('compileJoin compiles basic join', function () {
 });
 
 it('compileJoin compiles left join', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE clj1 (id INTEGER)');
@@ -643,7 +643,7 @@ it('compileJoin compiles left join', function () {
 });
 
 it('compileJoin compiles cross join', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE ccj1 (id INTEGER)');
@@ -664,7 +664,7 @@ it('compileJoin compiles cross join', function () {
 });
 
 it('compileJoin compiles right join', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE crj1 (id INTEGER)');
@@ -686,7 +686,7 @@ it('compileJoin compiles right join', function () {
 });
 
 it('compileJoin compiles full outer join', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE cfj1 (id INTEGER)');
@@ -708,7 +708,7 @@ it('compileJoin compiles full outer join', function () {
 });
 
 it('compileJoin compiles where in join', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE cwj1 (id INTEGER)');
@@ -730,7 +730,7 @@ it('compileJoin compiles where in join', function () {
 });
 
 it('compileNestedJoins in join clause', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE cnj1 (id INTEGER)');
@@ -753,7 +753,7 @@ it('compileNestedJoins in join clause', function () {
 });
 
 it('selectVectorDistance computes cosine distance', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('INSTALL vss');
@@ -774,7 +774,7 @@ it('selectVectorDistance computes cosine distance', function () {
 });
 
 it('whereVectorDistanceLessThan filters by distance', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('INSTALL vss');
@@ -793,7 +793,7 @@ it('whereVectorDistanceLessThan filters by distance', function () {
 });
 
 it('orderByVectorDistance orders by distance', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('INSTALL vss');

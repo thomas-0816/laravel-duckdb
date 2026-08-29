@@ -1,7 +1,7 @@
 <?php
 
-use DuckDb\DuckDbConnection;
-use DuckDb\Query\Grammars\DuckDBGrammar;
+use DuckDb\DuckDBConnection;
+use DuckDb\Query\Grammars\DuckDBQueryGrammar as DuckDBGrammar;
 
 class TestableDuckDBGrammarJson extends DuckDBGrammar
 {
@@ -22,7 +22,7 @@ class TestableDuckDBGrammarJson extends DuckDBGrammar
 }
 
 it('whereJsonLength works in real query', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE jt2 (data JSON)');
@@ -35,7 +35,7 @@ it('whereJsonLength works in real query', function () {
 });
 
 it('whereJsonContainsKey works in real query', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE jt3 (data JSON)');
@@ -49,7 +49,7 @@ it('whereJsonContainsKey works in real query', function () {
 });
 
 it('whereJsonContains compiles to json_contains', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE jt4 (data JSON)');
@@ -60,7 +60,7 @@ it('whereJsonContains compiles to json_contains', function () {
 });
 
 it('whereJsonBoolean works in real query', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE jt5 (data JSON)');
@@ -70,7 +70,7 @@ it('whereJsonBoolean works in real query', function () {
 });
 
 it('compileJsonValueCast returns value as-is', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $grammar = $connection->getQueryGrammar();
@@ -80,7 +80,7 @@ it('compileJsonValueCast returns value as-is', function () {
 });
 
 it('wrapJsonSelector returns json_extract expression', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $grammar = new TestableDuckDBGrammarJson($connection);
@@ -92,7 +92,7 @@ it('wrapJsonSelector returns json_extract expression', function () {
 });
 
 it('wrapJsonBooleanSelector wraps like wrapJsonSelector', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $grammar = new TestableDuckDBGrammarJson($connection);
@@ -102,7 +102,7 @@ it('wrapJsonBooleanSelector wraps like wrapJsonSelector', function () {
 });
 
 it('wrapJsonBooleanValue returns value as-is', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $grammar = new TestableDuckDBGrammarJson($connection);
@@ -112,7 +112,7 @@ it('wrapJsonBooleanValue returns value as-is', function () {
 });
 
 it('whereJsonOverlaps throws RuntimeException', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $grammar = $connection->getQueryGrammar();
@@ -129,7 +129,7 @@ it('whereJsonOverlaps throws RuntimeException', function () {
 });
 
 it('update compiles JSON columns correctly', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE ujct (id INTEGER, data JSON)');
@@ -142,7 +142,7 @@ it('update compiles JSON columns correctly', function () {
 });
 
 it('whereJsonContains with not works', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE wjcn (data JSON)');
@@ -154,7 +154,7 @@ it('whereJsonContains with not works', function () {
 });
 
 it('whereJsonContainsKey with not works', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE wjckn (data JSON)');

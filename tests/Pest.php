@@ -1,6 +1,6 @@
 <?php
 
-use DuckDb\DuckDbConnection;
+use DuckDb\DuckDBConnection;
 
 /*
 |--------------------------------------------------------------------------
@@ -34,7 +34,7 @@ use DuckDb\DuckDbConnection;
 |
 */
 
-function getTableNames(DuckDbConnection $connection, string $schema): array
+function getTableNames(DuckDBConnection $connection, string $schema): array
 {
     return $connection->table('information_schema.tables')
         ->select('table_name')
@@ -44,7 +44,7 @@ function getTableNames(DuckDbConnection $connection, string $schema): array
         ->toArray();
 }
 
-function getKeyColumnUsage(DuckDbConnection $connection, ?string $tableName, ?string $schema, bool $fkColumnsOnly): array
+function getKeyColumnUsage(DuckDBConnection $connection, ?string $tableName, ?string $schema, bool $fkColumnsOnly): array
 {
     $query = $connection->table('information_schema.key_column_usage')
         ->select('constraint_name', 'table_name', 'column_name');
@@ -61,7 +61,7 @@ function getKeyColumnUsage(DuckDbConnection $connection, ?string $tableName, ?st
     return $query->get()->toArray();
 }
 
-function getReferentialConstraints(DuckDbConnection $connection): array
+function getReferentialConstraints(DuckDBConnection $connection): array
 {
     return $connection->table('information_schema.referential_constraints')
         ->select('constraint_name', 'unique_constraint_name', 'update_rule', 'delete_rule')
@@ -69,7 +69,7 @@ function getReferentialConstraints(DuckDbConnection $connection): array
         ->toArray();
 }
 
-function getTableConstraints(DuckDbConnection $connection, string $tableName, string $schema, array $constraintTypes): array
+function getTableConstraints(DuckDBConnection $connection, string $tableName, string $schema, array $constraintTypes): array
 {
     $constraints = $connection->table('information_schema.table_constraints')
         ->select('constraint_name', 'constraint_type')

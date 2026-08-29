@@ -6,7 +6,7 @@ use Illuminate\Database\Connectors\Connector;
 use Illuminate\Database\Connectors\ConnectorInterface;
 use PDO;
 
-class DuckDbConnector extends Connector implements ConnectorInterface
+class DuckDBConnector extends Connector implements ConnectorInterface
 {
     public function connect(array $config): PDO
     {

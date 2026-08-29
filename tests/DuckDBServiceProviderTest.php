@@ -1,30 +1,30 @@
 <?php
 
-use DuckDb\DuckDbConnection;
-use DuckDb\DuckDbServiceProvider;
+use DuckDb\DuckDBConnection;
+use DuckDb\DuckDBServiceProvider;
 use Illuminate\Container\Container;
 use Illuminate\Database\Connection;
 
 it('registers the duckdb resolver on boot', function () {
-    $provider = new DuckDbServiceProvider(new Container());
+    $provider = new DuckDBServiceProvider(new Container());
     $provider->boot();
 
     expect(Connection::getResolver('duckdb'))->toBeCallable();
 });
 
 it('resolver creates a duckdb connection instance', function () {
-    $provider = new DuckDbServiceProvider(new Container());
+    $provider = new DuckDBServiceProvider(new Container());
     $provider->boot();
 
     $resolver = Connection::getResolver('duckdb');
     $pdo = new PDO('duckdb::memory:');
     $connection = $resolver($pdo, '', '', ['driver' => 'duckdb']);
 
-    expect($connection)->toBeInstanceOf(DuckDbConnection::class);
+    expect($connection)->toBeInstanceOf(DuckDBConnection::class);
 });
 
 it('resolver connection is functional', function () {
-    $provider = new DuckDbServiceProvider(new Container());
+    $provider = new DuckDBServiceProvider(new Container());
     $provider->boot();
 
     $resolver = Connection::getResolver('duckdb');
@@ -38,7 +38,7 @@ it('resolver connection is functional', function () {
 });
 
 it('resolver connection passes database name', function () {
-    $provider = new DuckDbServiceProvider(new Container());
+    $provider = new DuckDBServiceProvider(new Container());
     $provider->boot();
 
     $resolver = Connection::getResolver('duckdb');
@@ -49,7 +49,7 @@ it('resolver connection passes database name', function () {
 });
 
 it('resolver connection passes table prefix', function () {
-    $provider = new DuckDbServiceProvider(new Container());
+    $provider = new DuckDBServiceProvider(new Container());
     $provider->boot();
 
     $resolver = Connection::getResolver('duckdb');
@@ -60,7 +60,7 @@ it('resolver connection passes table prefix', function () {
 });
 
 it('resolver connection passes config', function () {
-    $provider = new DuckDbServiceProvider(new Container());
+    $provider = new DuckDBServiceProvider(new Container());
     $provider->boot();
 
     $resolver = Connection::getResolver('duckdb');
@@ -71,7 +71,7 @@ it('resolver connection passes config', function () {
 });
 
 it('resolver connection uses duckdb query grammar', function () {
-    $provider = new DuckDbServiceProvider(new Container());
+    $provider = new DuckDBServiceProvider(new Container());
     $provider->boot();
 
     $resolver = Connection::getResolver('duckdb');
@@ -79,11 +79,11 @@ it('resolver connection uses duckdb query grammar', function () {
     $connection = $resolver($pdo, '', '', ['driver' => 'duckdb']);
 
     expect($connection->getQueryGrammar())
-        ->toBeInstanceOf(\DuckDb\Query\Grammars\DuckDBGrammar::class);
+        ->toBeInstanceOf(\DuckDb\Query\Grammars\DuckDBQueryGrammar::class);
 });
 
 it('resolver connection uses duckdb schema grammar via builder', function () {
-    $provider = new DuckDbServiceProvider(new Container());
+    $provider = new DuckDBServiceProvider(new Container());
     $provider->boot();
 
     $resolver = Connection::getResolver('duckdb');
@@ -91,13 +91,13 @@ it('resolver connection uses duckdb schema grammar via builder', function () {
     $connection = $resolver($pdo, '', '', ['driver' => 'duckdb']);
 
     $schema = $connection->getSchemaBuilder();
-    expect($schema)->toBeInstanceOf(\DuckDb\Schema\DuckDBBuilder::class);
+    expect($schema)->toBeInstanceOf(\DuckDb\Schema\DuckDBSchemaBuilder::class);
     expect($connection->getSchemaGrammar())
-        ->toBeInstanceOf(\DuckDb\Schema\Grammars\DuckDBGrammar::class);
+        ->toBeInstanceOf(\DuckDb\Schema\Grammars\DuckDBSchemaGrammar::class);
 });
 
 it('resolver connection uses duckdb post processor', function () {
-    $provider = new DuckDbServiceProvider(new Container());
+    $provider = new DuckDBServiceProvider(new Container());
     $provider->boot();
 
     $resolver = Connection::getResolver('duckdb');
@@ -105,11 +105,11 @@ it('resolver connection uses duckdb post processor', function () {
     $connection = $resolver($pdo, '', '', ['driver' => 'duckdb']);
 
     expect($connection->getPostProcessor())
-        ->toBeInstanceOf(\DuckDb\Query\Processors\DuckDbProcessor::class);
+        ->toBeInstanceOf(\DuckDb\Query\Processors\DuckDBProcessor::class);
 });
 
 it('resolver connection can create tables via schema builder', function () {
-    $provider = new DuckDbServiceProvider(new Container());
+    $provider = new DuckDBServiceProvider(new Container());
     $provider->boot();
 
     $resolver = Connection::getResolver('duckdb');
@@ -127,7 +127,7 @@ it('resolver connection can create tables via schema builder', function () {
 });
 
 it('resolver connection can run raw queries', function () {
-    $provider = new DuckDbServiceProvider(new Container());
+    $provider = new DuckDBServiceProvider(new Container());
     $provider->boot();
 
     $resolver = Connection::getResolver('duckdb');
@@ -143,14 +143,14 @@ it('resolver connection can run raw queries', function () {
 
 it('register method can be called without error', function () {
     $app = new Container();
-    $provider = new DuckDbServiceProvider($app);
+    $provider = new DuckDBServiceProvider($app);
 
     $provider->register();
     expect(true)->toBeTrue();
 });
 
 it('boot can be called multiple times safely', function () {
-    $provider = new DuckDbServiceProvider(new Container());
+    $provider = new DuckDBServiceProvider(new Container());
 
     $provider->boot();
     $provider->boot();

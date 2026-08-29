@@ -35,7 +35,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "DuckDb\\DuckDbServiceProvider"
+                "DuckDb\\DuckDBServiceProvider"
             ]
         }
     },

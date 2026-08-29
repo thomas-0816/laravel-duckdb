@@ -5,7 +5,7 @@ namespace DuckDb\Query\Processors;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Processors\Processor;
 
-class DuckDbProcessor extends Processor
+class DuckDBProcessor extends Processor
 {
     /** @inheritDoc */
     public function processInsertGetId(Builder $query, $sql, $values, $sequence = null)

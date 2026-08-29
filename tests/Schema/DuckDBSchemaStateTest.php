@@ -1,11 +1,11 @@
 <?php
 
-use DuckDb\DuckDbConnection;
+use DuckDb\DuckDBConnection;
 use DuckDb\Schema\DuckDBSchemaState;
 use Illuminate\Filesystem\Filesystem;
 
 it('loads a schema file and executes the sql', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $state = new DuckDBSchemaState($connection, new Filesystem());
@@ -28,7 +28,7 @@ it('loads a schema file and executes the sql', function () {
 });
 
 it('loads a schema file with multiple statements', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $state = new DuckDBSchemaState($connection, new Filesystem());
@@ -50,7 +50,7 @@ it('loads a schema file with multiple statements', function () {
 });
 
 it('loads a schema file with only a comment', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $state = new DuckDBSchemaState($connection, new Filesystem());
@@ -67,7 +67,7 @@ it('loads a schema file with only a comment', function () {
 });
 
 it('throws when loading a nonexistent file', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $state = new DuckDBSchemaState($connection, new Filesystem());
@@ -76,7 +76,7 @@ it('throws when loading a nonexistent file', function () {
 })->throws(Exception::class);
 
 it('dumps schema to a file including migration data and cleans up temp directory', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE tools (id INTEGER, name TEXT)');
@@ -101,7 +101,7 @@ it('dumps schema to a file including migration data and cleans up temp directory
 });
 
 it('can set migration table and dump includes its data', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE custom_migrations (id INTEGER, migration TEXT, batch INTEGER)');
@@ -119,7 +119,7 @@ it('can set migration table and dump includes its data', function () {
 });
 
 it('detects whether migration table exists', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
 
@@ -131,7 +131,7 @@ it('detects whether migration table exists', function () {
 });
 
 it('dump skips migration inserts when migration table is empty', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $connection->getPdo()->exec('CREATE TABLE data (id INTEGER, val TEXT)');
@@ -150,7 +150,7 @@ it('dump skips migration inserts when migration table is empty', function () {
 });
 
 it('handles output callback without breaking load', function () {
-    $connection = new DuckDbConnection(function () {
+    $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
     $called = false;
