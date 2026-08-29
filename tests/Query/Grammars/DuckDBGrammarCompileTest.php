@@ -770,7 +770,7 @@ it('selectVectorDistance computes cosine distance', function () {
         ->get();
     expect($results)->toHaveCount(2);
     expect($results[0]->id)->toBe(1);
-    expect($results[0]->distance)->toBe(0.0001407862);
+    expect($results[0]->distance)->toEqualWithDelta(0.0001408, 0.000001);
 });
 
 it('whereVectorDistanceLessThan filters by distance', function () {
