@@ -2,6 +2,7 @@
 
 use DuckDb\DuckDbConnection;
 use DuckDb\Query\Grammars\DuckDBGrammar;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Expression;
 
 it('supports ilike and bitwise operators', function () {
@@ -1043,4 +1044,4 @@ it('where binary', function () {
     expect($result->count())->toBe(1);
     expect($result->first()->id)->toBe(1);
     expect($connection->table('table1')->whereNotBinary('bin', '\xAA\xAB\xAC')->count())->toBe(0);
-});
+})->skip(!method_exists(Builder::class, 'whereBinary'));
