@@ -756,6 +756,7 @@ it('selectVectorDistance computes cosine distance', function () {
     $connection = new DuckDBConnection(function () {
         return new PDO('duckdb::memory:');
     });
+    expect($connection->getQueryGrammar()->supportsVectorDistance())->toBeTrue();
     $connection->getPdo()->exec('INSTALL vss');
     $connection->getPdo()->exec('LOAD vss');
     $connection->getPdo()->exec('CREATE TABLE vd_movies (id INTEGER, title TEXT, vec FLOAT[3])');
