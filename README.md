@@ -826,7 +826,8 @@ class AppServiceProvider extends ServiceProvider {
 ```
 
 DuckDB only allows a single writer. So you can use multiple in-memory databases or\
-open an existing database multiple times with read-only access mode in `config/database.php`:
+open an existing database multiple times with read-only access mode in `config/database.php`:\
+[Learn more](https://duckdb.org/docs/current/connect/concurrency) about concurrency in DuckDB.
 
 ```php
 'connections' => [
@@ -840,8 +841,6 @@ open an existing database multiple times with read-only access mode in `config/d
         'database' => env('DB_DATABASE', database_path('analytics.duckdb')),
         'options' => [PDO::DUCKDB_ATTR_CONFIG => ['access_mode' => 'read_only'],
 ```
-
-[Learn more](https://duckdb.org/docs/current/connect/concurrency) about concurrency in DuckDB.
 
 Disconnect from databases after each request in `config/octane.php` to avoid side effects between requests:
 
