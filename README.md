@@ -825,9 +825,8 @@ class AppServiceProvider extends ServiceProvider {
         })->seconds(10);
 ```
 
-DuckDB only allows a single writer. So you can use multiple in-memory databases or\
-open an existing database multiple times with read-only access mode in `config/database.php`:\
-[Learn more](https://duckdb.org/docs/current/connect/concurrency) about concurrency in DuckDB.
+DuckDB only allows a [single writer](https://duckdb.org/docs/current/connect/concurrency). So you can use multiple in-memory databases or\
+open an existing database multiple times with read-only access mode in `config/database.php`:
 
 ```php
 'connections' => [
