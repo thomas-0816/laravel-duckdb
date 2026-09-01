@@ -802,14 +802,35 @@ SET lock_configuration = true;
 
 A complete list is available in the DuckDB documentation: [Securing DuckDB](https://duckdb.org/docs/lts/operations_manual/securing_duckdb/overview).
 
-## Development
+## Laravel Octane and Swoole
 
-```bash
-# testing
-composer test
-composer test_fix
-./vendor/bin/pest --coverage
+Run queries concurrently:
+
+```php
+$result = Octane::concurrently([
+    fn () => DB::connection('duckdb')->selectOne("select sleep_ms(1000)"),
+    fn () => DB::connection('duckdb')->selectOne("select sleep_ms(1000)"),
+    fn () => DB::connection('duckdb')->selectOne("select sleep_ms(1000)"),
+]); // takes 1s
 ```
+
+DuckDB only allows a single writer. So you can use multiple in-memory databases or\
+open an existing database multiple times with read-only access mode in `config/database.php`:
+
+```php
+'connections' => [
+    'duckdb' => [
+        'driver' => 'duckdb',
+        'database' => ':memory:',
+# or
+'connections' => [
+    'duckdb' => [
+        'driver'   => 'duckdb',
+        'database' => env('DB_DATABASE', database_path('analytics.duckdb')),
+        'options' => [PDO::DUCKDB_ATTR_CONFIG => ['access_mode' => 'read_only'],
+```
+
+[Learn more](https://duckdb.org/docs/current/connect/concurrency) about concurrency in DuckDB.
 
 ## Why DuckDB?
 
@@ -854,6 +875,15 @@ No. This is a third-party open-source community project.
 > Is DuckDB fully open-source?
 
 Yes. DuckDB and all components are fully open-source under the MIT license.
+
+## Development
+
+```bash
+# testing
+composer test
+composer test_fix
+./vendor/bin/pest --coverage
+```
 
 ## AI Disclosure
 
