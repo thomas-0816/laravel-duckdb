@@ -814,6 +814,17 @@ $result = Octane::concurrently([
 ]); // takes 1s
 ```
 
+Run queries every x seconds:
+
+```php
+class AppServiceProvider extends ServiceProvider {
+    public function boot(): void {
+        Octane::tick('my-ticker', function () {
+            $result = DB::connection('duckdb')->selectOne("select sleep_ms(1000)");
+            dump($result);
+        })->seconds(10);
+```
+
 DuckDB only allows a single writer. So you can use multiple in-memory databases or\
 open an existing database multiple times with read-only access mode in `config/database.php`:
 
