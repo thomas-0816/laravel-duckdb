@@ -1045,3 +1045,15 @@ it('where binary', function () {
     expect($result->first()->id)->toBe(1);
     expect($connection->table('table1')->whereNotBinary('bin', '\xAA\xAB\xAC')->count())->toBe(0);
 })->skip(!method_exists(Builder::class, 'whereBinary'));
+
+it('query explain', function () {
+    $connection = new DuckDBConnection(function () {
+        return new PDO('duckdb::memory:');
+    });
+    $connection->getPdo()->exec('create table t1 (id integer, name varchar)');
+    $connection->table('t1')->insert(['id' => 1, 'name' => 'foo']);
+
+    $result = $connection->table('t1')->where('name', 'foo')->explain()->first();
+    expect($result->explain_key)->toBe('physical_plan');
+    expect($result->explain_value)->toContain('PROJECTION')->toContain('SEQ_SCAN');
+});
