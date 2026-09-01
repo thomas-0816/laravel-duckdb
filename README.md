@@ -843,6 +843,14 @@ open an existing database multiple times with read-only access mode in `config/d
 
 [Learn more](https://duckdb.org/docs/current/connect/concurrency) about concurrency in DuckDB.
 
+Disconnect from databases after each request in `config/octane.php` to avoid side effects between requests:
+
+```php
+'listeners' => [
+    OperationTerminated::class => [
+        DisconnectFromDatabases::class,
+```
+
 ## Why DuckDB?
 
 https://duckdb.org/why_duckdb
