@@ -2400,3 +2400,40 @@ it('compile unsigned types', function () {
     expect($result[4]['column_name'])->toBe('id5');
     expect($result[4]['data_type'])->toBe('UINTEGER');
 });
+
+it('compile vectors', function () {
+    $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:'));
+    $connection->getPdo()->exec('INSTALL vss');
+    $connection->getPdo()->exec('LOAD vss');
+
+    $connection->getSchemaBuilder()->create('table1', function (Blueprint $table) {
+        $table->id('id');
+        $table->vector('vec', 3);
+        $table->vectorIndex('vec');
+        $table->vector('vec2', 3);
+        $table->vectorIndex('vec2');
+    });
+
+    $columns = $connection->getPdo()->query('select * from duckdb_columns() where internal = false')->fetchAll(PDO::FETCH_ASSOC);
+    expect($columns)->toHaveCount(3);
+    expect($columns[1]['column_name'])->toBe('vec');
+    expect($columns[1]['data_type'])->toBe('FLOAT[3]');
+    expect($columns[2]['column_name'])->toBe('vec2');
+    expect($columns[2]['data_type'])->toBe('FLOAT[3]');
+
+    $indexes = $connection->getPdo()->query(
+        "select index_name, expressions from duckdb_indexes() where table_name = 'table1' and is_primary = false"
+    )->fetchAll(PDO::FETCH_ASSOC);
+    expect($indexes)->toHaveCount(2);
+    expect($indexes[0]['index_name'])->toBe('table1_vec2_vectorindex');
+    expect($indexes[0]['expressions'])->toBe('[vec2]');
+    expect($indexes[1]['index_name'])->toBe('table1_vec_vectorindex');
+    expect($indexes[1]['expressions'])->toBe('[vec]');
+
+    $connection->getSchemaBuilder()->table('table1', function (Blueprint $table) {
+        $table->dropVectorIndex('table1_vec_vectorindex');
+        $table->dropVectorIndex(['vec2']);
+    });
+    $indexes = $connection->getPdo()->query("select index_name from duckdb_indexes() where table_name = 'table1' and is_primary = false")->fetchColumn();
+    expect($indexes)->toBeEmpty();
+});

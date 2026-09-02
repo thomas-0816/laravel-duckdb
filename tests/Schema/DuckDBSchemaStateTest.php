@@ -5,9 +5,7 @@ use DuckDb\Schema\DuckDBSchemaState;
 use Illuminate\Filesystem\Filesystem;
 
 it('loads a schema file and executes the sql', function () {
-    $connection = new DuckDBConnection(function () {
-        return new PDO('duckdb::memory:');
-    });
+    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
     $state = new DuckDBSchemaState($connection, new Filesystem());
     $path = tempnam(sys_get_temp_dir(), 'duckdb_schema_');
 
@@ -28,9 +26,7 @@ it('loads a schema file and executes the sql', function () {
 });
 
 it('loads a schema file with multiple statements', function () {
-    $connection = new DuckDBConnection(function () {
-        return new PDO('duckdb::memory:');
-    });
+    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
     $state = new DuckDBSchemaState($connection, new Filesystem());
     $path = tempnam(sys_get_temp_dir(), 'duckdb_schema_');
 
@@ -50,9 +46,7 @@ it('loads a schema file with multiple statements', function () {
 });
 
 it('loads a schema file with only a comment', function () {
-    $connection = new DuckDBConnection(function () {
-        return new PDO('duckdb::memory:');
-    });
+    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
     $state = new DuckDBSchemaState($connection, new Filesystem());
     $path = tempnam(sys_get_temp_dir(), 'duckdb_schema_');
 
@@ -67,18 +61,14 @@ it('loads a schema file with only a comment', function () {
 });
 
 it('throws when loading a nonexistent file', function () {
-    $connection = new DuckDBConnection(function () {
-        return new PDO('duckdb::memory:');
-    });
+    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
     $state = new DuckDBSchemaState($connection, new Filesystem());
 
     $state->load('/nonexistent/path.sql');
 })->throws(Exception::class);
 
 it('dumps schema to a file including migration data and cleans up temp directory', function () {
-    $connection = new DuckDBConnection(function () {
-        return new PDO('duckdb::memory:');
-    });
+    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE tools (id INTEGER, name TEXT)');
     $connection->getPdo()->exec("INSERT INTO tools VALUES (1, 'hammer')");
     $connection->getPdo()->exec('CREATE TABLE migrations (id INTEGER, migration TEXT, batch INTEGER)');
@@ -101,9 +91,7 @@ it('dumps schema to a file including migration data and cleans up temp directory
 });
 
 it('can set migration table and dump includes its data', function () {
-    $connection = new DuckDBConnection(function () {
-        return new PDO('duckdb::memory:');
-    });
+    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE custom_migrations (id INTEGER, migration TEXT, batch INTEGER)');
     $connection->getPdo()->exec("INSERT INTO custom_migrations VALUES (1, 'create_users_table', 1)");
     $state = new DuckDBSchemaState($connection);
@@ -119,9 +107,7 @@ it('can set migration table and dump includes its data', function () {
 });
 
 it('detects whether migration table exists', function () {
-    $connection = new DuckDBConnection(function () {
-        return new PDO('duckdb::memory:');
-    });
+    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
 
     $state = new DuckDBSchemaState($connection);
     expect($state->hasMigrationTable())->toBeFalse();
@@ -131,9 +117,7 @@ it('detects whether migration table exists', function () {
 });
 
 it('dump skips migration inserts when migration table is empty', function () {
-    $connection = new DuckDBConnection(function () {
-        return new PDO('duckdb::memory:');
-    });
+    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE data (id INTEGER, val TEXT)');
     $connection->getPdo()->exec("INSERT INTO data VALUES (1, 'x')");
     $connection->getPdo()->exec('CREATE TABLE migrations (id INTEGER, migration TEXT, batch INTEGER)');
@@ -150,9 +134,7 @@ it('dump skips migration inserts when migration table is empty', function () {
 });
 
 it('handles output callback without breaking load', function () {
-    $connection = new DuckDBConnection(function () {
-        return new PDO('duckdb::memory:');
-    });
+    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
     $called = false;
     $state = new DuckDBSchemaState($connection);
     $state->handleOutputUsing(function ($type, $buffer) use (&$called) {
