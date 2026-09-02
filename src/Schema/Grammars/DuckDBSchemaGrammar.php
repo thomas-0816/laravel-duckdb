@@ -255,26 +255,31 @@ class DuckDBSchemaGrammar extends Grammar
 
     public function compileUnique(Blueprint $blueprint, Fluent $command): string
     {
-        [$schema, $table] = $this->connection->getSchemaBuilder()->parseSchemaAndTable($blueprint->getTable());
-
         return sprintf(
-            'create unique index %s%s on %s (%s)',
-            $schema ? $this->wrapValue($schema) . '.' : '',
+            'create unique index %s on %s (%s)',
             $this->wrap($command->index),
-            $this->wrapTable($table),
+            $this->wrapTable($blueprint),
             $this->columnize($command->columns)
         );
     }
 
     public function compileIndex(Blueprint $blueprint, Fluent $command): string
     {
-        [$schema, $table] = $this->connection->getSchemaBuilder()->parseSchemaAndTable($blueprint->getTable());
-
         return sprintf(
-            'create index %s%s on %s (%s)',
-            $schema ? $this->wrapValue($schema) . '.' : '',
+            'create index %s on %s (%s)',
             $this->wrap($command->index),
-            $this->wrapTable($table),
+            $this->wrapTable($blueprint),
+            $this->columnize($command->columns)
+        );
+    }
+
+    public function compileVectorIndex(Blueprint $blueprint, Fluent $command): string
+    {
+        return sprintf(
+            'create index %s on %s using %s (%s)',
+            $this->wrap($command->index),
+            $this->wrapTable($blueprint),
+            $command->algorithm,
             $this->columnize($command->columns)
         );
     }
@@ -324,6 +329,11 @@ class DuckDBSchemaGrammar extends Grammar
     }
 
     public function compileDropUnique(Blueprint $blueprint, Fluent $command): string
+    {
+        return $this->compileDropIndex($blueprint, $command);
+    }
+
+    public function compileDropVectorIndex(Blueprint $blueprint, Fluent $command): string
     {
         return $this->compileDropIndex($blueprint, $command);
     }
@@ -546,6 +556,11 @@ class DuckDBSchemaGrammar extends Grammar
     protected function typeGeography(Fluent $column): string
     {
         return 'geometry';
+    }
+
+    protected function typeVector(Fluent $column): string
+    {
+        return $column->dimensions ? "float[{$column->dimensions}]" : 'float[]';
     }
 
     protected function modifyVirtualAs(Blueprint $blueprint, Fluent $column): ?string
