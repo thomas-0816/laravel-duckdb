@@ -1339,21 +1339,31 @@ it('compileIndex creates index with schema', function () {
 
 it('compileDropIndex drops index with schema', function () {
     $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:'));
+    $connection->getPdo()->exec('CREATE SCHEMA custom');
 
-    $connection->getSchemaBuilder()->create('drop_idx_test', function (Blueprint $table) {
+    $connection->getSchemaBuilder()->create('custom.schema_idx_tbl', function (Blueprint $table) {
         $table->integer('col1');
-        $table->index(['col1'], 'idx_to_drop');
-    });
-
-    $connection->getSchemaBuilder()->table('drop_idx_test', function (Blueprint $table) {
-        $table->dropIndex('idx_to_drop');
+        $table->index(['col1'], 'idx_custom');
+        $table->unique('col1', 'uniq_custom');
     });
 
     $indexes = $connection->getPdo()->query(
-        "select index_name from duckdb_indexes() where table_name = 'drop_idx_test'"
-    )->fetchAll(PDO::FETCH_COLUMN);
+        "select index_name, is_unique from duckdb_indexes() where table_name = 'schema_idx_tbl'"
+    )->fetchAll(PDO::FETCH_ASSOC);
 
-    expect($indexes)->not->toContain('idx_to_drop');
+    expect($indexes)->toHaveCount(2);
+    expect($indexes[0]['index_name'])->toBe('idx_custom');
+    expect($indexes[0]['is_unique'])->toBe(false);
+    expect($indexes[1]['index_name'])->toBe('uniq_custom');
+    expect($indexes[1]['is_unique'])->toBe(true);
+
+    $connection->getSchemaBuilder()->table('custom.schema_idx_tbl', function (Blueprint $table) {
+        $table->dropIndex('idx_custom');
+        $table->dropIndex('uniq_custom');
+    });
+
+    $indexes = $connection->getPdo()->query("select index_name from duckdb_indexes() where table_name = 'schema_idx_tbl'")->fetchColumn();
+    expect($indexes)->toBeEmpty();
 });
 
 it('dropAllTables drops tables from custom schema', function () {
