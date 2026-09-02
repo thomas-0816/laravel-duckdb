@@ -319,8 +319,8 @@ it('verifies vector similarity search', function () {
         $table->vectorIndex('vec');
     });
     $connection->table('events')->insert([
-        ['id' => 1, 'vec' => json_encode([1, 2, 3])],
-        ['id' => 2, 'vec' => json_encode([4, 5, 6])],
+        ['id' => 1, 'vec' => [1, 2, 3]],
+        ['id' => 2, 'vec' => [4, 5, 6]],
     ]);
     $results = $connection->table('events')
         ->select('id')

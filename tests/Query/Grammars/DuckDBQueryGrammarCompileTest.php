@@ -663,8 +663,8 @@ it('selectVectorDistance computes cosine distance', function () {
     $connection->getPdo()->exec('LOAD vss');
     $connection->getPdo()->exec('CREATE TABLE table1 (id INTEGER, title TEXT, vec FLOAT[3])');
     $connection->table('table1')->insert([
-        ['id' => 1, 'title' => 'a', 'vec' => json_encode([1, 2, 3])],
-        ['id' => 2, 'title' => 'b', 'vec' => json_encode([4, 5, 6])],
+        ['id' => 1, 'title' => 'a', 'vec' => [1, 2, 3]],
+        ['id' => 2, 'title' => 'b', 'vec' => [4, 5, 6]],
     ]);
 
     $results = $connection->table('table1')
@@ -683,8 +683,8 @@ it('whereVectorDistanceLessThan filters by distance', function () {
     $connection->getPdo()->exec('LOAD vss');
     $connection->getPdo()->exec('CREATE TABLE table1 (id INTEGER, vec FLOAT[3])');
     $connection->table('table1')->insert([
-        ['id' => 1, 'vec' => json_encode([1, 2, 3])],
-        ['id' => 2, 'vec' => json_encode([4, 5, 6])],
+        ['id' => 1, 'vec' => [1, 2, 3]],
+        ['id' => 2, 'vec' => [4, 5, 6]],
     ]);
 
     $results = $connection->table('table1')
@@ -700,9 +700,9 @@ it('orderByVectorDistance orders by distance', function () {
     $connection->getPdo()->exec('LOAD vss');
     $connection->getPdo()->exec('CREATE TABLE table1 (id INTEGER, vec FLOAT[3])');
     $connection->table('table1')->insert([
-        ['id' => 1, 'vec' => json_encode([1, 2, 3])],
-        ['id' => 2, 'vec' => json_encode([4, 5, 6])],
-        ['id' => 3, 'vec' => json_encode([6, 5, 4])],
+        ['id' => 1, 'vec' => [1, 2, 3]],
+        ['id' => 2, 'vec' => [4, 5, 6]],
+        ['id' => 3, 'vec' => [6, 5, 4]],
     ]);
     $results = $connection->table('table1')
         ->orderByVectorDistance('vec', [6.1, 5.1, 4.1])

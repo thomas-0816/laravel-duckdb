@@ -113,7 +113,7 @@ it('whereJsonOverlaps throws RuntimeException', function () {
 it('update compiles JSON columns correctly', function () {
     $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE ujct (id INTEGER, data JSON)');
-    $connection->table('ujct')->insert(['id' => 1, 'data' => json_encode(['a_a' => 1, 'b' => 3])]);
+    $connection->table('ujct')->insert(['id' => 1, 'data' => ['a_a' => 1, 'b' => 3]]);
 
     $connection->table('ujct')->where('id', 1)->update(['data->a_a' => 2]);
 
