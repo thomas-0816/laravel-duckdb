@@ -2446,4 +2446,4 @@ it('compile vectors', function () {
     });
     $indexes = $connection->getPdo()->query("select index_name from duckdb_indexes() where table_name = 'table1' and is_primary = false")->fetchColumn();
     expect($indexes)->toBeEmpty();
-});
+})->skip(! method_exists(Blueprint::class, 'dropVectorIndex'));
