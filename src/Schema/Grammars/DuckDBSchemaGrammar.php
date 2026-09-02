@@ -276,7 +276,7 @@ class DuckDBSchemaGrammar extends Grammar
     public function compileVectorIndex(Blueprint $blueprint, Fluent $command): string
     {
         return sprintf(
-            'create index %s on %s using %s (%s)',
+            "create index %s on %s using %s (%s) WITH (metric = 'cosine')",
             $this->wrap($command->index),
             $this->wrapTable($blueprint),
             $command->algorithm,

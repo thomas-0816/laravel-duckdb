@@ -308,3 +308,26 @@ it('verifies csv data import', function () {
     expect((array) $result[0])->toBe(['column_name' => 'aaa', 'column_type' => 'VARCHAR', 'null' => 'YES', 'key' => null, 'default' => null, 'extra' => null]);
     expect((array) $result[1])->toBe(['column_name' => 'bbb', 'column_type' => 'VARCHAR', 'null' => 'YES', 'key' => null, 'default' => null, 'extra' => null]);
 });
+
+it('verifies vector similarity search', function () {
+    $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:'));
+    $connection->unprepared('INSTALL vss; LOAD vss');
+
+    $connection->getSchemaBuilder()->create('events', function (Blueprint $table) {
+        $table->id();
+        $table->vector('vec', 3);
+        $table->vectorIndex('vec');
+    });
+    $connection->table('events')->insert([
+        ['id' => 1, 'vec' => json_encode([1, 2, 3])],
+        ['id' => 2, 'vec' => json_encode([4, 5, 6])],
+    ]);
+    $results = $connection->table('events')
+        ->select('id')
+        ->selectVectorDistance('vec', [1.1, 2.1, 3.1], 'distance')
+        ->where('distance', '<=', 0.01)
+        ->orderBy('distance')
+        ->get();
+    expect($results->count())->toBe(1);
+    expect($results->first()->distance)->toEqualWithDelta(0.0001408, 0.0000001);
+});
