@@ -6,7 +6,7 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Expression;
 
 it('supports ilike and bitwise operators', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $grammar = new DuckDBGrammar($connection);
 
     $operators = $grammar->getOperators();
@@ -16,7 +16,7 @@ it('supports ilike and bitwise operators', function () {
 });
 
 it('ilike operator works in a real query', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE items (name TEXT)');
     $connection->getPdo()->exec("INSERT INTO items VALUES ('Hello'), ('WORLD'), ('hello')");
 
@@ -28,7 +28,7 @@ it('ilike operator works in a real query', function () {
 });
 
 it('like operator works in a real query (case-sensitive in duckdb)', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE items2 (name TEXT)');
     $connection->getPdo()->exec("INSERT INTO items2 VALUES ('Hello'), ('WORLD'), ('hello')");
 
@@ -39,7 +39,7 @@ it('like operator works in a real query (case-sensitive in duckdb)', function ()
 });
 
 it('date functions work in real queries', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE events (d DATE, t TEXT)');
     $connection->getPdo()->exec("INSERT INTO events VALUES ('2024-03-15', 'one')");
     $connection->getPdo()->exec("INSERT INTO events VALUES ('2024-06-20', 'two')");
@@ -51,7 +51,7 @@ it('date functions work in real queries', function () {
 });
 
 it('whereRowValues works in real query', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE rv (a INTEGER, b INTEGER)');
     $connection->getPdo()->exec("INSERT INTO rv VALUES (1, 2), (3, 4)");
 
@@ -61,7 +61,7 @@ it('whereRowValues works in real query', function () {
 });
 
 it('whereExists works in real query', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE we_parent (id INTEGER)');
     $connection->getPdo()->exec('CREATE TABLE we_child (parent_id INTEGER)');
     $connection->getPdo()->exec("INSERT INTO we_parent VALUES (1), (2)");
@@ -76,7 +76,7 @@ it('whereExists works in real query', function () {
 });
 
 it('whereNotExists works in real query', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE wne_parent (id INTEGER)');
     $connection->getPdo()->exec('CREATE TABLE wne_child (parent_id INTEGER)');
     $connection->getPdo()->exec("INSERT INTO wne_parent VALUES (1), (2)");
@@ -91,7 +91,7 @@ it('whereNotExists works in real query', function () {
 });
 
 it('whereSub works in real query', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE ws_emp (id INTEGER, salary INTEGER)');
     $connection->getPdo()->exec("INSERT INTO ws_emp VALUES (1, 100), (2, 200), (3, 300)");
 
@@ -102,7 +102,7 @@ it('whereSub works in real query', function () {
 });
 
 it('whereNested works in real query', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE wn (id INTEGER, val TEXT)');
     $connection->getPdo()->exec("INSERT INTO wn VALUES (1, 'a'), (2, 'b'), (3, 'c')");
 
@@ -115,7 +115,7 @@ it('whereNested works in real query', function () {
 });
 
 it('whereExpression works in real query', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE wex (id INTEGER)');
     $connection->getPdo()->exec("INSERT INTO wex VALUES (1), (2), (3)");
 
@@ -127,7 +127,7 @@ it('whereExpression works in real query', function () {
 });
 
 it('insert or ignore works in real query', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE iot (id INTEGER PRIMARY KEY, name TEXT)');
 
     $connection->table('iot')->insert(['id' => 1, 'name' => 'alice']);
@@ -141,7 +141,7 @@ it('insert or ignore works in real query', function () {
 });
 
 it('upsert works with update on conflict', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE upsert_t (id INTEGER PRIMARY KEY, name TEXT)');
 
     $connection->table('upsert_t')->insert(['id' => 1, 'name' => 'alice']);
@@ -156,7 +156,7 @@ it('upsert works with update on conflict', function () {
 });
 
 it('upsert inserts new rows', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE upsert_t (id INTEGER PRIMARY KEY, name TEXT)');
 
     $connection->table('upsert_t')->upsert(
@@ -170,7 +170,7 @@ it('upsert inserts new rows', function () {
 });
 
 it('truncate issues delete from and works', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE ttd (id INTEGER, name TEXT)');
     $connection->table('ttd')->insert([['id' => 1, 'name' => 'a'], ['id' => 2, 'name' => 'b']]);
     expect($connection->table('ttd')->count())->toBe(2);
@@ -181,7 +181,7 @@ it('truncate issues delete from and works', function () {
 });
 
 it('union results are returned from subquery wrap', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE us (id INTEGER)');
     $connection->table('us')->insert([['id' => 1], ['id' => 2]]);
 
@@ -194,7 +194,7 @@ it('union results are returned from subquery wrap', function () {
 });
 
 it('union queries can be filtered', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE us (id INTEGER)');
     $connection->table('us')->insert([['id' => 1], ['id' => 2], ['id' => 3]]);
 
@@ -207,7 +207,7 @@ it('union queries can be filtered', function () {
 });
 
 it('getBitwiseOperators returns bitwise operators', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $grammar = new DuckDBGrammar($connection);
 
     $bitwise = $grammar->getBitwiseOperators();
@@ -215,7 +215,7 @@ it('getBitwiseOperators returns bitwise operators', function () {
 });
 
 it('lock is ignored in queries', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE lock_t (id INTEGER)');
     $connection->table('lock_t')->insert(['id' => 1]);
 
@@ -224,7 +224,7 @@ it('lock is ignored in queries', function () {
 });
 
 it('index hint is ignored in queries', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE ih_t (id INTEGER)');
     $connection->table('ih_t')->insert(['id' => 1]);
 
@@ -233,14 +233,14 @@ it('index hint is ignored in queries', function () {
 });
 
 it('supportsSavepoints returns false', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $grammar = $connection->getQueryGrammar();
 
     expect($grammar->supportsSavepoints())->toBeFalse();
 });
 
 it('savepoint and rollback work in real queries', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE sp_t (id INTEGER, val TEXT)');
     $connection->table('sp_t')->insert(['id' => 1, 'val' => 'original']);
 
@@ -253,7 +253,7 @@ it('savepoint and rollback work in real queries', function () {
 });
 
 it('select specific columns', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE sc_t (id INTEGER, name TEXT)');
     $connection->table('sc_t')->insert([['id' => 1, 'name' => 'a']]);
 
@@ -263,7 +263,7 @@ it('select specific columns', function () {
 });
 
 it('select distinct works', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE sd_t (val INTEGER)');
     $connection->table('sd_t')->insert([['val' => 1], ['val' => 1], ['val' => 2]]);
 
@@ -272,7 +272,7 @@ it('select distinct works', function () {
 });
 
 it('limit and offset work in real queries', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE lo_t (id INTEGER)');
     $connection->table('lo_t')->insert([['id' => 1], ['id' => 2], ['id' => 3], ['id' => 4], ['id' => 5]]);
 
@@ -288,7 +288,7 @@ it('limit and offset work in real queries', function () {
 });
 
 it('whereRaw works in real query', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE wr_t (id INTEGER, name TEXT)');
     $connection->table('wr_t')->insert([['id' => 1, 'name' => 'a'], ['id' => 2, 'name' => 'b'], ['id' => 3, 'name' => 'c']]);
 
@@ -298,7 +298,7 @@ it('whereRaw works in real query', function () {
 });
 
 it('whereBasic works with all comparison operators', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE wb_t (id INTEGER, val INTEGER)');
     $connection->table('wb_t')->insert([['id' => 1, 'val' => 10], ['id' => 2, 'val' => 20], ['id' => 3, 'val' => 30]]);
 
@@ -312,7 +312,7 @@ it('whereBasic works with all comparison operators', function () {
 });
 
 it('whereIn works in real query', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE win_t (id INTEGER, name TEXT)');
     $connection->table('win_t')->insert([['id' => 1, 'name' => 'a'], ['id' => 2, 'name' => 'b'], ['id' => 3, 'name' => 'c']]);
 
@@ -321,7 +321,7 @@ it('whereIn works in real query', function () {
 });
 
 it('whereIn returns 0=1 when values empty', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE wie_t (id INTEGER)');
     $connection->table('wie_t')->insert(['id' => 1]);
 
@@ -333,7 +333,7 @@ it('whereIn returns 0=1 when values empty', function () {
 });
 
 it('whereNotIn works in real query', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE wni_t (id INTEGER)');
     $connection->table('wni_t')->insert([['id' => 1], ['id' => 2], ['id' => 3]]);
 
@@ -342,7 +342,7 @@ it('whereNotIn works in real query', function () {
 });
 
 it('whereNotIn returns 1=1 when values empty', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE wnie_t (id INTEGER)');
     $connection->table('wnie_t')->insert(['id' => 1]);
 
@@ -354,7 +354,7 @@ it('whereNotIn returns 1=1 when values empty', function () {
 });
 
 it('whereInRaw works in real query', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE wir_t (id INTEGER)');
     $connection->table('wir_t')->insert([['id' => 1], ['id' => 2], ['id' => 3]]);
 
@@ -363,7 +363,7 @@ it('whereInRaw works in real query', function () {
 });
 
 it('whereNotInRaw works in real query', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE wnir_t (id INTEGER)');
     $connection->table('wnir_t')->insert([['id' => 1], ['id' => 2], ['id' => 3]]);
 
@@ -372,7 +372,7 @@ it('whereNotInRaw works in real query', function () {
 });
 
 it('whereNull works in real query', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE wnl_t (id INTEGER, val TEXT)');
     $connection->table('wnl_t')->insert([['id' => 1, 'val' => 'a'], ['id' => 2, 'val' => null]]);
 
@@ -381,7 +381,7 @@ it('whereNull works in real query', function () {
 });
 
 it('whereNotNull works in real query', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE wnnl_t (id INTEGER, val TEXT)');
     $connection->table('wnnl_t')->insert([['id' => 1, 'val' => 'a'], ['id' => 2, 'val' => null]]);
 
@@ -390,7 +390,7 @@ it('whereNotNull works in real query', function () {
 });
 
 it('whereBetween works in real query', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE wbtw_t (id INTEGER)');
     $connection->table('wbtw_t')->insert([['id' => 1], ['id' => 2], ['id' => 3], ['id' => 4], ['id' => 5]]);
 
@@ -399,7 +399,7 @@ it('whereBetween works in real query', function () {
 });
 
 it('whereBetween works with not', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE wbtwn_t (id INTEGER)');
     $connection->table('wbtwn_t')->insert([['id' => 1], ['id' => 2], ['id' => 3], ['id' => 4], ['id' => 5]]);
 
@@ -408,7 +408,7 @@ it('whereBetween works with not', function () {
 });
 
 it('whereBetweenColumns works in real query', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE wbtc_t (id INTEGER, min_val INTEGER, max_val INTEGER)');
     $connection->table('wbtc_t')->insert([['id' => 1, 'min_val' => 1, 'max_val' => 5], ['id' => 2, 'min_val' => 10, 'max_val' => 20]]);
 
@@ -418,7 +418,7 @@ it('whereBetweenColumns works in real query', function () {
 });
 
 it('whereColumn works in real query', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE wc_t (a INTEGER, b INTEGER)');
     $connection->table('wc_t')->insert([['a' => 1, 'b' => 1], ['a' => 1, 'b' => 2], ['a' => 2, 'b' => 1]]);
 
@@ -428,7 +428,7 @@ it('whereColumn works in real query', function () {
 });
 
 it('having between works in real query', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE hbt_t (category TEXT, val INTEGER)');
     $connection->table('hbt_t')->insert([
         ['category' => 'a', 'val' => 1],
@@ -450,7 +450,7 @@ it('having between works in real query', function () {
 });
 
 it('having null works in real query', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE hnl_t (id INTEGER, note TEXT)');
     $connection->table('hnl_t')->insert([['id' => 1, 'note' => 'a'], ['id' => 2, 'note' => null]]);
 
@@ -463,7 +463,7 @@ it('having null works in real query', function () {
 });
 
 it('having not null works in real query', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE hnnt (id INTEGER, note TEXT)');
     $connection->table('hnnt')->insert([['id' => 1, 'note' => 'a'], ['id' => 2, 'note' => null]]);
 
@@ -478,7 +478,7 @@ it('having not null works in real query', function () {
 });
 
 it('order by with raw expression works', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE ore (id INTEGER, name TEXT)');
     $connection->table('ore')->insert([['id' => 1, 'name' => 'a'], ['id' => 2, 'name' => 'b']]);
 
@@ -488,7 +488,7 @@ it('order by with raw expression works', function () {
 });
 
 it('insertGetId with multiple rows works', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE igimr (id INTEGER, name TEXT)');
 
     $connection->table('igimr')->insert(['id' => 1, 'name' => 'first']);
@@ -500,7 +500,7 @@ it('insertGetId with multiple rows works', function () {
 });
 
 it('insert multiple rows at once', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE imr (id INTEGER, name TEXT)');
 
     $connection->table('imr')->insert([
@@ -513,7 +513,7 @@ it('insert multiple rows at once', function () {
 });
 
 it('insert default values works', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE idv (id INTEGER DEFAULT 0, name TEXT DEFAULT \'unknown\')');
 
     $connection->getPdo()->exec('INSERT INTO "idv" DEFAULT VALUES');
@@ -522,7 +522,7 @@ it('insert default values works', function () {
 });
 
 it('basic update without joins works', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE bu_t (id INTEGER, val TEXT)');
     $connection->table('bu_t')->insert([['id' => 1, 'val' => 'old'], ['id' => 2, 'val' => 'keep']]);
 
@@ -533,7 +533,7 @@ it('basic update without joins works', function () {
 });
 
 it('basic delete without joins works', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE bd_t (id INTEGER, val TEXT)');
     $connection->table('bd_t')->insert([['id' => 1, 'val' => 'a'], ['id' => 2, 'val' => 'b']]);
 
@@ -544,7 +544,7 @@ it('basic delete without joins works', function () {
 });
 
 it('delete with limit works', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE dl_t (id INTEGER)');
     $connection->table('dl_t')->insert([['id' => 1], ['id' => 2], ['id' => 3]]);
 
@@ -554,7 +554,7 @@ it('delete with limit works', function () {
 });
 
 it('update with limit works', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE ul_t (id INTEGER, val TEXT)');
     $connection->table('ul_t')->insert([['id' => 1, 'val' => 'a'], ['id' => 2, 'val' => 'b'], ['id' => 3, 'val' => 'c']]);
 
@@ -564,7 +564,7 @@ it('update with limit works', function () {
 });
 
 it('prepareBindingsForDelete works correctly', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $grammar = $connection->getQueryGrammar();
 
     $bindings = [
@@ -580,7 +580,7 @@ it('prepareBindingsForDelete works correctly', function () {
 });
 
 it('union all works', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE ua_t (id INTEGER)');
     $connection->table('ua_t')->insert([['id' => 1], ['id' => 2]]);
 
@@ -593,7 +593,7 @@ it('union all works', function () {
 });
 
 it('union with limit and offset works', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $grammar = new DuckDBGrammar($connection);
     $connection->getPdo()->exec('CREATE TABLE uwl (id INTEGER)');
     $connection->table('uwl')->insert([['id' => 1], ['id' => 2]]);
@@ -607,7 +607,7 @@ it('union with limit and offset works', function () {
 });
 
 it('substituteBindingsIntoRawSql replaces bindings', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $grammar = $connection->getQueryGrammar();
 
     $result = $grammar->substituteBindingsIntoRawSql(
@@ -618,7 +618,7 @@ it('substituteBindingsIntoRawSql replaces bindings', function () {
 });
 
 it('substituteBindingsIntoRawSql handles escaped quotes', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $grammar = $connection->getQueryGrammar();
 
     $result = $grammar->substituteBindingsIntoRawSql(
@@ -629,7 +629,7 @@ it('substituteBindingsIntoRawSql handles escaped quotes', function () {
 });
 
 it('select with aggregate functions works', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE saft (id INTEGER, val INTEGER)');
     $connection->table('saft')->insert([['id' => 1, 'val' => 10], ['id' => 2, 'val' => 20], ['id' => 3, 'val' => 30]]);
 
@@ -641,7 +641,7 @@ it('select with aggregate functions works', function () {
 });
 
 it('select with aggregate and group by works', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE sagb (category TEXT, val INTEGER)');
     $connection->table('sagb')->insert([
         ['category' => 'a', 'val' => 10],
@@ -654,7 +654,7 @@ it('select with aggregate and group by works', function () {
 });
 
 it('whereTime works in real query', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE wtme (id INTEGER, t TIME)');
     $connection->getPdo()->exec("INSERT INTO wtme VALUES (1, '10:30:00'::TIME), (2, '14:00:00'::TIME)");
 
@@ -663,7 +663,7 @@ it('whereTime works in real query', function () {
 });
 
 it('nested having works', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE nh_t (cat TEXT, val INTEGER)');
     $connection->table('nh_t')->insert([
         ['cat' => 'a', 'val' => 1],
@@ -683,7 +683,7 @@ it('nested having works', function () {
 });
 
 it('basic having bit works', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE hbt2 (cat TEXT, val INTEGER)');
     $connection->table('hbt2')->insert([
         ['cat' => 'a', 'val' => 1],
@@ -708,7 +708,7 @@ it('basic having bit works', function () {
 });
 
 it('whereBetweenColumns with not works', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE wbtn (id INTEGER, min_v INTEGER, max_v INTEGER)');
     $connection->table('wbtn')->insert([
         ['id' => 1, 'min_v' => 1, 'max_v' => 5],
@@ -721,7 +721,7 @@ it('whereBetweenColumns with not works', function () {
 });
 
 it('having expression works', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE he_t (cat TEXT, val INTEGER)');
     $connection->table('he_t')->insert([
         ['cat' => 'a', 'val' => 10],
@@ -739,7 +739,7 @@ it('having expression works', function () {
 });
 
 it('select with aggregate distinct works', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE sad (val INTEGER)');
     $connection->table('sad')->insert([['val' => 1], ['val' => 1], ['val' => 2]]);
 
@@ -748,7 +748,7 @@ it('select with aggregate distinct works', function () {
 });
 
 it('lock is silently ignored for all lock types', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE clt (id INTEGER)');
     $connection->table('clt')->insert([['id' => 1], ['id' => 2]]);
 
@@ -760,7 +760,7 @@ it('lock is silently ignored for all lock types', function () {
 });
 
 it('whereLike defaults to ilike (case-insensitive)', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE wl1 (name TEXT)');
     $connection->getPdo()->exec("INSERT INTO wl1 VALUES ('Hello'), ('WORLD'), ('hello')");
 
@@ -769,7 +769,7 @@ it('whereLike defaults to ilike (case-insensitive)', function () {
 });
 
 it('whereLike with caseSensitive true uses like', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE wl2 (name TEXT)');
     $connection->getPdo()->exec("INSERT INTO wl2 VALUES ('Hello'), ('WORLD'), ('hello')");
 
@@ -779,7 +779,7 @@ it('whereLike with caseSensitive true uses like', function () {
 });
 
 it('whereNotLike defaults to not ilike', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE wl3 (name TEXT)');
     $connection->getPdo()->exec("INSERT INTO wl3 VALUES ('Hello'), ('WORLD'), ('hello')");
 
@@ -789,7 +789,7 @@ it('whereNotLike defaults to not ilike', function () {
 });
 
 it('whereNotLike with caseSensitive true uses not like', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE wl4 (name TEXT)');
     $connection->getPdo()->exec("INSERT INTO wl4 VALUES ('Hello'), ('WORLD'), ('hello')");
 
@@ -800,7 +800,7 @@ it('whereNotLike with caseSensitive true uses not like', function () {
 });
 
 it('update with join and where on main query compiles correctly', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE ujw1 (id INTEGER, status TEXT, val TEXT)');
     $connection->getPdo()->exec('CREATE TABLE ujw2 (id INTEGER, ref TEXT)');
     $connection->table('ujw1')->insert([
@@ -819,7 +819,7 @@ it('update with join and where on main query compiles correctly', function () {
 });
 
 it('update with join and limit and skip and where on main query compiles correctly', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE ujw1 (id INTEGER, status TEXT, val TEXT)');
     $connection->getPdo()->exec('CREATE TABLE ujw2 (id INTEGER, ref TEXT)');
     $connection->table('ujw1')->insert([
@@ -840,7 +840,7 @@ it('update with join and limit and skip and where on main query compiles correct
 });
 
 it('delete with join and where on main query compiles correctly', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE djw1 (id INTEGER, status TEXT)');
     $connection->getPdo()->exec('CREATE TABLE djw2 (id INTEGER)');
     $connection->table('djw1')->insert([
@@ -860,7 +860,7 @@ it('delete with join and where on main query compiles correctly', function () {
 });
 
 it('delete with limit and where clause compiles correctly', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE dlw (id INTEGER, keep TEXT)');
     $connection->table('dlw')->insert([
         ['id' => 1, 'keep' => 'yes'],
@@ -875,7 +875,7 @@ it('delete with limit and where clause compiles correctly', function () {
 });
 
 it('delete with limit and skip and where clause compiles correctly', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE dlw (id INTEGER, keep TEXT)');
     $connection->table('dlw')->insert([
         ['id' => 1, 'keep' => 'no'],
@@ -890,7 +890,7 @@ it('delete with limit and skip and where clause compiles correctly', function ()
 });
 
 it('where binary', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE table1 (id INTEGER, bin BLOB)');
     $connection->table('table1')->insert(['id' => 1, 'bin' => '\xAA\xAB\xAC']);
 
@@ -901,7 +901,7 @@ it('where binary', function () {
 })->skip(!method_exists(Builder::class, 'whereBinary'));
 
 it('query explain', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('create table t1 (id integer, name varchar)');
     $connection->table('t1')->insert(['id' => 1, 'name' => 'foo']);
 

@@ -10,7 +10,7 @@ use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Filesystem\Filesystem;
 
 it('can run a select query and return results', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE test (id INTEGER, name TEXT)');
     $connection->getPdo()->exec("INSERT INTO test VALUES (1, 'Alice'), (2, 'Bob')");
 
@@ -22,7 +22,7 @@ it('can run a select query and return results', function () {
 });
 
 it('can insert and update data', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE test (id INTEGER, name TEXT)');
     $connection->getPdo()->exec("INSERT INTO test VALUES (1, 'Alice')");
 
@@ -35,7 +35,7 @@ it('can insert and update data', function () {
 });
 
 it('can delete data', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE test (id INTEGER, name TEXT)');
     $connection->getPdo()->exec("INSERT INTO test VALUES (1, 'Alice')");
 
@@ -46,7 +46,7 @@ it('can delete data', function () {
 });
 
 it('can run a raw statement', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE test (id INTEGER)');
 
     $result = $connection->statement('INSERT INTO test VALUES (42)');
@@ -55,7 +55,7 @@ it('can run a raw statement', function () {
 });
 
 it('commits persist and rollbacks discard', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE test (id INTEGER, name TEXT)');
 
     $connection->beginTransaction();
@@ -72,7 +72,7 @@ it('commits persist and rollbacks discard', function () {
 });
 
 it('can use the query builder for inserts', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE users (id INTEGER, email TEXT)');
 
     $connection->table('users')->insert([
@@ -85,7 +85,7 @@ it('can use the query builder for inserts', function () {
 });
 
 it('can use the query builder with where clauses', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE users (id INTEGER, email TEXT)');
     $connection->table('users')->insert([
         ['id' => 1, 'email' => 'alice@example.com'],
@@ -98,7 +98,7 @@ it('can use the query builder with where clauses', function () {
 });
 
 it('can create a table via the schema builder', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $schema = $connection->getSchemaBuilder();
 
     $schema->create('posts', function ($table) {
@@ -113,7 +113,7 @@ it('can create a table via the schema builder', function () {
 });
 
 it('can check if a table exists', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE animals (id INTEGER)');
 
     $schema = $connection->getSchemaBuilder();
@@ -123,7 +123,7 @@ it('can check if a table exists', function () {
 });
 
 it('can get column listing', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE data (id INTEGER, label TEXT, value DOUBLE)');
 
     $schema = $connection->getSchemaBuilder();
@@ -134,7 +134,7 @@ it('can get column listing', function () {
 });
 
 it('returns driver title', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
 
     expect($connection->getDriverTitle())->toBe('DuckDB');
 });
@@ -147,7 +147,7 @@ it('registers the duckdb driver resolver via service provider', function () {
 });
 
 it('handles query exceptions on unique constraint violations', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE items (id INTEGER, slug TEXT UNIQUE)');
     $connection->table('items')->insert(['id' => 1, 'slug' => 'foo']);
 
@@ -155,7 +155,7 @@ it('handles query exceptions on unique constraint violations', function () {
 })->throws(UniqueConstraintViolationException::class);
 
 it('escapes binary values to hex literal', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
 
     $result = $connection->escape("\x00\x01\xFF", true);
 
@@ -163,7 +163,7 @@ it('escapes binary values to hex literal', function () {
 });
 
 it('escapes empty binary to empty hex literal', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
 
     $result = $connection->escape('', true);
 
@@ -171,7 +171,7 @@ it('escapes empty binary to empty hex literal', function () {
 });
 
 it('returns a DuckDBSchemaState from getSchemaState', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
 
     $schemaState = $connection->getSchemaState();
 
@@ -179,7 +179,7 @@ it('returns a DuckDBSchemaState from getSchemaState', function () {
 });
 
 it('parses unique constraint violation columns from exception', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE tags (id INTEGER, name TEXT UNIQUE)');
     $connection->table('tags')->insert(['id' => 1, 'name' => 'laravel']);
 
@@ -188,7 +188,7 @@ it('parses unique constraint violation columns from exception', function () {
 })->throws(PDOException::class, 'Duplicate key "name: laravel" violates unique constraint');
 
 it('parses composite unique constraint violation columns', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
     $connection->getPdo()->exec('CREATE TABLE pairs (a INTEGER, b INTEGER, UNIQUE(a, b))');
     $connection->table('pairs')->insert(['a' => 1, 'b' => 2]);
 
@@ -197,13 +197,13 @@ it('parses composite unique constraint violation columns', function () {
 })->throws(PDOException::class, 'Duplicate key "a: 1, b: 2" violates unique constraint');
 
 it('returns false for isUniqueConstraintError on non-matching exception', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
 
     $connection->select('SELECT * FROM non_existent_table_xyz');
 })->throws(QueryException::class);
 
 it('parses unique constraint violation with empty columns when message format is unrecognized', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
 
     $connection->getPdo()->exec('CREATE TABLE unique_format_test (id INTEGER, name TEXT UNIQUE)');
     $connection->getPdo()->exec("INSERT INTO unique_format_test VALUES (1, 'a')");
@@ -217,7 +217,7 @@ it('parses unique constraint violation with empty columns when message format is
 });
 
 it('reuses existing schema grammar when calling getSchemaBuilder twice', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
 
     $schema1 = $connection->getSchemaBuilder();
     $schema2 = $connection->getSchemaBuilder();
@@ -227,7 +227,7 @@ it('reuses existing schema grammar when calling getSchemaBuilder twice', functio
 });
 
 it('getSchemaState accepts optional filesystem and process factory', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
 
     $files = new Filesystem();
     $processFactory = static fn($process) => $process;
@@ -238,7 +238,7 @@ it('getSchemaState accepts optional filesystem and process factory', function ()
 });
 
 it('getSchemaState accepts only filesystem argument', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
 
     $schemaState = $connection->getSchemaState(new Filesystem());
 
@@ -246,7 +246,7 @@ it('getSchemaState accepts only filesystem argument', function () {
 });
 
 it('getSchemaBuilder returns functional schema builder', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
 
     $schema = $connection->getSchemaBuilder();
 
@@ -261,7 +261,7 @@ it('getSchemaBuilder returns functional schema builder', function () {
 });
 
 it('default query grammar is DuckDB grammar', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
 
     $grammar = $connection->getQueryGrammar();
 
@@ -269,7 +269,7 @@ it('default query grammar is DuckDB grammar', function () {
 });
 
 it('default post processor is DuckDB processor', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
 
     $processor = $connection->getPostProcessor();
 
@@ -277,7 +277,7 @@ it('default post processor is DuckDB processor', function () {
 });
 
 it('returns duckdb as the driver name', function () {
-    $connection = new DuckDBConnection(fn () => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
 
     expect($connection->getDriverTitle())->toBe('DuckDB');
 });
