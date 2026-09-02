@@ -2,12 +2,14 @@
 
 namespace DuckDb\Query\Grammars;
 
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\Grammars\Grammar;
 use Illuminate\Database\Query\JoinLateralClause;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
+use Illuminate\Support\Stringable;
 
 class DuckDBQueryGrammar extends Grammar
 {
@@ -263,13 +265,7 @@ class DuckDBQueryGrammar extends Grammar
         return "delete from {$table} where {$this->wrap('rowid')} in ({$selectSql})";
     }
 
-    /**
-     * Compile a "lateral join" clause.
-     *
-     * @param  \Illuminate\Database\Query\JoinLateralClause  $join
-     * @param  string  $expression
-     * @return string
-     */
+    /** {@inheritdoc} */
     public function compileJoinLateral(JoinLateralClause $join, string $expression): string
     {
         $joining = trim($join->type . ' join lateral ' . $expression);
@@ -277,22 +273,19 @@ class DuckDBQueryGrammar extends Grammar
         return $join->type === 'cross' ? $joining : $joining . ' on true';
     }
 
-    /**
-     * Compile a vector distance expression for the given column.
-     *
-     * @param  string  $column
-     * @return string
-     */
+    /** {@inheritdoc} */
     public function compileVectorDistanceExpression($column)
     {
-        return "({$this->wrap($column)} <=> ?)";
+        $frame = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 2)[1];
+        $vector = $frame['args'][1] ?? null;
+        $vector = is_string($vector) ? (new Stringable($vector))->toEmbeddings(cache: true) : $vector; // @phpstan-ignore method.notFound
+        $vector = $vector instanceof Arrayable ? $vector->toArray() : $vector;
+        $dimensions = is_array($vector) ? count($vector) : 0;
+
+        return "array_cosine_distance({$this->wrap($column)}, ?::FLOAT[{$dimensions}])";
     }
 
-    /**
-     * Determine if the grammar supports vector distance queries.
-     *
-     * @return bool
-     */
+    /** {@inheritdoc */
     public function supportsVectorDistance()
     {
         return true;

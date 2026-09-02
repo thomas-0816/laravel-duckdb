@@ -2423,6 +2423,10 @@ it('compile vectors', function () {
         $table->vector('vec2', 3);
         $table->vectorIndex('vec2');
     });
+    $connection->table('table1')->insert([
+        ['id' => 1, 'vec' => [1, 2, 3], 'vec2' => [1, 2, 3]],
+        ['id' => 2, 'vec' => [4, 5, 6], 'vec2' => [4, 5, 6]],
+    ]);
 
     $columns = $connection->getPdo()->query('select * from duckdb_columns() where internal = false')->fetchAll(PDO::FETCH_ASSOC);
     expect($columns)->toHaveCount(3);
@@ -2431,9 +2435,8 @@ it('compile vectors', function () {
     expect($columns[2]['column_name'])->toBe('vec2');
     expect($columns[2]['data_type'])->toBe('FLOAT[3]');
 
-    $indexes = $connection->getPdo()->query(
-        "select index_name, expressions from duckdb_indexes() where table_name = 'table1' and is_primary = false"
-    )->fetchAll(PDO::FETCH_ASSOC);
+    $indexes = $connection->getPdo()
+        ->query("select index_name, expressions from duckdb_indexes() where table_name = 'table1' and is_primary = false")->fetchAll(PDO::FETCH_ASSOC);
     expect($indexes)->toHaveCount(2);
     expect($indexes[0]['index_name'])->toBe('table1_vec2_vectorindex');
     expect($indexes[0]['expressions'])->toBe('[vec2]');
@@ -2447,3 +2450,27 @@ it('compile vectors', function () {
     $indexes = $connection->getPdo()->query("select index_name from duckdb_indexes() where table_name = 'table1' and is_primary = false")->fetchColumn();
     expect($indexes)->toBeEmpty();
 })->skip(! method_exists(Blueprint::class, 'dropVectorIndex'));
+
+it('compile vector search', function () {
+    $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:'));
+    $connection->getPdo()->exec('INSTALL vss');
+    $connection->getPdo()->exec('LOAD vss');
+
+    $connection->getSchemaBuilder()->create('table1', function (Blueprint $table) {
+        $table->id('id');
+        $table->vector('vec', 3);
+        $table->vectorIndex('vec');
+    });
+    $connection->table('table1')->insert([
+        ['id' => 1, 'vec' => [1, 2, 3]],
+        ['id' => 2, 'vec' => [4, 5, 6]],
+    ]);
+
+    $results = $connection->table('table1')
+        ->select('id')
+        ->selectVectorDistance('vec', [1.1, 2.1, 3.1], 'distance')
+        ->orderBy('distance')
+        ->limit(1); // required to trigger index scan
+    expect($results->first()->id)->toBe(1);
+    expect($results->explain()->first()->explain_value)->toContain('HNSW_INDEX_SCAN');
+});
