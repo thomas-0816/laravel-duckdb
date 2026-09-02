@@ -677,17 +677,17 @@ DB::connection('duckdb')->unprepared('INSTALL vss; LOAD vss');
 
 Schema::connection('duckdb')->create('events', function (Blueprint $table) {
     $table->id();
-    $table->vector('vec', 3);
-    $table->vectorIndex('vec');
+    $table->vector('embeddings', 3);
+    $table->vectorIndex('embeddings');
 });
 DB::connection('duckdb')->table('events')->insert([
-    ['id' => 1, 'vec' => [1, 2, 3]],
-    ['id' => 2, 'vec' => [4, 5, 6]],
+    ['id' => 1, 'embeddings' => [1, 2, 3]],
+    ['id' => 2, 'embeddings' => [4, 5, 6]],
 ]);
 
 $results = DB::connection('duckdb')->table('events')
     ->select('id')
-    ->selectVectorDistance('vec', [1.1, 2.1, 3.1], 'distance')
+    ->selectVectorDistance('embeddings', [1.1, 2.1, 3.1], 'distance')
     ->where('distance', '<=', 0.01)
     ->orderBy('distance')
     ->get();
