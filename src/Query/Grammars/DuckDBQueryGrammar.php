@@ -273,8 +273,10 @@ class DuckDBQueryGrammar extends Grammar
         return $join->type === 'cross' ? $joining : $joining . ' on true';
     }
 
-    /** {@inheritdoc} */
-    public function compileVectorDistanceExpression($column)
+    /**
+     * @param string $column
+     */
+    public function compileVectorDistanceExpression($column): string
     {
         $frame = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 2)[1];
         $vector = $frame['args'][1] ?? null;
@@ -286,7 +288,7 @@ class DuckDBQueryGrammar extends Grammar
     }
 
     /** {@inheritdoc */
-    public function supportsVectorDistance()
+    public function supportsVectorDistance(): bool
     {
         return true;
     }
