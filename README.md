@@ -396,7 +396,9 @@ dump($result->toArray());
 DB::connection('duckdb')->unprepared('INSTALL excel; LOAD excel');
 
 DB::connection('duckdb')->unprepared('CREATE TABLE table1 (text VARCHAR, amount DECIMAL(10, 2))');
-DB::connection('duckdb')->table('table1')->insert([['text' => 'Hello Excel 🦆', 'amount' => 42.21]]);
+DB::connection('duckdb')->table('table1')->insert([
+    ['text' => 'Hello Excel 🦆', 'amount' => 42.21],
+]);
 
 DB::connection('duckdb')->unprepared("COPY (SELECT * FROM table1) TO '/tmp/table1.xlsx'");
 
