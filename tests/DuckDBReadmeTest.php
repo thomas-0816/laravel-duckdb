@@ -333,14 +333,15 @@ it('verifies vector similarity search', function () {
 });
 
 it('verifies read and write excel files', function () {
+    $tmpFileXlsx = sys_get_temp_dir() . '/test.xlsx';
     $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:'));
     $connection->unprepared('INSTALL excel; LOAD excel');
     $connection->unprepared('CREATE TABLE table1 (id INTEGER, text VARCHAR, amount DECIMAL(10, 2))');
     $connection->table('table1')->insert(['id' => 1, 'text' => 'Hello Excel 🦆', 'amount' => 42.21]);
-    $connection->unprepared("COPY (SELECT * FROM table1) TO '/tmp/table1.xlsx'");
+    $connection->unprepared(sprintf("COPY (SELECT * FROM table1) TO '%s'", $tmpFileXlsx));
 
     $result = $connection->query()
-        ->from('/tmp/table1.xlsx')
+        ->from($tmpFileXlsx)
         ->get()
         ->toArray();
     expect((array) $result[0])->toBe(['A1' => 1.0, 'B1' => 'Hello Excel 🦆', 'C1' => 42.21]);
