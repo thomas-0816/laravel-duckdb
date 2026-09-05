@@ -331,3 +331,17 @@ it('verifies vector similarity search', function () {
     expect($results->count())->toBe(1);
     expect($results->first()->distance)->toEqualWithDelta(0.0001408, 0.0000001);
 });
+
+it('verifies read and write excel files', function () {
+    $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:'));
+    $connection->unprepared('INSTALL excel; LOAD excel');
+    $connection->unprepared('CREATE TABLE table1 (id INTEGER, text VARCHAR, amount DECIMAL(10, 2))');
+    $connection->table('table1')->insert(['id' => 1, 'text' => 'Hello Excel 🦆', 'amount' => 42.21]);
+    $connection->unprepared("COPY (SELECT * FROM table1) TO '/tmp/table1.xlsx'");
+
+    $result = $connection->query()
+        ->from('/tmp/table1.xlsx')
+        ->get()
+        ->toArray();
+    expect((array) $result[0])->toBe(['A1' => 1.0, 'B1' => 'Hello Excel 🦆', 'C1' => 42.21]);
+});
