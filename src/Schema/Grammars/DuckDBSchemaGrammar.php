@@ -37,7 +37,7 @@ class DuckDBSchemaGrammar extends Grammar
     /** @inheritDoc */
     public function compileTables($schema)
     {
-        $sql = 'select table_name as name, schema_name as schema'
+        return 'select table_name as name, schema_name as schema'
             . ' from duckdb_tables() as t where'
             . (match (true) {
                 ! empty($schema) && is_array($schema) => ' t.schema_name in (' . $this->quoteString($schema) . ') and',
@@ -46,8 +46,6 @@ class DuckDBSchemaGrammar extends Grammar
             })
             . ' not t.internal '
             . 'order by t.schema_name, t.table_name';
-
-        return $sql;
     }
 
     /** @inheritDoc */
@@ -145,24 +143,20 @@ class DuckDBSchemaGrammar extends Grammar
     /** {@inheritdoc} */
     protected function addForeignKeys(array $foreignKeys): ?string
     {
-        return array_reduce($foreignKeys, function ($sql, $foreign) {
-            return $sql . $this->getForeignKey($foreign);
-        }, '');
+        return array_reduce($foreignKeys, fn($sql, $foreign) => $sql . $this->getForeignKey($foreign), '');
     }
 
     protected function getForeignKey(Fluent $foreign): string
     {
         $name = $foreign->index ?: 'fk_' . implode('_', (array) $foreign->columns);
 
-        $sql = sprintf(
+        return sprintf(
             ', constraint %s foreign key(%s) references %s(%s)',
             $this->wrap($name),
             $this->columnize($foreign->columns),
             $this->wrapTable($foreign->on),
             $this->columnize((array) $foreign->references)
         );
-
-        return $sql;
     }
 
     protected function addPrimaryKeys(?Fluent $primary): ?string
@@ -176,9 +170,7 @@ class DuckDBSchemaGrammar extends Grammar
 
     protected function addUniqueConstraints(array $uniques): string
     {
-        return array_reduce($uniques, function ($sql, $unique) {
-            return $sql . sprintf(', unique (%s)', $this->columnize($unique->columns));
-        }, '');
+        return array_reduce($uniques, fn($sql, $unique) => sprintf('%s, unique (%s)', $sql, $this->columnize($unique->columns)), '');
     }
 
     public function compileAdd(Blueprint $blueprint, Fluent $command): array
