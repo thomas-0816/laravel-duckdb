@@ -9,9 +9,8 @@ class DuckDBServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
-        Connection::resolverFor('duckdb', function ($connection, $database, $prefix, $config) {
-            return new DuckDBConnection($connection, $database, $prefix, $config);
-        });
+        Connection::resolverFor('duckdb', static fn($connection, $database, $prefix, $config)
+            => new DuckDBConnection($connection, $database, $prefix, $config));
     }
 
     /** {@inheritdoc} */

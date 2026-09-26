@@ -23,7 +23,7 @@ it('connects to a file-based database', function () {
     unlink($file);
     $connector = new DuckDBConnector();
     $connector->connect(['database' => $file]);
-    expect(file_exists($file))->toBeTrue();
+    expect($file)->toBeFile();
     unlink($file);
 });
 
