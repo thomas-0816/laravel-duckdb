@@ -24,7 +24,7 @@ class DuckDBProcessor extends Processor
     /** @inheritDoc */
     public function processColumns($results)
     {
-        return array_map(function ($result) {
+        return array_map(static function ($result) {
             $result = (object) $result;
             $type = strtolower($result->type);
             $autoincrement = $result->default !== null && str_starts_with($result->default, 'nextval(');
@@ -47,10 +47,11 @@ class DuckDBProcessor extends Processor
     public function processIndexes($results)
     {
         $primaryCount = 0;
-        $indexes = array_map(function ($result) use (&$primaryCount) {
+        $indexes = array_map(static function ($result) use (&$primaryCount) {
             $result = (object) $result;
-            if ($isPrimary = (bool) ($result->primary ?? false)) {
-                $primaryCount += 1;
+            $isPrimary = (bool) ($result->primary ?? false);
+            if ($isPrimary) {
+                $primaryCount++;
             }
 
             return [
@@ -73,7 +74,7 @@ class DuckDBProcessor extends Processor
     /** @inheritDoc */
     public function processForeignKeys($results)
     {
-        return array_map(function ($result) {
+        return array_map(static function ($result) {
             $result = (object) $result;
 
             return [
