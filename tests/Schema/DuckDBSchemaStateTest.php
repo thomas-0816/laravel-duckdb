@@ -54,7 +54,12 @@ it('loads a schema file with only a comment', function () {
 
     $state->load($path);
 
-    $tables = getTableNames($connection, 'main');
+    $tables = $connection->table('information_schema.tables')
+        ->select('table_name')
+        ->where('table_type', 'BASE TABLE')
+        ->where('table_schema', 'main')
+        ->get()
+        ->toArray();
     expect($tables)->toHaveCount(0);
 
     unlink($path);
@@ -146,7 +151,12 @@ it('handles output callback without breaking load', function () {
     $state->load($path);
 
     expect($called)->toBeFalse();
-    $tableNames = array_column(getTableNames($connection, 'main'), 'table_name');
+    $tableNames = array_column($connection->table('information_schema.tables')
+        ->select('table_name')
+        ->where('table_type', 'BASE TABLE')
+        ->where('table_schema', 'main')
+        ->get()
+        ->toArray(), 'table_name');
     expect($tableNames)->toContain('callback_test');
 
     unlink($path);

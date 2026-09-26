@@ -16,7 +16,7 @@ it('creates a database file', function () {
     $result = $builder->createDatabase($path);
 
     expect($result)->toBeTrue();
-    expect(file_exists($path))->toBeTrue();
+    expect($path)->toBeFile();
 
     unlink($path);
 });
@@ -42,7 +42,7 @@ it('drops an existing database file', function () {
     $path = sys_get_temp_dir() . '/duckdb_drop_' . uniqid() . '.duckdb';
 
     $builder->createDatabase($path);
-    expect(file_exists($path))->toBeTrue();
+    expect($path)->toBeFile();
 
     $result = $builder->dropDatabaseIfExists($path);
 
@@ -59,7 +59,7 @@ it('creates and drops database file in sequence', function () {
     $path = sys_get_temp_dir() . '/duckdb_seq_' . uniqid() . '.duckdb';
 
     $builder->createDatabase($path);
-    expect(file_exists($path))->toBeTrue();
+    expect($path)->toBeFile();
 
     $builder->dropDatabaseIfExists($path);
     expect(file_exists($path))->toBeFalse();
@@ -178,7 +178,7 @@ it('pragma set returns empty string', function () {
 
     $result = $builder->pragma('threads', '4');
 
-    expect($result)->toBe('');
+    expect($result)->toBeEmpty();
 });
 
 it('pragma set changes the configuration', function () {
@@ -232,9 +232,9 @@ it('pragma returns string types for both get and set', function () {
     $builder = $connection->getSchemaBuilder();
 
     $getResult = $builder->pragma('platform');
-    expect(is_string($getResult))->toBeTrue();
+    expect($getResult)->toBeString();
 
     $setResult = $builder->pragma('threads', '2');
-    expect(is_string($setResult))->toBeTrue();
-    expect($setResult)->toBe('');
+    expect($setResult)->toBeString();
+    expect($setResult)->toBeEmpty();
 });
