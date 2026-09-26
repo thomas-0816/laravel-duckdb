@@ -21,7 +21,7 @@ it('getSchemas includes the default schema', function () {
     $main = collect($schemas)->firstWhere('name', 'main');
 
     expect($main)->not->toBeNull();
-    expect($main['default'])->toBe(true);
+    expect($main['default'])->toBeTrue();
 });
 
 it('hasTable detects an existing table via information_schema', function () {
@@ -751,7 +751,7 @@ it('modifyDefault with boolean default', function () {
     $connection->getPdo()->exec('INSERT INTO default_bool DEFAULT VALUES');
     $result = $connection->table('default_bool')->first();
 
-    expect($result->flag)->toBe(true);
+    expect($result->flag)->toBeTrue();
 });
 
 it('modifyDefault with integer default', function () {
@@ -891,7 +891,7 @@ it('compileTableComment sets a table comment', function () {
         $table->comment(null);
     });
     $result = $connection->getPdo()->query("select comment from duckdb_tables() where table_name = 'commented2'")->fetchColumn();
-    expect($result)->toBe(null);
+    expect($result)->toBeNull();
 });
 
 it('adding column without comment does not alter column metadata', function () {
@@ -1353,9 +1353,9 @@ it('compileDropIndex drops index with schema', function () {
 
     expect($indexes)->toHaveCount(2);
     expect($indexes[0]['index_name'])->toBe('idx_custom');
-    expect($indexes[0]['is_unique'])->toBe(false);
+    expect($indexes[0]['is_unique'])->toBeFalse();
     expect($indexes[1]['index_name'])->toBe('uniq_custom');
-    expect($indexes[1]['is_unique'])->toBe(true);
+    expect($indexes[1]['is_unique'])->toBeTrue();
 
     $connection->getSchemaBuilder()->table('custom.schema_idx_tbl', function (Blueprint $table) {
         $table->dropIndex('idx_custom');
@@ -1443,8 +1443,7 @@ it('compileTableComment sets table comment via schema builder', function () {
     });
 
     $result = $connection->getPdo()->query("select * from duckdb_tables() where table_name = 'tcomment_raw'")->fetch(PDO::FETCH_ASSOC);
-
-    expect($result)->not->toBeFalse();
+    expect($result)->not->toBeEmpty();
 });
 
 it('compileCreate with char type via grammar', function () {
@@ -2153,8 +2152,8 @@ it('change column default with boolean value', function () {
 
     $connection->table('chg_default_bool')->insert([['id' => 2]]);
 
-    expect($connection->table('chg_default_bool')->where('id', 1)->value('active'))->toBe(true);
-    expect($connection->table('chg_default_bool')->where('id', 2)->value('active'))->toBe(false);
+    expect($connection->table('chg_default_bool')->where('id', 1)->value('active'))->toBeTrue();
+    expect($connection->table('chg_default_bool')->where('id', 2)->value('active'))->toBeFalse();
 });
 
 it('change multiple column attributes at once', function () {
