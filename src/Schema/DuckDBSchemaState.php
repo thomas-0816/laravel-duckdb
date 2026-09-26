@@ -52,9 +52,7 @@ class DuckDBSchemaState extends SchemaState
         foreach ($rows as $row) {
             $row = (array) $row;
             $columns = array_keys($row);
-            $values = array_map(function ($v) {
-                return is_null($v) ? 'NULL' : $this->connection->getPdo()->quote((string) $v);
-            }, $row);
+            $values = array_map(fn($v) => (is_null($v) ? 'NULL' : $this->connection->getPdo()->quote((string) $v)), $row);
 
             $migrations[] = sprintf(
                 'INSERT INTO %s (%s) VALUES (%s);',

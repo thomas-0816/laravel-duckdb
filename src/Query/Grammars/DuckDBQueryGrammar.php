@@ -182,11 +182,11 @@ class DuckDBQueryGrammar extends Grammar
 
         $sql .= ' on conflict (' . $this->columnize($uniqueBy) . ') do update set ';
 
-        $columns = (new Collection($update))->map(function ($value, $key) {
-            return is_numeric($key)
-                ? $this->wrap($value) . ' = ' . $this->wrapValue('excluded') . '.' . $this->wrap($value)
-                : $this->wrap($key) . ' = ' . $this->parameter($value);
-        })->implode(', ');
+        $columns = (new Collection($update))->map(
+            fn($value, $key) => is_numeric($key)
+                ? ($this->wrap($value) . ' = ' . $this->wrapValue('excluded') . '.' . $this->wrap($value))
+                : ($this->wrap($key) . ' = ' . $this->parameter($value))
+        )->implode(', ');
 
         return $sql . $columns;
     }
@@ -287,7 +287,7 @@ class DuckDBQueryGrammar extends Grammar
         return "array_cosine_distance({$this->wrap($column)}, ?::FLOAT[{$dimensions}])";
     }
 
-    /** {@inheritdoc */
+    /** {@inheritdoc} */
     public function supportsVectorDistance(): bool
     {
         return true;
