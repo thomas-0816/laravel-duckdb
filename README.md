@@ -34,6 +34,13 @@ It is also thread safe and fully tested with FrankenPHP (PHP-ZTS) and Swoole.\
 The release packages contain pre-compiled binaries for all supported platforms and DuckDB is directly included.\
 DuckDB extensions work the same way as they do in DuckDB CLI.
 
+## Install and load pdo_duckdb on demand
+
+```bash
+pie install --skip-enable-extension thomas-0816/pdo-duckdb-php
+php -d extension=pdo_duckdb some_script.php
+```
+
 ## Configuration
 
 Add a `duckdb` connection to your `config/database.php`:
@@ -481,6 +488,31 @@ dump(array_map('json_encode', $rows));
 #     {"train_number":"647","station_name":"Berlin S\u00fcdkreuz","delay_in_min":120,"hour":4,"departure_is_canceled":false}
 #     {"train_number":"647","station_name":"Berlin-Spandau","delay_in_min":146,"hour":4,"departure_is_canceled":false}
 ```
+
+## Read private data using REST APIs
+
+```php
+use Illuminate\Support\Facades\DB;
+
+$url = 'https://httpbin.org/headers';
+DB::connection('duckdb')->unprepared("CREATE SECRET http_auth (TYPE http, SCOPE '{$url}', BEARER_TOKEN 'some secret')");
+
+$result = DB::connection('duckdb')->query()
+    ->select('*')
+    ->fromRaw("read_json('{$url}?foo=bar')")
+    ->get();
+var_dump($result[0]);
+
+# stdClass Object
+#     [headers] => Array
+#             [Accept] => */*
+#             [Authorization] => Bearer some secret
+#             [Host] => httpbin.org
+#             [User-Agent] => duckdb/v1.5.5(linux_amd64) capi d8cdaa33fd
+#             [X-Amzn-Trace-Id] => Root=1-6ab92b91-3190fcdc299218c830d77467
+```
+
+See the documentation for [managing secrets](https://duckdb.org/docs/current/configuration/secrets_manager) and [read_json()](https://duckdb.org/docs/lts/data/json/loading_json).
 
 ## Copy data from MariaDB to a Parquet file
 

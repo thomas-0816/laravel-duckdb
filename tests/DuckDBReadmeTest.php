@@ -347,3 +347,14 @@ it('verifies read and write excel files', function () {
         ->toArray();
     expect((array) $result[0])->toBe(['A1' => 1.0, 'B1' => 'Hello Excel 🦆', 'C1' => 42.21]);
 });
+
+it('verifies read data from private rest api', function () {
+    $url = 'https://httpbin.org/headers';
+    $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:'));
+    $connection->unprepared("CREATE SECRET http_auth (TYPE http, SCOPE '{$url}', BEARER_TOKEN 'some secret')");
+    $result = $connection->query()
+        ->select('*')
+        ->fromRaw("read_json('{$url}?foo=bar')")
+        ->get();
+    expect($result[0]->headers['Authorization'])->toBe('Bearer some secret');
+});
