@@ -710,4 +710,4 @@ it('orderByVectorDistance orders by distance', function () {
         ->select('id')
         ->get();
     expect($results->pluck('id')->all())->toBe([3, 2, 1]);
-})->skip(!method_exists(Builder::class, 'orderByVectorDistance'));;
+})->skip(!method_exists(Builder::class, 'orderByVectorDistance'));

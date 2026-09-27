@@ -104,7 +104,7 @@ it('verifies examples from readme', function () {
     $connection->getSchemaBuilder()->createSequence('seq_events_id', 1, 1);
     $sequences = $connection->getPdo()->query("select * from duckdb_sequences()")->fetchAll(PDO::FETCH_ASSOC);
     expect($sequences)->not->toBeEmpty();
-})->skip(! method_exists(Builder::class, 'selectExpression'));;
+})->skip(! method_exists(Builder::class, 'selectExpression'));
 
 it('verifies examples from readme, csv files', function () {
     $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:'));
@@ -331,7 +331,7 @@ it('verifies vector similarity search', function () {
         ->get();
     expect($results->count())->toBe(1);
     expect($results->first()->distance)->toEqualWithDelta(0.0001408, 0.0000001);
-})->skip(! method_exists(Blueprint::class, 'vectorIndex'));;
+})->skip(! method_exists(Blueprint::class, 'vectorIndex'));
 
 it('verifies read and write excel files', function () {
     $tmpFileXlsx = sys_get_temp_dir() . '/test.xlsx';
