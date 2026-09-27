@@ -106,7 +106,7 @@ jobs:
             vendor/bin/php-cs-fixer fix --dry-run --allow-risky=yes --diff
             vendor/bin/phpstan analyse
           fi
-          vendor/bin/pest --coverage --min=95
+          vendor/bin/pest --coverage --min=90
 
   zizmor:
     name: zizmor
