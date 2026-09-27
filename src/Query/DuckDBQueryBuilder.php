@@ -9,7 +9,7 @@ use RuntimeException;
 class DuckDBQueryBuilder extends Builder
 {
     /** {@inheritdoc} */
-    protected function ensureConnectionSupportsVectors()
+    protected function ensureConnectionSupportsVectors(): void
     {
         throw_if(! $this->getGrammar() instanceof DuckDBQueryGrammar, RuntimeException::class, 'Vector distance queries are not supported.');
     }
