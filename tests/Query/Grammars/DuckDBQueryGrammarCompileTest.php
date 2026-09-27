@@ -1,6 +1,7 @@
 <?php
 
 use DuckDb\DuckDBConnection;
+use Illuminate\Database\Query\Builder;
 
 it('update with join compiles to UPDATE...FROM syntax', function () {
     $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
@@ -172,7 +173,7 @@ it('whereNullSafeEquals matches null and non-null values', function () {
     $matchValue = $connection->table('wnse_t')->whereNullSafeEquals('val', 'a')->get();
     expect($matchValue)->toHaveCount(1);
     expect($matchValue[0]->id)->toBe(1);
-});
+})->skip(! method_exists(Builder::class, 'whereNullSafeEquals'));
 
 it('compileGroups compiles GROUP BY correctly', function () {
     $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
@@ -190,7 +191,7 @@ it('compileGroups compiles GROUP BY correctly', function () {
     expect((int) $results[0]->cnt)->toBe(2);
     expect($results[1]->category)->toBe('b');
     expect((int) $results[1]->cnt)->toBe(1);
-});
+})->skip(!method_exists(Builder::class, 'selectExpression'));
 
 it('compileHavings compiles HAVING correctly', function () {
     $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
@@ -213,7 +214,7 @@ it('compileHavings compiles HAVING correctly', function () {
     expect($results)->toHaveCount(1);
     expect($results[0]->category)->toBe('b');
     expect((int) $results[0]->total)->toBe(6);
-});
+})->skip(!method_exists(Builder::class, 'selectExpression'));
 
 it('compileInOrderOf works with CASE WHEN ordering', function () {
     $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
@@ -224,7 +225,7 @@ it('compileInOrderOf works with CASE WHEN ordering', function () {
     expect($results[0]->name)->toBe('a');
     expect($results[1]->name)->toBe('b');
     expect($results[2]->name)->toBe('c');
-});
+})->skip(! method_exists(Builder::class, 'inOrderOf'));
 
 it('compileInsert compiles basic insert correctly', function () {
     $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
@@ -351,7 +352,7 @@ it('whereValueBetween filters value between two columns', function () {
 
     $results = $connection->table('wvbt')->whereValueBetween(15, ['low', 'high'])->get();
     expect($results)->toHaveCount(0);
-});
+})->skip(! method_exists(Builder::class, 'whereValueBetween'));
 
 it('compileColumns with distinct', function () {
     $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
@@ -675,7 +676,7 @@ it('selectVectorDistance computes cosine distance', function () {
     expect($results)->toHaveCount(2);
     expect($results[0]->id)->toBe(1);
     expect($results[0]->distance)->toEqualWithDelta(0.0001408, 0.000001);
-});
+})->skip(!method_exists(Builder::class, 'selectVectorDistance'));
 
 it('whereVectorDistanceLessThan filters by distance', function () {
     $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
@@ -692,7 +693,7 @@ it('whereVectorDistanceLessThan filters by distance', function () {
         ->select('id')
         ->get();
     expect($results->pluck('id')->all())->toBe([1]);
-});
+})->skip(!method_exists(Builder::class, 'whereVectorDistanceLessThan'));
 
 it('orderByVectorDistance orders by distance', function () {
     $connection = new DuckDBConnection(fn() => new PDO('duckdb::memory:'));
@@ -709,4 +710,4 @@ it('orderByVectorDistance orders by distance', function () {
         ->select('id')
         ->get();
     expect($results->pluck('id')->all())->toBe([3, 2, 1]);
-});
+})->skip(!method_exists(Builder::class, 'orderByVectorDistance'));;

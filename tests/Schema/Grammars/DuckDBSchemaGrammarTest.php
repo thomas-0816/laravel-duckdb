@@ -2472,4 +2472,4 @@ it('compile vector search', function () {
         ->limit(1); // required to trigger index scan
     expect($results->first()->id)->toBe(1);
     expect($results->explain()->first()->explain_value)->toContain('HNSW_INDEX_SCAN');
-})->skip(! method_exists(Blueprint::class, 'dropVectorIndex'));
+})->skip(! method_exists(Blueprint::class, 'vectorIndex'));
