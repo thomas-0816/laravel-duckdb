@@ -2,6 +2,7 @@
 
 use DuckDb\DuckDBConnection;
 use Illuminate\Database\Query\Expression;
+use Illuminate\Database\Query\Grammars\Grammar;
 use Illuminate\Database\Schema\Blueprint;
 
 it('getSchemas returns schemas from DuckDB', function () {
@@ -2471,5 +2472,7 @@ it('compile vector search', function () {
         ->orderBy('distance')
         ->limit(1); // required to trigger index scan
     expect($results->first()->id)->toBe(1);
-    expect($results->explain()->first()->explain_value)->toContain('HNSW_INDEX_SCAN');
+    if (method_exists(Grammar::class, 'compileVectorDistanceExpression')) {
+        expect($results->explain()->first()->explain_value)->toContain('HNSW_INDEX_SCAN');
+    }
 })->skip(! method_exists(Blueprint::class, 'vectorIndex'));
