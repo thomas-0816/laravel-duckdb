@@ -821,7 +821,7 @@ DB::connection('duckdb')->transaction(function ($db) {
 });
 ```
 
-## Client server mode (Quack Remote Protocol)
+## Client-server mode (Quack Remote Protocol)
 
 Start the DuckDB server:
 
