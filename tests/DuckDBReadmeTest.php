@@ -405,4 +405,4 @@ it('verifies bulk data insertion', function () {
         ->from('t1')
         ->first();
     expect($result->count)->toBe(100);
-});
+})->skip(! method_exists(Builder::class, 'selectExpression'));
