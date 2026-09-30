@@ -38,7 +38,7 @@ DuckDB extensions work the same way as they do in DuckDB CLI.
 
 ```bash
 pie install --skip-enable-extension thomas-0816/pdo-duckdb-php
-php -d extension=pdo_duckdb some_script.php
+php -d extension=pdo_duckdb artisan some_command
 ```
 
 ## Configuration
