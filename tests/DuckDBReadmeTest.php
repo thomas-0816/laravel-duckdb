@@ -361,7 +361,7 @@ it('verifies read data from private rest api', function () {
 
 it('verifies quack protocol', function () {
     $server = new DuckDBConnection(static fn() => new PDO('duckdb::memory:'));
-    $server->unprepared("CALL quack_serve('quack:127.0.0.1:9494', token='secret')");
+    $server->unprepared("CALL quack_serve('quack:127.0.0.1:9494', token='secret', disable_ssl=true)");
 
     $client = new DuckDBConnection(static fn() => new PDO('duckdb::memory:', null, null, [
         PDO::DUCKDB_ATTR_INIT_COMMAND => "ATTACH 'quack:127.0.0.1:9494' AS remote (TOKEN 'secret'); USE remote;",
@@ -370,10 +370,11 @@ it('verifies quack protocol', function () {
     $client->unprepared("INSERT INTO table1 VALUES ('foo', 'bar')");
 
     $result = $client->select('SELECT * FROM table1');
-    print_r($result);
     expect((array) $result[0])->toBe(['v' => 'foo', 'v2' => 'bar']);
     $result2 = $server->select('SELECT * FROM table1');
     expect((array) $result2[0])->toBe(['v' => 'foo', 'v2' => 'bar']);
+
+    $server->unprepared("CALL quack_stop('quack:127.0.0.1:9494')");
 });
 
 it('verifies bulk data insertion', function () {
