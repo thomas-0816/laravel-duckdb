@@ -596,6 +596,42 @@ dump($rows->toArray());
 #         [origin] => offline
 ```
 
+## Bulk data insertion
+
+Inserting many rows one by one is slow, use a single query to perform bulk data insertion.
+
+```php
+$data = [];
+for ($i = 0; $i < 1_000_000; $i++) {
+    $data[] = ['i1' => $i, 'v1' => 'foo' . $i];
+}
+
+DB::connection('duckdb')->unprepared('CREATE TABLE t1 (i1 integer, v1 varchar)');
+DB::connection('duckdb')->unprepared("INSERT INTO t1 SELECT value->>'i1', value->>'v1' FROM json_each('" . json_encode($data) . "')");
+
+$result = DB::connection('duckdb')->query()
+    ->selectExpression('count(*)', 'count')
+    ->from('t1')
+    ->first();
+dump($result->count); # 1000000
+```
+
+```php
+$data = [];
+for ($i = 0; $i < 1_000_000; $i++) {
+    $data[] = [$i, 'foo' . $i];
+}
+
+DB::connection('duckdb')->unprepared('CREATE TABLE t1 (i1 integer, v1 varchar)');
+DB::connection('duckdb')->unprepared("INSERT INTO t1 SELECT value->>0, value->>1 FROM json_each('" . json_encode($data) . "')");
+
+$result = DB::connection('duckdb')->query()
+    ->selectExpression('count(*)', 'count')
+    ->from('t1')
+    ->first();
+dump($result->count); # 1000000
+```
+
 ## Schema and Query Builder for special types
 
 Special types can be defined by using rawColumn():
@@ -784,6 +820,45 @@ DB::connection('duckdb')->transaction(function ($db) {
     $db->statement("INSERT INTO test_csv SELECT * FROM '/tmp/test.csv'");
 });
 ```
+
+## Client server mode (Quack Remote Protocol)
+
+Start the DuckDB server:
+
+```bash
+duckdb database.duckdb --cmd "CALL quack_serve('quack:127.0.0.1:9494', token='secret');"
+```
+
+For the client(s), use DUCKDB_ATTR_INIT_COMMAND in `config/database.php` to open the quack connection automatically:
+
+```php
+'connections' => [
+    'duckdb' => [
+        'driver' => 'duckdb',
+        'database' => ':memory:',
+        'options' => [
+            PDO::DUCKDB_ATTR_INIT_COMMAND => "ATTACH 'quack:127.0.0.1:9494' AS remote (TOKEN 'secret'); USE remote;",
+        ]
+```
+
+```php
+use Illuminate\Support\Facades\DB;
+
+// open quack connection on demand
+// DB::connection('duckdb')->unprepared("ATTACH 'quack:127.0.0.1:9494' AS remote (TOKEN 'secret'); USE remote;");
+DB::connection('duckdb')->unprepared('CREATE TABLE IF NOT EXISTS table1 (v VARCHAR, v2 VARCHAR)');
+DB::connection('duckdb')->unprepared("INSERT INTO table1 VALUES ('foo', 'bar')");
+
+$result = DB::connection('duckdb')->select('SELECT * FROM table1');
+dump($result);
+
+# Array
+#     [0] => stdClass Object
+#         [v] => foo
+#         [v2] => bar
+```
+
+For more information about the Quack Remote Protocol, see the [documentation](https://duckdb.org/docs/current/quack/overview).
 
 ## Community extensions
 

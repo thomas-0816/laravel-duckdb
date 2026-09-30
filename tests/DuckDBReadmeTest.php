@@ -358,3 +358,50 @@ it('verifies read data from private rest api', function () {
         ->get();
     expect($result[0]->headers['Authorization'])->toBe('Bearer some secret');
 });
+
+it('verifies quack protocol', function () {
+    $server = new DuckDBConnection(static fn() => new PDO('duckdb::memory:'));
+    $server->unprepared("CALL quack_serve('quack:127.0.0.1:9494', token='secret')");
+
+    $client = new DuckDBConnection(static fn() => new PDO('duckdb::memory:', null, null, [
+        PDO::DUCKDB_ATTR_INIT_COMMAND => "ATTACH 'quack:127.0.0.1:9494' AS remote (TOKEN 'secret'); USE remote;",
+    ]));
+    $client->unprepared('CREATE TABLE IF NOT EXISTS table1 (v VARCHAR, v2 VARCHAR)');
+    $client->unprepared("INSERT INTO table1 VALUES ('foo', 'bar')");
+
+    $result = $client->select('SELECT * FROM table1');
+    print_r($result);
+    expect((array) $result[0])->toBe(['v' => 'foo', 'v2' => 'bar']);
+    $result2 = $server->select('SELECT * FROM table1');
+    expect((array) $result2[0])->toBe(['v' => 'foo', 'v2' => 'bar']);
+});
+
+it('verifies bulk data insertion', function () {
+    $data = [];
+    for ($i = 0; $i < 100; $i++) {
+        $data[] = ['i1' => $i, 'v1' => 'foo' . $i];
+    }
+    $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:'));
+    $connection->unprepared('CREATE TABLE t1 (i1 integer, v1 varchar)');
+    $connection->unprepared("INSERT INTO t1 SELECT value->>'i1', value->>'v1' FROM json_each('" . json_encode($data) . "')");
+
+    $result = $connection->query()
+        ->selectExpression('count(*)', 'count')
+        ->from('t1')
+        ->first();
+    expect($result->count)->toBe(100);
+
+    $data = [];
+    for ($i = 0; $i < 100; $i++) {
+        $data[] = [$i, 'foo' . $i];
+    }
+    $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:'));
+    $connection->unprepared('CREATE TABLE t1 (i1 integer, v1 varchar)');
+    $connection->unprepared("INSERT INTO t1 SELECT value->>0, value->>1 FROM json_each('" . json_encode($data) . "')");
+
+    $result = $connection->query()
+        ->selectExpression('count(*)', 'count')
+        ->from('t1')
+        ->first();
+    expect($result->count)->toBe(100);
+});
