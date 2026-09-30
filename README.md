@@ -598,7 +598,7 @@ dump($rows->toArray());
 
 ## Bulk data insertion
 
-Inserting many rows one by one is slow, use a single query to perform bulk data insertion.
+Inserting many rows one by one is slow, use a single query to perform bulk data insertion (1M rows in <1s).
 
 ```php
 $data = [];
