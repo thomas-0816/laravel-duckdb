@@ -478,22 +478,13 @@ dump(array_map('json_encode', $rows));
 #     {"train_type":"ICE","train_number":"1541","delay_avg":66,"count":198}
 #     {"train_type":"ICE","train_number":"79152","delay_avg":44,"count":2}
 #     {"train_type":"ICE","train_number":"2587","delay_avg":44,"count":72}
-#     {"train_type":"ICE","train_number":"2214","delay_avg":43,"count":159}
-#     {"train_type":"ICE","train_number":"2311","delay_avg":42,"count":289}
-#     {"train_type":"ICE","train_number":"953","delay_avg":42,"count":79}
-#     {"train_type":"ICE","train_number":"859","delay_avg":41,"count":80}
-#     {"train_type":"ICE","train_number":"526","delay_avg":41,"count":337}
-#     {"train_type":"ICE","train_number":"640","delay_avg":39,"count":372}
+...
 # array
 #     {"train_number":"647","station_name":"Dortmund Hbf","delay_in_min":82,"hour":0,"departure_is_canceled":false}
 #     {"train_number":"647","station_name":"Hamm (Westf) Hbf","delay_in_min":120,"hour":1,"departure_is_canceled":false}
 #     {"train_number":"647","station_name":"Bielefeld Hbf","delay_in_min":120,"hour":1,"departure_is_canceled":false}
 #     {"train_number":"647","station_name":"Minden (Westf)","delay_in_min":123,"hour":2,"departure_is_canceled":false}
-#     {"train_number":"647","station_name":"Hannover Hbf","delay_in_min":138,"hour":2,"departure_is_canceled":false}
-#     {"train_number":"647","station_name":"Wolfsburg Hbf","delay_in_min":135,"hour":3,"departure_is_canceled":false}
-#     {"train_number":"647","station_name":"Berlin Hauptbahnhof","delay_in_min":121,"hour":4,"departure_is_canceled":true}
-#     {"train_number":"647","station_name":"Berlin S\u00fcdkreuz","delay_in_min":120,"hour":4,"departure_is_canceled":false}
-#     {"train_number":"647","station_name":"Berlin-Spandau","delay_in_min":146,"hour":4,"departure_is_canceled":false}
+...
 ```
 
 ## Read private data using REST APIs
@@ -512,11 +503,8 @@ var_dump($result[0]);
 
 # stdClass Object
 #     [headers] => Array
-#             [Accept] => */*
-#             [Authorization] => Bearer some secret
-#             [Host] => httpbin.org
-#             [User-Agent] => duckdb/v1.5.5(linux_amd64) capi d8cdaa33fd
-#             [X-Amzn-Trace-Id] => Root=1-6ab92b91-3190fcdc299218c830d77467
+#         [Accept] => */*
+#         [Authorization] => Bearer some secret
 ```
 
 See the documentation for [managing secrets](https://duckdb.org/docs/current/configuration/secrets_manager) and [read_json()](https://duckdb.org/docs/lts/data/json/loading_json).
