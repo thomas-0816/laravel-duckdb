@@ -30,7 +30,7 @@ php artisan package:discover
 
 `pdo_duckdb` is a native DuckDB database driver for the PHP Data Objects (PDO) interface.\
 As a native PHP extension, it is implemented in C/C++ and does not require PHP FFI or preloading.\
-It is also thread safe and fully tested with FrankenPHP (PHP-ZTS) and Swoole.\
+It is also thread safe and fully tested with php-cli, php-fpm, mod_php, FrankenPHP (PHP-ZTS) and Swoole.\
 The release packages contain pre-compiled binaries for all supported platforms and DuckDB is directly included.\
 DuckDB extensions work the same way as they do in DuckDB CLI.
 
@@ -79,7 +79,7 @@ For testing or reading external files, use the special in-memory database in `co
 
 ```bash
 pie install --skip-enable-extension thomas-0816/pdo-duckdb-php
-php -d extension=pdo_duckdb some_script.php
+php -d extension=pdo_duckdb artisan some_command
 ```
 
 On demand connection without `config/database.php`:
@@ -605,7 +605,7 @@ dump($rows->toArray());
 
 ## Bulk data insertion
 
-Inserting many rows one by one is slow, use a single query to perform bulk data insertion.
+Inserting many rows one by one is slow, use a single query to perform bulk data insertion (1M rows in <1s).
 
 ```php
 $data = [];
@@ -828,7 +828,7 @@ DB::connection('duckdb')->transaction(function ($db) {
 });
 ```
 
-## Client server mode (Quack Remote Protocol)
+## Client-server mode (Quack Remote Protocol)
 
 Start the DuckDB server:
 
