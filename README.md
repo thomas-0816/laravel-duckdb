@@ -34,13 +34,6 @@ It is also thread safe and fully tested with FrankenPHP (PHP-ZTS) and Swoole.\
 The release packages contain pre-compiled binaries for all supported platforms and DuckDB is directly included.\
 DuckDB extensions work the same way as they do in DuckDB CLI.
 
-## Install and load pdo_duckdb on demand
-
-```bash
-pie install --skip-enable-extension thomas-0816/pdo-duckdb-php
-php -d extension=pdo_duckdb some_script.php
-```
-
 ## Configuration
 
 Add a `duckdb` connection to your `config/database.php`:
@@ -80,6 +73,20 @@ For testing or reading external files, use the special in-memory database in `co
         ],
     ],
 ],
+```
+
+## Install and load pdo_duckdb on demand
+
+```bash
+pie install --skip-enable-extension thomas-0816/pdo-duckdb-php
+php -d extension=pdo_duckdb some_script.php
+```
+
+On demand connection without `config/database.php`:
+
+```php
+$connection = (new ConnectionFactory(app()))
+    ->make(['driver' => 'duckdb', 'database' => ':memory:', 'duckdb');
 ```
 
 ## Schema Builder
