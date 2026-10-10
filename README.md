@@ -1081,6 +1081,10 @@ The DuckDB project is owned and maintained by the [DuckDB Foundation](https://du
 
 Yes. Support is available on GitHub, see the [community support](https://duckdb.org/community_support) page for details.
 
+> Can I get support for Laravel Eloquent driver for DuckDB?
+
+Yes. Just open an Issue or a Pull request.
+
 > Is the Laravel Eloquent driver for DuckDB developed by the DuckDB project?
 
 No. This is a third-party open-source community project.
