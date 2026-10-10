@@ -405,6 +405,8 @@ dump($result->toArray());
 ## Read and write Excel files
 
 ```php
+use Illuminate\Support\Facades\DB;
+
 DB::connection('duckdb')->unprepared('INSTALL excel; LOAD excel');
 
 DB::connection('duckdb')->unprepared('CREATE TABLE table1 (text VARCHAR, amount DECIMAL(10, 2))');
@@ -521,6 +523,8 @@ docker run --network host --entrypoint sh rustfs/rc -c "
 Use DuckDB [httpfs](https://duckdb.org/docs/current/core_extensions/httpfs/s3api) extension to read and write data from/to S3:
 
 ```php
+use Illuminate\Support\Facades\DB;
+
 // set credentials
 DB::connection('duckdb')->unprepared("
     CREATE SECRET rustfs (TYPE s3, ENDPOINT '127.0.0.1:9000', USE_SSL false,
