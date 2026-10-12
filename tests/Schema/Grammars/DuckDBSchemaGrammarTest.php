@@ -2473,6 +2473,6 @@ it('compile vector search', function () {
         ->limit(1); // required to trigger index scan
     expect($results->first()->id)->toBe(1);
     if (method_exists(Grammar::class, 'compileVectorDistanceExpression')) {
-        expect($results->explain()->first()->explain_value)->toContain('HNSW_INDEX_SCAN');
+        expect($results->explain()->first()->explain_value)->toContain('HNSW Index');
     }
 })->skip(! method_exists(Blueprint::class, 'vectorIndex'));

@@ -907,5 +907,5 @@ it('query explain', function () {
 
     $result = $connection->table('t1')->where('name', 'foo')->explain()->first();
     expect($result->explain_key)->toBe('physical_plan');
-    expect($result->explain_value)->toContain('PROJECTION')->toContain('SEQ_SCAN');
+    expect($result->explain_value)->toContain('Projection')->toContain('Sequential');
 });
