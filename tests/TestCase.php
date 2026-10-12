@@ -2,6 +2,8 @@
 
 namespace DuckDb\Tests;
 
+use DuckDb\DuckDBConnection;
+use PDO;
 use PHPUnit\Framework\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase
@@ -28,6 +30,25 @@ abstract class TestCase extends BaseTestCase
     protected function tearDown(): void
     {
         parent::tearDown();
+
+        $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:conn1')); // shared memory connection
+
+        $tables = $connection->select('select schema_name, table_name from duckdb_tables() where internal = false');
+        foreach ($tables as $table) {
+            $connection->unprepared('drop table if exists ' . $table->schema_name . '.' . $table->table_name);
+        }
+        $views = $connection->select('select schema_name, view_name from duckdb_views() where internal = false');
+        foreach ($views as $view) {
+            $connection->unprepared('drop view if exists ' . $view->schema_name . '.' . $view->view_name);
+        }
+        $sequences = $connection->select('select schema_name, sequence_name from duckdb_sequences()');
+        foreach ($sequences as $sequence) {
+            $connection->unprepared('drop sequence if exists ' . $sequence->schema_name . '.' . $sequence->sequence_name);
+        }
+        $schemas = $connection->select('select schema_name from duckdb_schemas() where internal = false');
+        foreach ($schemas as $schema) {
+            $connection->unprepared('drop schema if exists ' . $schema->schema_name);
+        }
 
         gc_collect_cycles();
     }

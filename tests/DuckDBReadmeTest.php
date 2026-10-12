@@ -51,7 +51,7 @@ class LogsJson extends Model
 }
 
 it('verifies examples from readme', function () {
-    $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:conn1'));
     $connection->getSchemaBuilder()->create('events', function (Blueprint $table) {
         $table->id();
         $table->string('category');
@@ -107,7 +107,7 @@ it('verifies examples from readme', function () {
 })->skip(! method_exists(Builder::class, 'selectExpression'));
 
 it('verifies examples from readme, csv files', function () {
-    $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:conn1'));
 
     $list = [
         ['aaa', 'bbb', 'ccc'],
@@ -139,7 +139,7 @@ it('verifies examples from readme, csv files', function () {
 });
 
 it('verifies examples from readme, json files', function () {
-    $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:conn1'));
 
     $tmpFile = sys_get_temp_dir() . '/logs.json';
     $tmpFileParquet = sys_get_temp_dir() . '/logs_json.parquet';
@@ -175,7 +175,7 @@ it('verifies examples from readme, json files', function () {
 });
 
 it('verifies special schema types with query builder', function () {
-    $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:conn1'));
 
     $connection->getSchemaBuilder()->create('events', function (Blueprint $table) {
         $table->id();
@@ -212,7 +212,7 @@ it('verifies special schema types with query builder', function () {
 });
 
 it('verifies special schema types with eloquent', function () {
-    $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:conn1'));
     Event::setConnectionResolver(new Resolver($connection));
 
     $connection->getSchemaBuilder()->create('events', function (Blueprint $table) {
@@ -253,7 +253,7 @@ it('verifies special schema types with eloquent', function () {
 });
 
 it('verifies parquet read and write', function () {
-    $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:conn1'));
 
     $tmpFileParquet = sys_get_temp_dir() . '/table1.parquet';
 
@@ -276,7 +276,7 @@ it('verifies parquet read and write', function () {
 });
 
 it('verifies last insert id', function () {
-    $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:conn1'));
 
     $connection->getSchemaBuilder()->create('table1', function (Blueprint $table) {
         $table->id();
@@ -300,7 +300,7 @@ it('verifies csv data import', function () {
     }
     fclose($fp);
 
-    $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:conn1'));
     $connection->statement("CREATE TABLE test_csv AS SELECT * FROM '{$tmpFileCsv}'"); // create schema + import data
     $connection->statement("INSERT INTO test_csv SELECT * FROM '{$tmpFileCsv}'"); // only import data
 
@@ -311,7 +311,7 @@ it('verifies csv data import', function () {
 });
 
 it('verifies vector similarity search', function () {
-    $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:conn1'));
     $connection->unprepared('INSTALL vss; LOAD vss');
 
     $connection->getSchemaBuilder()->create('events', function (Blueprint $table) {
@@ -335,7 +335,7 @@ it('verifies vector similarity search', function () {
 
 it('verifies read and write excel files', function () {
     $tmpFileXlsx = sys_get_temp_dir() . '/test.xlsx';
-    $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:conn1'));
     $connection->unprepared('INSTALL excel; LOAD excel');
     $connection->unprepared('CREATE TABLE table1 (id INTEGER, text VARCHAR, amount DECIMAL(10, 2))');
     $connection->table('table1')->insert(['id' => 1, 'text' => 'Hello Excel 🦆', 'amount' => 42.21]);
@@ -350,7 +350,7 @@ it('verifies read and write excel files', function () {
 
 it('verifies read data from private rest api', function () {
     $url = 'https://mockhttp.org/headers';
-    $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:conn1'));
     $connection->unprepared('SET force_download=true');
     $connection->unprepared("CREATE SECRET http_auth (TYPE http, SCOPE '{$url}', BEARER_TOKEN 'some secret')");
     $result = $connection->query()
@@ -361,7 +361,7 @@ it('verifies read data from private rest api', function () {
 });
 
 it('verifies quack protocol', function () {
-    $server = new DuckDBConnection(static fn() => new PDO('duckdb::memory:'));
+    $server = new DuckDBConnection(static fn() => new PDO('duckdb::memory:conn1'));
     $server->unprepared("CALL quack_serve('quack:127.0.0.1:9494', token='secret', disable_ssl=true)");
 
     $client = new DuckDBConnection(static fn() => new PDO('duckdb::memory:', null, null, [
@@ -383,7 +383,7 @@ it('verifies bulk data insertion', function () {
     for ($i = 0; $i < 100; $i++) {
         $data[] = ['i1' => $i, 'v1' => 'foo' . $i];
     }
-    $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:'));
+    $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:conn1'));
     $connection->unprepared('CREATE TABLE t1 (i1 integer, v1 varchar)');
     $connection->unprepared("INSERT INTO t1 SELECT value->>'i1', value->>'v1' FROM json_each('" . json_encode($data) . "')");
 
@@ -397,13 +397,13 @@ it('verifies bulk data insertion', function () {
     for ($i = 0; $i < 100; $i++) {
         $data[] = [$i, 'foo' . $i];
     }
-    $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:'));
-    $connection->unprepared('CREATE TABLE t1 (i1 integer, v1 varchar)');
-    $connection->unprepared("INSERT INTO t1 SELECT value->>0, value->>1 FROM json_each('" . json_encode($data) . "')");
+    $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:conn1'));
+    $connection->unprepared('CREATE TABLE t2 (i1 integer, v1 varchar)');
+    $connection->unprepared("INSERT INTO t2 SELECT value->>0, value->>1 FROM json_each('" . json_encode($data) . "')");
 
     $result = $connection->query()
         ->selectExpression('count(*)', 'count')
-        ->from('t1')
+        ->from('t2')
         ->first();
     expect($result->count)->toBe(100);
 })->skip(! method_exists(Builder::class, 'selectExpression'));
