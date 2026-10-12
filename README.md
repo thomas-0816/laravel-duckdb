@@ -492,8 +492,9 @@ dump(array_map('json_encode', $rows));
 ```php
 use Illuminate\Support\Facades\DB;
 
-$url = 'https://httpbin.org/headers';
+$url = 'https://mockhttp.org/headers';
 DB::connection('duckdb')->unprepared("CREATE SECRET http_auth (TYPE http, SCOPE '{$url}', BEARER_TOKEN 'some secret')");
+DB::connection('duckdb')->unprepared('SET force_download=true');
 
 $result = DB::connection('duckdb')->query()
     ->select('*')
@@ -503,8 +504,8 @@ var_dump($result[0]);
 
 # stdClass Object
 #     [headers] => Array
-#         [Accept] => */*
-#         [Authorization] => Bearer some secret
+#         [accept] => */*
+#         [authorization] => Bearer some secret
 ```
 
 See the documentation for [managing secrets](https://duckdb.org/docs/current/configuration/secrets_manager) and [read_json()](https://duckdb.org/docs/lts/data/json/loading_json).

@@ -349,14 +349,15 @@ it('verifies read and write excel files', function () {
 });
 
 it('verifies read data from private rest api', function () {
-    $url = 'https://httpbin.org/headers';
+    $url = 'https://mockhttp.org/headers';
     $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:'));
+    $connection->unprepared('SET force_download=true');
     $connection->unprepared("CREATE SECRET http_auth (TYPE http, SCOPE '{$url}', BEARER_TOKEN 'some secret')");
     $result = $connection->query()
         ->select('*')
         ->fromRaw("read_json('{$url}?foo=bar')")
         ->get();
-    expect($result[0]->headers['Authorization'])->toBe('Bearer some secret');
+    expect($result[0]->headers['authorization'])->toBe('Bearer some secret');
 });
 
 it('verifies quack protocol', function () {
