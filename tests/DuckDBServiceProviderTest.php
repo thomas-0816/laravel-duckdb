@@ -17,7 +17,7 @@ it('resolver creates a duckdb connection instance', function () {
     $provider->boot();
 
     $resolver = Connection::getResolver('duckdb');
-    $pdo = new PDO('duckdb::memory:');
+    $pdo = new PDO('duckdb::memory:conn1');
     $connection = $resolver($pdo, '', '', ['driver' => 'duckdb']);
 
     expect($connection)->toBeInstanceOf(DuckDBConnection::class);
@@ -28,7 +28,7 @@ it('resolver connection is functional', function () {
     $provider->boot();
 
     $resolver = Connection::getResolver('duckdb');
-    $pdo = new PDO('duckdb::memory:');
+    $pdo = new PDO('duckdb::memory:conn1');
     $connection = $resolver($pdo, '', '', ['driver' => 'duckdb']);
 
     $connection->getPdo()->exec('CREATE TABLE func_test (val INTEGER)');
@@ -42,7 +42,7 @@ it('resolver connection passes database name', function () {
     $provider->boot();
 
     $resolver = Connection::getResolver('duckdb');
-    $pdo = new PDO('duckdb::memory:');
+    $pdo = new PDO('duckdb::memory:conn1');
     $connection = $resolver($pdo, 'testdb', '', ['driver' => 'duckdb']);
 
     expect($connection->getDatabaseName())->toBe('testdb');
@@ -53,7 +53,7 @@ it('resolver connection passes table prefix', function () {
     $provider->boot();
 
     $resolver = Connection::getResolver('duckdb');
-    $pdo = new PDO('duckdb::memory:');
+    $pdo = new PDO('duckdb::memory:conn1');
     $connection = $resolver($pdo, '', 'pref_', ['driver' => 'duckdb']);
 
     expect($connection->getTablePrefix())->toBe('pref_');
@@ -64,7 +64,7 @@ it('resolver connection passes config', function () {
     $provider->boot();
 
     $resolver = Connection::getResolver('duckdb');
-    $pdo = new PDO('duckdb::memory:');
+    $pdo = new PDO('duckdb::memory:conn1');
     $connection = $resolver($pdo, '', '', ['driver' => 'duckdb', 'custom' => 'value']);
 
     expect($connection->getConfig('custom'))->toBe('value');
@@ -75,7 +75,7 @@ it('resolver connection uses duckdb query grammar', function () {
     $provider->boot();
 
     $resolver = Connection::getResolver('duckdb');
-    $pdo = new PDO('duckdb::memory:');
+    $pdo = new PDO('duckdb::memory:conn1');
     $connection = $resolver($pdo, '', '', ['driver' => 'duckdb']);
 
     expect($connection->getQueryGrammar())
@@ -87,7 +87,7 @@ it('resolver connection uses duckdb schema grammar via builder', function () {
     $provider->boot();
 
     $resolver = Connection::getResolver('duckdb');
-    $pdo = new PDO('duckdb::memory:');
+    $pdo = new PDO('duckdb::memory:conn1');
     $connection = $resolver($pdo, '', '', ['driver' => 'duckdb']);
 
     $schema = $connection->getSchemaBuilder();
@@ -101,7 +101,7 @@ it('resolver connection uses duckdb post processor', function () {
     $provider->boot();
 
     $resolver = Connection::getResolver('duckdb');
-    $pdo = new PDO('duckdb::memory:');
+    $pdo = new PDO('duckdb::memory:conn1');
     $connection = $resolver($pdo, '', '', ['driver' => 'duckdb']);
 
     expect($connection->getPostProcessor())
@@ -113,7 +113,7 @@ it('resolver connection can create tables via schema builder', function () {
     $provider->boot();
 
     $resolver = Connection::getResolver('duckdb');
-    $pdo = new PDO('duckdb::memory:');
+    $pdo = new PDO('duckdb::memory:conn1');
     $connection = $resolver($pdo, '', '', ['driver' => 'duckdb']);
 
     $connection->getSchemaBuilder()->create('provider_test', function ($table) {
@@ -131,7 +131,7 @@ it('resolver connection can run raw queries', function () {
     $provider->boot();
 
     $resolver = Connection::getResolver('duckdb');
-    $pdo = new PDO('duckdb::memory:');
+    $pdo = new PDO('duckdb::memory:conn1');
     $connection = $resolver($pdo, '', '', ['driver' => 'duckdb']);
 
     $connection->getPdo()->exec('CREATE TABLE raw_test (id INTEGER)');
