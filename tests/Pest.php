@@ -1,5 +1,7 @@
 <?php
 
+use DuckDb\Tests\TestCase;
+
 /*
 |--------------------------------------------------------------------------
 | Test Case
@@ -10,6 +12,8 @@
 | specific options and overrides in the `uses()` call as needed.
 |
 */
+
+uses(TestCase::class)->in(__DIR__);
 
 /*
 |--------------------------------------------------------------------------
