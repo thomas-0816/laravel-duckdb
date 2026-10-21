@@ -55,6 +55,9 @@ jobs:
           - 12.*
           - 13.0
           - 13.*
+        duckdb-version:
+          - ^1
+          - ^2-beta
         exclude:
           - php-version: 8.2
             laravel-version: 13.*
@@ -86,6 +89,7 @@ jobs:
         env:
           laravel_version: ${{ matrix.laravel-version }}
           php_version: ${{ matrix.php-version }}
+          duckdb_version: ${{ matrix.duckdb-version }}
           BOX_REQUIREMENT_CHECKER: false
         shell: bash
         run: |
@@ -95,9 +99,9 @@ jobs:
           uname -a
           php -v
           if [ "$RUNNER_OS" = "Windows" ]; then
-            pie install -v thomas-0816/pdo-duckdb-php
+            pie install -v thomas-0816/pdo-duckdb-php:${duckdb_version}
           else
-            sudo -E pie install -v thomas-0816/pdo-duckdb-php
+            sudo -E pie install -v thomas-0816/pdo-duckdb-php:${duckdb_version}
           fi
           php -m | grep duckdb
           rm composer.lock

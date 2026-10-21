@@ -17,7 +17,10 @@ Integrates DuckDB's analytical database engine into Laravel's Eloquent ORM and S
 Install and setup [pdo_duckdb](https://github.com/thomas-0816/pdo-duckdb-php) database driver with [PIE](https://github.com/php/pie):
 
 ```bash
-pie install thomas-0816/pdo-duckdb-php
+# DuckDB 1.x
+pie install thomas-0816/pdo-duckdb-php:^1
+# DuckDB 2.x
+pie install thomas-0816/pdo-duckdb-php:^2-beta
 ```
 
 Install and setup Laravel Eloquent driver for DuckDB:
@@ -78,7 +81,11 @@ For testing or reading external files, use the special in-memory database in `co
 ## Install and load pdo_duckdb on demand
 
 ```bash
-pie install --skip-enable-extension thomas-0816/pdo-duckdb-php
+# DuckDB 1.x
+pie install --skip-enable-extension thomas-0816/pdo-duckdb-php:^1
+# DuckDB 2.x
+pie install --skip-enable-extension thomas-0816/pdo-duckdb-php:^2-beta
+
 php -d extension=pdo_duckdb artisan some_command
 ```
 
