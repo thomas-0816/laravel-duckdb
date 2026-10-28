@@ -107,10 +107,10 @@ jobs:
           rm composer.lock
           composer require illuminate/database:${laravel_version}
           if [ "$RUNNER_OS" != "Windows" ]; then
-            vendor/bin/php-cs-fixer fix --dry-run --allow-risky=yes --diff
-            vendor/bin/phpstan analyse
+            composer phpcsfixer
+            composer phpstan
           fi
-          vendor/bin/pest --coverage --min=90
+          composer pest -- --min=90
 
   zizmor:
     name: zizmor

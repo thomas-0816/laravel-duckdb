@@ -1107,7 +1107,7 @@ Yes. DuckDB and all components are fully open-source under the MIT license.
 # testing
 composer test
 composer test_fix
-./vendor/bin/pest --coverage
+composer pest
 ```
 
 ## AI Disclosure
