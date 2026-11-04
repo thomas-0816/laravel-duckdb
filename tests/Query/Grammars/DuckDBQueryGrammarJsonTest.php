@@ -139,3 +139,22 @@ it('whereJsonContainsKey with not works', function () {
 
     expect($connection->table('wjckn')->whereJsonDoesntContainKey('data->a')->count())->toBe(1);
 });
+
+it('jsonPartialUpdate works', function () {
+    $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:conn1'));
+    $connection->getPdo()->exec('CREATE TABLE example (name varchar, payload JSON)');
+    $connection->table('example')->insert([
+        ['name' => 'Foo Bar', 'payload' => json_encode(['tags' => [], 'tags2' => [], 'tags3' => [], 'active' => true])],
+    ]);
+    $connection->table('example')->update([
+        'payload->tags' => ['Foo', 'Bar'],
+    ]);
+    $connection->table('example')->update([
+        'payload->tags2' => ['Baz'],
+    ]);
+    $connection->table('example')->update([
+        'payload->tags3' => collect(['Test', 'Value']),
+    ]);
+
+    expect($connection->table('example')->value('payload'))->toBe(['active' => true, 'tags' => ['Foo', 'Bar'], 'tags2' => ['Baz'], 'tags3' => ['Test', 'Value']]);
+});

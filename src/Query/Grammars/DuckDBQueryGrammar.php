@@ -167,7 +167,6 @@ class DuckDBQueryGrammar extends Grammar
             ->merge($jsonGroups)
             ->map(function ($value, $key) use ($jsonGroups) {
                 $column = last(explode('.', $key));
-
                 $value = isset($jsonGroups[$key]) ? $this->compileJsonPatch($column, $value) : $this->parameter($value);
 
                 return $this->wrap($column) . ' = ' . $value;
