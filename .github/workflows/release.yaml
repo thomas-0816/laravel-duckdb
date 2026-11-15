@@ -68,6 +68,7 @@ jobs:
           duckdb_version: ${{ matrix.duckdb-version }}
           php_version: ${{ matrix.php-version }}
           BOX_REQUIREMENT_CHECKER: false
+          tag: ${{ github.event.release.tag_name || github.ref_name }}
         shell: bash
         run: |
           if [ "$php_version" = "8.6" ]; then
@@ -88,7 +89,7 @@ jobs:
             composer require laravel/framework:${laravel_version} --prefer-lowest
           fi
           composer show laravel/framework | grep versions
-          composer require thomas-0816/laravel-duckdb
+          composer require thomas-0816/laravel-duckdb:${tag}
           php artisan package:discover
           sed -i.bak 's/sqlite/duckdb/g' .env
           sed -i.bak 's/sqlite/duckdb/g' config/database.php
