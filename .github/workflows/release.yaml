@@ -39,7 +39,7 @@ jobs:
           - highest
         duckdb-version:
           - ^1
-          - ^2-beta
+          - ^2
         exclude:
           - php-version: 8.2
             laravel-version: 13.*
