@@ -693,7 +693,7 @@ it('whereVectorDistanceLessThan filters by distance', function () {
         ->select('id')
         ->get();
     expect($results->pluck('id')->all())->toBe([1]);
-})->skip(!method_exists(Builder::class, 'whereVectorDistanceLessThan') || true); // https://github.com/duckdb/duckdb/issues/26957
+})->skip(!method_exists(Builder::class, 'whereVectorDistanceLessThan'));
 
 it('orderByVectorDistance orders by distance', function () {
     $connection = new DuckDBConnection(static fn() => new PDO('duckdb::memory:conn1'));
